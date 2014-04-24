@@ -1,0 +1,13 @@
+## Title: X4D |cFFAE19Loot
+## Author: @wilson0x4d
+## Notes: Displays Loot Items in Chat Window
+## Version: 1.4
+## APIVersion: 100003
+## SavedVariables: X4D_Loot_SV
+## OptionalDependsOn: LibAddonMenu-1.0
+
+lib/LibStub/LibStub.lua
+lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
+
+X4D_Loot.lua
+X4D_Loot.xml
