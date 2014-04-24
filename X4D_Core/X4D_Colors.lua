@@ -3,42 +3,39 @@ if (not X4D_Colors) then
 	return;
 end
 
-function HEX2DEC(input, offset)
+local function HEX2DEC(input, offset)
 	if (offset == nil) then
 		offset = 1;
 	end
 	return (tonumber(input:sub(offset, offset), 16) * 16) + tonumber(input:sub(offset + 1, offset + 1), 16);
 end
 
-function DEC2HEX(input)
+local function DEC2HEX(input)
 	local h = (input / 16);
 	local l = (input - (h * 16));
 	return string.format('%x%x', h, l);
 end
 
-function X4D_Colors.CreateColor(r, g, b)
+function X4D_Colors.Create(r, g, b)
 	return '|c' .. DEC2HEX(r * 255) .. DEC2HEX(g * 255) .. DEC2HEX(b * 255);
 end
 
-function X4D_Colors.ParseColor(color)
-	return HEX2DEC(color, 3)/256, HEX2DEC(color, 5)/256, HEX2DEC(color, 7)/256, 1;
+function X4D_Colors.Parse(color)
+	return (HEX2DEC(color, 3) / 256), (HEX2DEC(color, 5) / 256), (HEX2DEC(color, 7) / 256), 1;
 end
 
-function X4D_Colors.DeriveHighlightColor(color)
-	local r, g, b, a = X4D_Colors.ParseColor(color);
-	r = r * 1.5;
-	if (r > 1) then
-		r = 1;
+function X4D_Colors.Lerp(colorFrom, colorTo, percent)
+	if (percent == nil) then
+		percent = 50;
 	end
-	g = g * 1.5;
-	if (g > 1) then
-		g = 1;
-	end
-	b = b * 1.5;
-	if (b > 1) then
-		b = 1;
-	end
-	return X4D_Colors.CreateColor(r, g, b);
+	local factor = 1 + (percent / 100);
+	local rFrom, gFrom, bFrom = X4D_Colors.ParseColor(colorFrom);
+	local rTo, gTo, bTo = X4D_Colors.ParseColor(colorFrom);
+	return X4D_Colors.CreateColor(rFrom + ((rTo - rFrom) * factor), gFrom + ((gTo - gFrom) * factor), bFrom + ((bTo - bFrom) * factor));
+end
+
+function X4D_Colors.DeriveHighlight(color)
+	return X4D_Colors.Lerp(color, '|cFFFFFF', 50);
 end
 
 X4D_Colors.SYSTEM = '|cFFFF00';
@@ -47,6 +44,8 @@ X4D_Colors.TRACE_INFORMATION = '|c6666FF';
 X4D_Colors.TRACE_WARNING = '|cCC6600';
 X4D_Colors.TRACE_ERROR = '|c990000';
 X4D_Colors.TRACE_CRITICAL = '|cFF0033';
+
+
 
 --[[
 
