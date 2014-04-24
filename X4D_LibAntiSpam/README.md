@@ -142,3 +142,4 @@ v1.1
 - Adds additional mapping to catch a new spammer.
 v1.0
 - Initial release.
+

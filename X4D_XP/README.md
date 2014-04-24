@@ -21,3 +21,4 @@ v1.1
 - Colors adjusted for readability.
 v1.0
 - Initial release.
+

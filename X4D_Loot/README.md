@@ -37,3 +37,4 @@ v1.1
 - Added support for displaying 'quest items'.
 v1.0
 - Initial release.
+

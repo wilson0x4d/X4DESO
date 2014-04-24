@@ -64,3 +64,4 @@ If ESO is already running, execute **/reloadui** command.
 ## Versions
 v1.0
 - Initial release.
+
