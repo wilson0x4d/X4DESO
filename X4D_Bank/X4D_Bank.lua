@@ -1,10 +1,10 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.1);
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.2);
 if (not X4D_Bank) then
 	return;
 end
 
 X4D_Bank.NAME = 'X4D_Bank';
-X4D_Bank.VERSION = 1.1;
+X4D_Bank.VERSION = 1.2;
 
 X4D_Bank.Options = {};
 X4D_Bank.Options.Saved = {};
@@ -181,8 +181,8 @@ local function InitializeOptionsUI()
 	LAM:AddCheckbox(cplId, 
 		'X4D_BANK_CHECK_AUTOWITHDRAW_RESERVE', 'Auto-Withdraw Reserve', 
 		'When enabled, if you are carrying less than your specified reserve the difference will be withdrawn from the bank.', 
-		function() return X4D_Chat.Settings.SavedVars.AutoWithdrawReserve end,
-		function() X4D_Chat.Settings.SavedVars.AutoWithdrawReserve = not X4D_Chat.Settings.SavedVars.AutoWithdrawReserve end);
+		function() return X4D_Bank.Options.Saved.AutoWithdrawReserve end,
+		function() X4D_Bank.Options.Saved.AutoWithdrawReserve = not X4D_Bank.Options.Saved.AutoWithdrawReserve end);
 
 	LAM:AddSlider(cplId,
 		'X4D_BANK_SLIDER_AUTODEPOSIT_FIXED_AMOUNT', 'Auto-Deposit Fixed Amount',

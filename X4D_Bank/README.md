@@ -20,6 +20,8 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.2
+- Fix 'reset to defaults' bug in Options UI.
 v1.1
 - Option to Auto-Withdraw funds from bank to meet your reserve amount.
 v1.0
