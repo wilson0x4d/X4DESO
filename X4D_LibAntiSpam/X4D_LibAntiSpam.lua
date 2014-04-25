@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.41);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.42);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.41';
+X4D_LibAntiSpam.VERSION = '1.42';
 
 X4D_LibAntiSpam.Settings = {};
 X4D_LibAntiSpam.Settings.SavedVars = {};
@@ -254,7 +254,9 @@ local function UpdateFloodState(player, normalized)
 		player.Time = GetGameTimeMilliseconds();
 		if (not player.IsFlood) then
 			player.IsFlood = true;
-			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From);
+			if (not player.IsSpam) then
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From);
+			end
 		end
 	elseif (player.Time <= (GetGameTimeMilliseconds() - (X4D_LibAntiSpam.Settings.SavedVars.FloodTime * 1000))) then
 		player.IsFlood = false;

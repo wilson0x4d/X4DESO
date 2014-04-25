@@ -25,6 +25,8 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.42
+- Fix so Spammers also caught flooding is not double-notified to the user.
 v1.41
 - Fixed a bug in flood check code.
 - Increased max 'Flood Time' value to 900 seconds (equivalent to 15 minutes)
