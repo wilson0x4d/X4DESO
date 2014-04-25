@@ -371,20 +371,20 @@ function string.StartsWith(String,Start)
    return string.sub(String,1,string.len(Start))==Start;
 end
 
-function X4D_Chat.StartAnimation()
+local _nextUpdateTime = 0;
+
+local function OnUpdate(...)
+	local timeNow = GetGameTimeMilliseconds();
+	if (_nextUpdateTime >= timeNow) then
+		return;
+	end
+	_nextUpdateTime = timeNow + 5000;	
 	X4D_Chat.Register();
 	if (X4D_Chat.Settings.SavedVars.PreventChatFade) then
 		if (ZO_ChatWindow.container and ZO_ChatWindow.container.currentBuffer) then
 			ZO_ChatWindow.container.currentBuffer:ShowFadedLines();
 		end
 	end
-	if (ZO_ChatWindow.container and ZO_ChatWindow.container.currentBuffer) then
-		local fadeStartTime, fadeEndTime = ZO_ChatWindow.container.currentBuffer:GetLineFade();
-		if (fadeStartTime < 200) then
-			fadeStartTime = 200;
-		end
-	end
-	zo_callLater(X4D_Chat.StartAnimation, fadeStartTime);
 end
 
 local function SetComboboxValue(controlName, value)
@@ -418,10 +418,6 @@ local function SetEditBoxValue(controlName, value, maxInputChars)
 		_G[controlName]['edit']:SetMaxInputChars(maxInputChars);
 	end
 	_G[controlName]['edit']:SetText(value);
-end
-
-function X4D_Chat.TestHandler(...)
-	d(...);
 end
 
 function X4D_Chat.OnAddOnLoaded(event, addonName)
@@ -600,7 +596,7 @@ function X4D_Chat.OnAddOnLoaded(event, addonName)
 	CHAT_SYSTEM['maxContainerHeight'] = 1000;
 	CHAT_SYSTEM['maxContainerWidth'] = 1800;
 	
-	X4D_Chat.StartAnimation();
+	EVENT_MANAGER:RegisterForUpdate('X4D_Chat_Update', 1000, OnUpdate);
 end
 
 function X4D_Chat.LootCallback(color, text)
