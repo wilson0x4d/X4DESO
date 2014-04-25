@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.38);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.39);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.38';
+X4D_LibAntiSpam.VERSION = '1.39';
 
 X4D_LibAntiSpam.Settings = {};
 X4D_LibAntiSpam.Settings.SavedVars = {};
@@ -23,28 +23,45 @@ X4D_LibAntiSpam.Colors = {
 X4D_LibAntiSpam.PatternDiff = {
 	['h.?a.?n.?%a.?w.?o.?r.?k'] = 'add',
 	['i.?i.?i.?i.?i.?c.?o.?[mn]+'] = 'add',
-	['%w?%w?%w?%w?%w?.?g.?[cop]+.?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[cop%.]+[vmn]+'] = 'add',
-	['p.?[vm]+.?p.?b.?a.?n.?k.*c.?[cop%.]+.?[vmn]+'] = 'add',
-	['o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['e.?z.?o.?o.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['g.?g.?a.?t.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['[vmn]+.?[vmn]+.?[cop%.]+.?[wvm]+.?i.?n.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['g.?a.?e.?z.?c.?[cop%.]?.?[vmn]+'] = 'add',
-	['g.?a.?[vmn]+.?e.?c.?b.?o.?c.?[cop%.]+.?[vmn]+'] = 'add',	
-	['w.?o.?w.?g.?[li].?c.?[cop%.]+.?[vmn]+'] = 'add',	
-	['g.?a.?[vmn]+.?e.?i.?[vmn]+.?c?.?[cop%.]+?.?[vmn]+'] = 'add',
-	['u.?t.?[vmn]+.?[vmn]+.?o.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['g.?g.?a.?t.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'add',
+	['%w?%w?%w?%w?%w?.?g.?[cop]+.?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['%w?%w?%w?%w?%w?.?g.?[op].?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[op].?[mn]+'] = 'add',
+	['p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[cop]+[vmn]+'] = 'remove',
+	['p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[op][mn]+'] = 'add',
+	['p.?[vm]+.?p.?b.?a.?n.?k.*c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['p.?[vm]+.?p.?b.?a.?n.?k.*c.?[op].?[mn]+'] = 'add',
+	['o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[op].?[mn]+'] = 'add',
+	['e.?z.?o.?o.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['e.?z.?o.?o.?[mn].?c.?[op].?[mn]+'] = 'add',
+	['g.?g.?a.?t.?[mn].?c.?[op].?[mn]+'] = 'add',
+	['[vmn]+.?[vmn]+.?[cop%.]+.?[wvm]+.?i.?n.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['[mn].?[mn].?[op].?[wvm]+.?i.?n.?c.?[op].?[mn]+'] = 'add',
+	['g.?a.?e.?z.?c.?[cop%.]?.?[vmn]+'] = 'remove',
+	['g.?a.?e.?z.?c.?[op]?.?[mn]+'] = 'add',
+	['g.?a.?[vmn]+.?e.?c.?b.?o.?c.?[cop%.]+.?[vmn]+'] = 'remove',	
+	['g.?a.?[mn].?e.?c.?b.?o.?c.?[op].?[mn]+'] = 'add',	
+	['w.?o.?w.?g.?[li].?c.?[cop%.]+.?[vmn]+'] = 'remove',	
+	['w.?o.?w.?g.?[li].?c.?[op].?[mn]+'] = 'add',	
+	['g.?a.?[vmn]+.?e.?i.?[vmn]+.?c?.?[cop%.]+?.?[vmn]+'] = 'remove',
+	['g.?a.?[mn].?e.?[li].?[mn].?c?.?[op]?.?[mn]+'] = 'add',
+	['u.?t.?[vmn]+.?[vmn]+.?o.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['u.?t.?[mn].?[mn].?o.?c.?[op].?[mn]+'] = 'add',
+	['g.?g.?a.?t.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['g.?g.?a.?t.?[mn].?c.?[op].?[mn]+'] = 'add',
 	['g.?o.?l.?d[^e]?a[^c]?h'] = 'add',
 	['s[ea][fl]eandfast'] = 'add',
-	['cheap.*g[cop%.][li]d.*usd'] = 'add',	
+	['cheap.*g[op][li]d.*usd'] = 'add',	
 	['cheap.*fast.*sa[fl]e'] = 'add',
-	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[cop%.]+.?.?[vmn]+'] = 'add',
-	['g.?[cop%.]+.?[li].?d.?c.?e.?[cop%.]+.?.?.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['[vmn]+.?[vmn]+.?[cop%.]+.?[vmn]+.?a.?r.?t.?c.?[cop%.]+.?[vmn]+'] = 'add',
-	['e.?g.?p.?a.?[li].?.c[cop%.]*[vmn]+'] = 'add',
-	['[wvm]?.?t.?s.?i.?t.?e.?[vmn].?c.?[cop%.]+.?[vmn]+'] = 'add',
+	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[cop%.]+.?.?[vmn]+'] = 'remove',
+	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[op].?.?[mn]+'] = 'add',
+	['g.?[cop%.]+.?[li].?d.?c.?e.?[cop%.]+.?.?.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['g.?[op].?[li].?d.?c.?e.?[op].?.?.?c.?[op].?[mn]+'] = 'add',
+	['[vmn]+.?[vmn]+.?[cop%.]+.?[vmn]+.?a.?r.?t.?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['[mn].?[mn].?[op].?[mn].?a.?r.?t.?c.?[op].?[mn]+'] = 'add',
+	['e.?g.?p.?a.?[li].?.c[cop%.]*[vmn]+'] = 'remove',
+	['e.?g.?p.?a.?[li].?.c[op]*[mn]+'] = 'add',
+	['[wvm]?.?t.?s.?i.?t.?e.?[vmn].?c.?[cop%.]+.?[vmn]+'] = 'remove',
+	['[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+'] = 'add',
 };
 
 X4D_LibAntiSpam.CharMap = {};
@@ -340,8 +357,18 @@ local function Strip(input)
 	return output;
 end
 
-local function Scrub(input)
-	return input:gsub('[%{%}%|%-~%s\1-\44\58-\63\91-\96\123-\255]', '');
+local function PreScrub(input)
+	local output = input:gsub('\\/\\/', 'w');
+	output = output:gsub('/\\/\\', 'm');
+	output = output:gsub('/\\/', 'n');
+	return output;
+end
+
+local function PostScrub(input)
+	local output = input:gsub('[%{%}%|%-~%s\1-\44\58-\63\91-\96\123-\255]', '');
+	output = output:gsub('c+', 'c');
+	output = output:gsub('n+', 'n');
+	return output;
 end
 
 local function Condense(input)
@@ -354,9 +381,10 @@ local function Condense(input)
 end
 
 local function Normalize(input)
-	local output = Strip(input);
+	local output = PreScrub(input);
+	output = Strip(output);
 	output = ToASCII(output);
-	return Condense(Scrub(output)), Condense(Scrub(StringPivot(output)));
+	return Condense(PostScrub(output)), Condense(PostScrub(StringPivot(output)));
 end
 
 function X4D_LibAntiSpam.Check(self, text, fromName)
