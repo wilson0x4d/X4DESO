@@ -1,16 +1,16 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.39);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.41);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.39';
+X4D_LibAntiSpam.VERSION = '1.41';
 
 X4D_LibAntiSpam.Settings = {};
 X4D_LibAntiSpam.Settings.SavedVars = {};
 X4D_LibAntiSpam.Settings.Defaults = {
 	NotifyWhenDetected = true,
-	FloodTime = 30,
+	FloodTime = 300,
 	ShowNormalizations = false,
 	Patterns = {},
 };
@@ -246,7 +246,7 @@ local function AddPlayer(fromName)
 end
 
 local function UpdateFloodState(player, normalized)
-	if (player.IsWhitelist or (X4D_LibAntiSpam.Settings.SavedVars.FloodTime > 0)) then
+	if (player.IsWhitelist or (X4D_LibAntiSpam.Settings.SavedVars.FloodTime == 0)) then
 		player.IsFlood = false;
 		return;
 	end
@@ -343,7 +343,7 @@ local function ToASCII(input)
 		output = output:utf8replace(utf8_scrub2);
 		output = output:gsub('(\194.)', FromCharMap):gsub('(.)', FromCharMap);
 	end
-	return output;
+	return output:lower();
 end
 
 local function Strip(input)
@@ -358,9 +358,18 @@ local function Strip(input)
 end
 
 local function PreScrub(input)
-	local output = input:gsub('\\/\\/', 'w');
-	output = output:gsub('/\\/\\', 'm');
-	output = output:gsub('/\\/', 'n');
+	local output = input:upper();
+	output = output:gsub('\\/\\/', 'W');
+	output = output:gsub('\\/V', 'W');
+	output = output:gsub('V\\/', 'W');
+	output = output:gsub('/\\/\\', 'M');
+	output = output:gsub('/V\\', 'M');	
+	output = output:gsub('/\\/', 'N');
+	output = output:gsub('/V', 'N');
+	output = output:gsub('\\/V', 'W');
+	output = output:gsub('VV', 'w');
+	output = output:gsub('VWVW', 'www');
+	output = output:gsub('[%(%{%%[][%)%}%]]', 'o');
 	return output;
 end
 
@@ -372,7 +381,7 @@ local function PostScrub(input)
 end
 
 local function Condense(input)
-	local output = input:gsub('%.+', '.'):lower();
+	local output = input:gsub('%.+', '.');
 	while (output ~= input) do
 		input = output;
 		output = input:gsub('%.+', '.');
@@ -447,7 +456,7 @@ end
 
 local function SetPatternsEditBoxText()
 	local patterns = table.concat(X4D_LibAntiSpam.Settings.SavedVars.Patterns, '\n');
-	SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', patterns, 4096);
+	SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', patterns, 8192);
 	return patterns;
 end
 
@@ -496,7 +505,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 	LAM:AddSlider(cplId,
 		'X4D_LIBANTISPAM_SLIDER_FLOODTIME', 'Max Flood Time',
 		'This determines mininum amount of time, in seconds, before repeated text is not considered Flooding. Flooding is when a user types the same thing into chat over and over.',
-		0, 300, 5,
+		0, 900, 30,
 		function () return X4D_LibAntiSpam.Settings.SavedVars.FloodTime end,
 		function (v) X4D_LibAntiSpam.Settings.SavedVars.FloodTime = tonumber(tostring(v)) end);
 	LAM:AddEditBox(cplId, 
@@ -530,14 +539,14 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', X4D_LibAntiSpam.Settings.Defaults.NotifyWhenDetected);
 						X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected = X4D_LibAntiSpam.Settings.Defaults.NotifyWhenDetected;
 						
-						SetSliderValue('X4D_LIBANTISPAM_SLIDER_FLOODTIME', X4D_LibAntiSpam.Settings.Defaults.FloodTime, 0, 300);
+						SetSliderValue('X4D_LIBANTISPAM_SLIDER_FLOODTIME', X4D_LibAntiSpam.Settings.Defaults.FloodTime, 0, 900);
 						X4D_LibAntiSpam.Settings.SavedVars.FloodTime = X4D_LibAntiSpam.Settings.Defaults.FloodTime;
 						
 						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', X4D_LibAntiSpam.Settings.Defaults.ShowNormalizations);						
 						X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations = X4D_LibAntiSpam.Settings.Defaults.ShowNormalizations;
 												
 						local merged = MergePatterns();
-						SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', table.concat(merged, '\n'), 4096);
+						SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', table.concat(merged, '\n'), 8192);
 						X4D_LibAntiSpam.Settings.SavedVars.Patterns = merged;
 
 					end
@@ -601,7 +610,7 @@ end
 function X4D_LibAntiSpam.OnPlayerActivated()
 	zo_callLater(function() 
 		local merged = MergePatterns();
-		SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', table.concat(merged, '\n'), 4096);
+		SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', table.concat(merged, '\n'), 8192);
 		X4D_LibAntiSpam.Settings.SavedVars.Patterns = merged;
 		RejectSpammerGuildInvites();
 	end, 2000);
