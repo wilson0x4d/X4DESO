@@ -19,11 +19,11 @@ local TRACE_COLORS = {
 	[X4D_Debug.TRACE_LEVELS.WARNING] = X4D_Colors.TRACE_WARNING,	
 	[X4D_Debug.TRACE_LEVELS.ERROR] = X4D_Colors.TRACE_ERROR,	
 	[X4D_Debug.TRACE_LEVELS.CRITICAL] = X4D_Colors.TRACE_CRITICAL,	
-	[X4D_Debug.TRACE_LEVELS.VERBOSE+100] = X4D_Colors.DeriveHighlightColor(X4D_Colors.TRACE_VERBOSE),	
-	[X4D_Debug.TRACE_LEVELS.INFORMATION+100] = X4D_Colors.DeriveHighlightColor(X4D_Colors.TRACE_INFORMATION),	
-	[X4D_Debug.TRACE_LEVELS.WARNING+100] = X4D_Colors.DeriveHighlightColor(X4D_Colors.TRACE_WARNING),	
-	[X4D_Debug.TRACE_LEVELS.ERROR+100] = X4D_Colors.DeriveHighlightColor(X4D_Colors.TRACE_ERROR),	
-	[X4D_Debug.TRACE_LEVELS.CRITICAL+100] = X4D_Colors.DeriveHighlightColor(X4D_Colors.TRACE_CRITICAL),	
+	[X4D_Debug.TRACE_LEVELS.VERBOSE+100] = X4D_Colors.DeriveHighlight(X4D_Colors.TRACE_VERBOSE),	
+	[X4D_Debug.TRACE_LEVELS.INFORMATION+100] = X4D_Colors.DeriveHighlight(X4D_Colors.TRACE_INFORMATION),	
+	[X4D_Debug.TRACE_LEVELS.WARNING+100] = X4D_Colors.DeriveHighlight(X4D_Colors.TRACE_WARNING),	
+	[X4D_Debug.TRACE_LEVELS.ERROR+100] = X4D_Colors.DeriveHighlight(X4D_Colors.TRACE_ERROR),	
+	[X4D_Debug.TRACE_LEVELS.CRITICAL+100] = X4D_Colors.DeriveHighlight(X4D_Colors.TRACE_CRITICAL),	
 };
 
 local TRACE_FORMATS = {
@@ -40,7 +40,7 @@ function X4D_Debug.SetTraceLevel(self, level)
 	_minTraceLevel = level;
 end
 
-local _systemHighlightColor = X4D_Colors.DeriveHighlightColor(X4D_Colors.SYSTEM);
+local _systemHighlightColor = X4D_Colors.DeriveHighlight(X4D_Colors.SYSTEM);
 
 function X4D_Debug.Log(self, source, level, message)
 	if (type(message) ~= 'string') then

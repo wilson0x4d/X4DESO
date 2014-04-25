@@ -29,9 +29,9 @@ function X4D_Colors.Lerp(colorFrom, colorTo, percent)
 		percent = 50;
 	end
 	local factor = 1 + (percent / 100);
-	local rFrom, gFrom, bFrom = X4D_Colors.ParseColor(colorFrom);
-	local rTo, gTo, bTo = X4D_Colors.ParseColor(colorFrom);
-	return X4D_Colors.CreateColor(rFrom + ((rTo - rFrom) * factor), gFrom + ((gTo - gFrom) * factor), bFrom + ((bTo - bFrom) * factor));
+	local rFrom, gFrom, bFrom = X4D_Colors.Parse(colorFrom);
+	local rTo, gTo, bTo = X4D_Colors.Parse(colorFrom);
+	return X4D_Colors.Create(rFrom + ((rTo - rFrom) * factor), gFrom + ((gTo - gFrom) * factor), bFrom + ((bTo - bFrom) * factor));
 end
 
 function X4D_Colors.DeriveHighlight(color)
