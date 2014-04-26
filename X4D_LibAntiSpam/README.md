@@ -25,6 +25,8 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.43
+- Fix Chat Flood notifications are no longer displayed when you disable notifications.
 v1.42
 - Fix so Spammers also caught flooding is not double-notified to the user.
 - Modified Patterns.
@@ -56,7 +58,7 @@ v1.34
 - Modified Patterns.
 v1.33
 - Integrated into latest version of X4D_Chat to provide timestamp support.
-- Added Chat Emit Callback support, other add-ons can now capture the messages LibAntiChat emits and write them to custom chat frames, etc.
+- Added Chat Emit Callback support, other add-ons can now capture the messages LibAntiSpam emits and write them to custom chat frames, etc.
 v1.32
 - Modified Patterns.
 v1.31
