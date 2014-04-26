@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.42);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.43);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.42';
+X4D_LibAntiSpam.VERSION = '1.43';
 
 X4D_LibAntiSpam.Settings = {};
 X4D_LibAntiSpam.Settings.SavedVars = {};
@@ -64,6 +64,7 @@ X4D_LibAntiSpam.PatternDiff = {
 	['e.?g.?p.?a.?[li].?.c[op]*[mn]+'] = 'add',
 	['[wvm]?.?t.?s.?i.?t.?e.?[vmn].?c.?[cop%.]+.?[vmn]+'] = 'remove',
 	['[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+'] = 'add',
+	['w.?t.?s.?m.?m.?o.?c.?o.?[mn]+'] = 'add',
 };
 
 X4D_LibAntiSpam.CharMap = {};

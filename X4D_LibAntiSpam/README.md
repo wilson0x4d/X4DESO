@@ -27,6 +27,7 @@ If ESO is already running, execute **/reloadui** command.
 ## Versions
 v1.43
 - Fix Chat Flood notifications are no longer displayed when you disable notifications.
+- New Pattern.
 v1.42
 - Fix so Spammers also caught flooding is not double-notified to the user.
 - Modified Patterns.
