@@ -152,6 +152,9 @@ local function utf8charbytes (s, i)
 	end
 end
 
+if not string.utf8charbytes then
+	string.utf8charbytes = utf8charbytes
+end
 
 -- returns the number of characters in a UTF-8 string
 local function utf8len (s)
