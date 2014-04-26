@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.43);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.44);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.43';
+X4D_LibAntiSpam.VERSION = '1.44';
 
 X4D_LibAntiSpam.Settings = {};
 X4D_LibAntiSpam.Settings.SavedVars = {};
@@ -79,7 +79,7 @@ local L_charMap = {
 	['ç'] = 'c', ['è'] = 'e', ['é'] = 'e', ['ê'] = 'e', ['ë'] = 'e', ['ì'] = 'i', ['æ'] = 'ae', 
 	['í'] = 'i', ['î'] = 'i', ['ï'] = 'i', ['ð'] = 'o', ['ñ'] = 'n', ['ò'] = 'o', ['ó'] = 'o', 
 	['ô'] = 'o', ['õ'] = 'o', ['ö'] = 'o', ['÷'] = 't', ['ø'] = 'o', ['ù'] = 'u', ['ú'] = 'u', 
-	['û'] = 'u', ['ü'] = 'u', ['ý'] = 'y', ['þ'] = 'b', ['ÿ'] = 'y', ['®'] = 'r', ['@'] = 'a',
+	['û'] = 'u', ['ü'] = 'u', ['ý'] = 'y', ['þ'] = 'b', ['ÿ'] = 'y', ['®'] = 'r', ['@'] = 'o',
 	['1'] = 'l', ['3'] = 'e', ['4'] = 'a', ['7'] = 'T', ['0'] = 'O', ['('] = 'c', ['2'] = 'R',
 	[')'] = 'o', ['·'] = '.', ['°'] = '.', ['¸'] = '.', ['¯'] = '-', [','] = '.', ['*'] = '.',
 	['$'] = 'S', ['/'] = 'm', ['¿'] = '?', ['5'] = 'S', ['9'] = 'g', ['\\'] = 'v', ['ß'] = 'b',

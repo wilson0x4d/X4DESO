@@ -25,6 +25,8 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.44
+- Modified CharMap.
 v1.43
 - Fix Chat Flood notifications are no longer displayed when you disable notifications.
 - New Pattern.
