@@ -257,7 +257,7 @@ local function UpdateFloodState(player, normalized)
 		player.Time = GetGameTimeMilliseconds();
 		if (not player.IsFlood) then
 			player.IsFlood = true;
-			if (not player.IsSpam) then
+			if (X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected and (not player.IsSpam)) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From);
 			end
 			return true;
