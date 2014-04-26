@@ -43,7 +43,8 @@ X4D_LibAntiSpam.PatternDiff = {
 	['w.?o.?w.?g.?[li].?c.?[cop%.]+.?[vmn]+'] = 'remove',	
 	['w.?o.?w.?g.?[li].?c.?[op].?[mn]+'] = 'add',	
 	['g.?a.?[vmn]+.?e.?i.?[vmn]+.?c?.?[cop%.]+?.?[vmn]+'] = 'remove',
-	['g.?a.?[mn].?e.?[li].?[mn].?c?.?[op]?.?[mn]+'] = 'add',
+	['g.?a.?[mn].?e.?[li].?[mn].?c?.?[op]?.?[mn]+'] = 'remove',
+	['g.?a.?[mn].?e.?[li].?[mn].?c.?[op].?[mn]+'] = 'add',
 	['u.?t.?[vmn]+.?[vmn]+.?o.?c.?[cop%.]+.?[vmn]+'] = 'remove',
 	['u.?t.?[mn].?[mn].?o.?c.?[op].?[mn]+'] = 'add',
 	['g.?g.?a.?t.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'remove',
@@ -53,7 +54,8 @@ X4D_LibAntiSpam.PatternDiff = {
 	['cheap.*g[op][li]d.*usd'] = 'add',	
 	['cheap.*fast.*sa[fl]e'] = 'add',
 	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[cop%.]+.?.?[vmn]+'] = 'remove',
-	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[op].?.?[mn]+'] = 'add',
+	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[op].?.?[mn]+'] = 'remove',
+	['[li].?.?f.?.?d.?.?p.?.?s.?.?c.?.?[op].?.?[mn]+'] = 'add',
 	['g.?[cop%.]+.?[li].?d.?c.?e.?[cop%.]+.?.?.?c.?[cop%.]+.?[vmn]+'] = 'remove',
 	['g.?[op].?[li].?d.?c.?e.?[op].?.?.?c.?[op].?[mn]+'] = 'add',
 	['[vmn]+.?[vmn]+.?[cop%.]+.?[vmn]+.?a.?r.?t.?c.?[cop%.]+.?[vmn]+'] = 'remove',
@@ -80,7 +82,7 @@ local L_charMap = {
 	['1'] = 'l', ['3'] = 'e', ['4'] = 'a', ['7'] = 'T', ['0'] = 'O', ['('] = 'c', ['2'] = 'R',
 	[')'] = 'o', ['·'] = '.', ['°'] = '.', ['¸'] = '.', ['¯'] = '-', [','] = '.', ['*'] = '.',
 	['$'] = 'S', ['/'] = 'm', ['¿'] = '?', ['5'] = 'S', ['9'] = 'g', ['\\'] = 'v', ['ß'] = 'b',
-	['{'] = 'c', ['}'] = 'o',
+	['{'] = 'c', ['}'] = 'o', 
 };
 
 for inp,v in pairs(L_charMap) do
@@ -91,6 +93,7 @@ for inp,v in pairs(L_charMap) do
 		X4D_LibAntiSpam.CharMap[string.format('%x', b1)] = v;
 	end
 	X4D_LibAntiSpam.CharMap[inp] = v;
+	d(X4D_LibAntiSpam.CharMap[inp] .. '=' .. v);
 end
 
 local function DefaultEmitCallback(color, text)
@@ -248,7 +251,7 @@ end
 local function UpdateFloodState(player, normalized)
 	if (player.IsWhitelist or (X4D_LibAntiSpam.Settings.SavedVars.FloodTime == 0)) then
 		player.IsFlood = false;
-		return;
+		return false;
 	end
 	if (normalized ~= nil and normalized:len() > 0 and player.TextLatest == normalized) then
 		player.Time = GetGameTimeMilliseconds();
@@ -257,10 +260,12 @@ local function UpdateFloodState(player, normalized)
 			if (not player.IsSpam) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From);
 			end
+			return true;
 		end
 	elseif (player.Time <= (GetGameTimeMilliseconds() - (X4D_LibAntiSpam.Settings.SavedVars.FloodTime * 1000))) then
 		player.IsFlood = false;
 	end
+	return false;
 end
 
 local function CheckPatterns(player, normalized, patterns)
@@ -338,14 +343,23 @@ local function FromCharMap(inp)
 	return res or inp; 
 end
 		
-local function ToASCII(input)
-	local output = input;
-	if (output ~= nil) then
-		output = output:utf8replace(utf8_scrub1);
-		output = output:utf8replace(utf8_scrub2);
-		output = output:gsub('(\194.)', FromCharMap):gsub('(.)', FromCharMap);
-	end
-	return output:lower();
+local function PreScrub(input)
+	local output = input:upper();
+	output = output:gsub('\\/\\/', 'W');
+	output = output:gsub('\\/V', 'W');
+	output = output:gsub('V\\/', 'W');
+	output = output:gsub('/\\/\\', 'M');
+	output = output:gsub('/V\\', 'M');	
+	output = output:gsub('/\\/', 'N');
+	output = output:gsub('/V', 'N');
+	output = output:gsub('\\/V', 'W');
+	output = output:gsub('\\/', 'V');
+	output = output:gsub('[%|/l]V[%|\\l]', 'M');
+	output = output:gsub('VV', 'w');
+	output = output:gsub('VWVW', 'www');
+	output = output:gsub('WVWV', 'www');
+	output = output:gsub('[%(%{%%[][%)%}%]]', 'o');
+	return output;
 end
 
 local function Strip(input)
@@ -359,19 +373,43 @@ local function Strip(input)
 	return output;
 end
 
-local function PreScrub(input)
-	local output = input:upper();
-	output = output:gsub('\\/\\/', 'W');
-	output = output:gsub('\\/V', 'W');
-	output = output:gsub('V\\/', 'W');
-	output = output:gsub('/\\/\\', 'M');
-	output = output:gsub('/V\\', 'M');	
-	output = output:gsub('/\\/', 'N');
-	output = output:gsub('/V', 'N');
-	output = output:gsub('\\/V', 'W');
-	output = output:gsub('VV', 'w');
-	output = output:gsub('VWVW', 'www');
-	output = output:gsub('[%(%{%%[][%)%}%]]', 'o');
+local function ToASCII(input)
+	local output = input;
+	if (output ~= nil) then
+		output = output:utf8replace(utf8_scrub1);
+		output = output:utf8replace(utf8_scrub2);
+		local stripped = '';
+		local iA = 1;
+		local iB = 1;
+		while (iA <= output:len()) do
+			local chA = output:sub(iA, iA);
+			if (chA ~= nil) then
+				local chB = output:utf8sub(iB, iB);
+				if (chB ~= nil) then
+					--local b1, b2 = chB:byte(1, 2);
+					--local b3 = chA:byte(1)
+					--if (b2) then
+					--	d(chA .. chB .. ' ' .. string.format('%x %x%x', b3, b1, b2));
+					--else
+					--	d(chA .. chB .. ' ' .. string.format('%x %x', b3, b1));
+					--end
+					if (chA == chB) then
+						stripped = stripped .. FromCharMap(chA);
+						iA = iA + 1;
+						iB = iB + 1;
+					else
+						iA = iA + chB:utf8charbytes()
+						iB = iB + 1;						
+					end
+				else
+					break;	
+				end
+			else
+				break;
+			end
+		end
+		output = stripped:lower();
+	end
 	return output;
 end
 
@@ -379,6 +417,7 @@ local function PostScrub(input)
 	local output = input:gsub('[%{%}%|%-~%s\1-\44\58-\63\91-\96\123-\255]', '');
 	output = output:gsub('c+', 'c');
 	output = output:gsub('n+', 'n');
+	output = output:gsub('[%|/l]v[%|\\l]', 'm');
 	return output;
 end
 
@@ -405,7 +444,12 @@ function X4D_LibAntiSpam.Check(self, text, fromName)
 		player = AddPlayer(fromName);
 		player:AddText(normalized);
 	else
-		UpdateFloodState(player, normalized);
+		local wasFlood = player.IsFlood;
+		if (UpdateFloodState(player, normalized) and (not wasFlood)) then
+			if (X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations) then
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')');
+			end	
+		end
 		player:AddText(normalized);
 		normalized = player:GetTextAggregate();
 	end
