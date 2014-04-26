@@ -24,17 +24,17 @@ event handler and also be easily extended/modified by multiple Add-Ons.
 
 ]]
 
-_G['test_X4D'] = function()
+X4D.Test = function()
 	d('Begin Test of X4D Framework..');
 	
 	X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.VERBOSE);
 
 	-- Debug API
-	X4D.Debug:Verbose('X4D.Debug.Verbose', "DEBUG");
-	X4D.Debug:Information('X4D.Debug.Information', "DEBUG");
-	X4D.Debug:Warning('X4D.Debug.Warning', "DEBUG");
-	X4D.Debug:Error('X4D.Debug.Error', "DEBUG");
-	X4D.Debug:Critical('X4D.Debug.Critical', "DEBUG");
+	X4D.Debug:Verbose('Test Verbose');
+	X4D.Debug:Information('Test Information');
+	X4D.Debug:Warning('Test Warning');
+	X4D.Debug:Error({ ['TEST'] = { ['ERROR'] = 'yes' } });
+	X4D.Debug:Critical({ [{ ['CRITICAL'] = 'yes' }] = 'TEST'});
 
 	-- Conversion API
 	local channelRoundTrip = X4D.Convert:CategoryToChannel(X4D.Convert:ChannelToCategory(CHAT_CHANNEL_OFFICER_1));
