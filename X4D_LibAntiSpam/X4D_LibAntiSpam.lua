@@ -1,70 +1,82 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.44);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.45);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.44';
+X4D_LibAntiSpam.VERSION = '1.45';
 
-X4D_LibAntiSpam.Settings = {};
-X4D_LibAntiSpam.Settings.SavedVars = {};
-X4D_LibAntiSpam.Settings.Defaults = {
+X4D_LibAntiSpam.Options = {};
+X4D_LibAntiSpam.Options.Saved = {};
+X4D_LibAntiSpam.Options.Default = {
 	NotifyWhenDetected = true,
-	FloodTime = 300,
+	UseInternalPatterns = true,
+	FloodTime = 30,
 	ShowNormalizations = false,
 	Patterns = {},
 };
+
+local function GetOption(name)
+	local scope = 'Account-Wide';
+	if (X4D_LibAntiSpam.Options.Saved.SettingsAre and X4D_LibAntiSpam.Options.Saved.SettingsAre ~= 'Account-Wide') then
+		scope = GetUnitName("player");
+	end
+	local scoped = X4D_LibAntiSpam.Options.Saved[scope];
+	if (scoped == nil) then
+		return X4D_LibAntiSpam.Options.Default[name];
+	end
+	local value = scoped[name];
+	if (value == nil) then
+		value = X4D_LibAntiSpam.Options.Default[name];
+	end
+	return value;
+end
+
+local function SetOption(name, value)
+	local scope = 'Account-Wide';
+	if (X4D_LibAntiSpam.Options.Saved.SettingsAre and X4D_LibAntiSpam.Options.Saved.SettingsAre ~= 'Account-Wide') then
+		scope = GetUnitName("player");
+	end
+	local scoped = X4D_LibAntiSpam.Options.Saved[scope];
+	if (scoped == nil) then
+		scoped = {};
+		X4D_LibAntiSpam.Options.Saved[scope] = scoped;
+	end
+	scoped[name] = value;
+end
+
 
 X4D_LibAntiSpam.Colors = {
 	X4D = '|cFFAE19',
 	SystemChannel = '|cFFFF00',
 };
 
-X4D_LibAntiSpam.PatternDiff = {
-	['h.?a.?n.?%a.?w.?o.?r.?k'] = 'add',
-	['i.?i.?i.?i.?i.?c.?o.?[mn]+'] = 'add',
-	['%w?%w?%w?%w?%w?.?g.?[cop]+.?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['%w?%w?%w?%w?%w?.?g.?[op].?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[op].?[mn]+'] = 'add',
-	['p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[cop]+[vmn]+'] = 'remove',
-	['p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[op][mn]+'] = 'add',
-	['p.?[vm]+.?p.?b.?a.?n.?k.*c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['p.?[vm]+.?p.?b.?a.?n.?k.*c.?[op].?[mn]+'] = 'add',
-	['o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[op].?[mn]+'] = 'add',
-	['e.?z.?o.?o.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['e.?z.?o.?o.?[mn].?c.?[op].?[mn]+'] = 'add',
-	['g.?g.?a.?t.?[mn].?c.?[op].?[mn]+'] = 'add',
-	['[vmn]+.?[vmn]+.?[cop%.]+.?[wvm]+.?i.?n.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['[mn].?[mn].?[op].?[wvm]+.?i.?n.?c.?[op].?[mn]+'] = 'add',
-	['g.?a.?e.?z.?c.?[cop%.]?.?[vmn]+'] = 'remove',
-	['g.?a.?e.?z.?c.?[op]?.?[mn]+'] = 'add',
-	['g.?a.?[vmn]+.?e.?c.?b.?o.?c.?[cop%.]+.?[vmn]+'] = 'remove',	
-	['g.?a.?[mn].?e.?c.?b.?o.?c.?[op].?[mn]+'] = 'add',	
-	['w.?o.?w.?g.?[li].?c.?[cop%.]+.?[vmn]+'] = 'remove',	
-	['w.?o.?w.?g.?[li].?c.?[op].?[mn]+'] = 'add',	
-	['g.?a.?[vmn]+.?e.?i.?[vmn]+.?c?.?[cop%.]+?.?[vmn]+'] = 'remove',
-	['g.?a.?[mn].?e.?[li].?[mn].?c?.?[op]?.?[mn]+'] = 'remove',
-	['g.?a.?[mn].?e.?[li].?[mn].?c.?[op].?[mn]+'] = 'add',
-	['u.?t.?[vmn]+.?[vmn]+.?o.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['u.?t.?[mn].?[mn].?o.?c.?[op].?[mn]+'] = 'add',
-	['g.?g.?a.?t.?[vmn]+.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['g.?g.?a.?t.?[mn].?c.?[op].?[mn]+'] = 'add',
-	['g.?o.?l.?d[^e]?a[^c]?h'] = 'add',
-	['s[ea][fl]eandfast'] = 'add',
-	['cheap.*g[op][li]d.*usd'] = 'add',	
-	['cheap.*fast.*sa[fl]e'] = 'add',
-	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[cop%.]+.?.?[vmn]+'] = 'remove',
-	['[li].?.?f.?.?d.?.?p.?.?s.?.?c?.?.?[op].?.?[mn]+'] = 'remove',
-	['[li].?.?f.?.?d.?.?p.?.?s.?.?c.?.?[op].?.?[mn]+'] = 'add',
-	['g.?[cop%.]+.?[li].?d.?c.?e.?[cop%.]+.?.?.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['g.?[op].?[li].?d.?c.?e.?[op].?.?.?c.?[op].?[mn]+'] = 'add',
-	['[vmn]+.?[vmn]+.?[cop%.]+.?[vmn]+.?a.?r.?t.?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['[mn].?[mn].?[op].?[mn].?a.?r.?t.?c.?[op].?[mn]+'] = 'add',
-	['e.?g.?p.?a.?[li].?.c[cop%.]*[vmn]+'] = 'remove',
-	['e.?g.?p.?a.?[li].?.c[op]*[mn]+'] = 'add',
-	['[wvm]?.?t.?s.?i.?t.?e.?[vmn].?c.?[cop%.]+.?[vmn]+'] = 'remove',
-	['[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+'] = 'add',
-	['w.?t.?s.?m.?m.?o.?c.?o.?[mn]+'] = 'add',
+X4D_LibAntiSpam.InternalPatterns = {
+	[0] = 'h.?a.?n.?%a.?w.?o.?r.?k',
+	[1] = 'i.?i.?i.?i.?i.?c.?o.?[mn]+',
+	[2] = '%w?%w?%w?%w?%w?.?g.?[op].?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[op].?[mn]+',
+	[3] = 'p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[op][mn]+',
+	[4] = 'p.?[vm]+.?p.?b.?a.?n.?k.*c.?[op].?[mn]+',
+	[5] = 'o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[op].?[mn]+',
+	[6] = 'e.?z.?o.?o.?[mn].?c.?[op].?[mn]+',
+	[7] = 'g.?g.?a.?t.?[mn].?c.?[op].?[mn]+',
+	[8] = '[mn].?[mn].?[op].?[wvm]+.?i.?n.?c.?[op].?[mn]+',
+	[9] = 'g.?a.?e.?z.?c.?[op]?.?[mn]+',
+	[10] = 'g.?a.?[mn].?e.?c.?b.?o.?c.?[op].?[mn]+',	
+	[11] = 'w.?o.?w.?g.?[li].?c.?[op].?[mn]+',	
+	[12] = 'g.?a.?[mn].?e.?[li].?[mn].?c.?[op].?[mn]+',
+	[13] = 'u.?t.?[mn].?[mn].?o.?c.?[op].?[mn]+',
+	[14] = 'g.?g.?a.?t.?[mn].?c.?[op].?[mn]+',
+	[15] = 'g.?o.?l.?d[^e]?a[^c]?h',
+	[16] = 's[ea][fl]eandfast',
+	[17] = 'cheap.*g[op][li]d.*usd',	
+	[18] = 'cheap.*fast.*sa[fl]e',
+	[19] = '[li].?.?f.?.?d.?.?p.?.?s.?.?c.?.?[op].?.?[mn]+',
+	[20] = 'g.?[op].?[li].?d.?c.?e.?[op].?.?.?c.?[op].?[mn]+',
+	[21] = '[mn].?[mn].?[op].?[mn].?a.?r.?t.?c.?[op].?[mn]+',
+	[22] = 'e.?g.?p.?a.?[li].?.c[op]*[mn]+',
+	[23] = '[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+',
+	[24] = 'w.?t.?s.?m.?m.?o.?c.?o.?[mn]+',
 };
 
 X4D_LibAntiSpam.CharMap = {};
@@ -250,7 +262,7 @@ local function AddPlayer(fromName)
 end
 
 local function UpdateFloodState(player, normalized)
-	if (player.IsWhitelist or (X4D_LibAntiSpam.Settings.SavedVars.FloodTime == 0)) then
+	if (player.IsWhitelist or (GetOption('FloodTime') == 0)) then
 		player.IsFlood = false;
 		return false;
 	end
@@ -258,12 +270,12 @@ local function UpdateFloodState(player, normalized)
 		player.Time = GetGameTimeMilliseconds();
 		if (not player.IsFlood) then
 			player.IsFlood = true;
-			if (X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected and (not player.IsSpam)) then
+			if (GetOption('NotifyWhenDetected') and (not player.IsSpam)) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From);
 			end
 			return true;
 		end
-	elseif (player.Time <= (GetGameTimeMilliseconds() - (X4D_LibAntiSpam.Settings.SavedVars.FloodTime * 1000))) then
+	elseif (player.Time <= (GetGameTimeMilliseconds() - (GetOption('FloodTime') * 1000))) then
 		player.IsFlood = false;
 	end
 	return false;
@@ -295,7 +307,10 @@ local function UpdateSpamState(player, normalized)
 		return;
 	end
 	if (not player.IsSpam) then
-		CheckPatterns(player, normalized, X4D_LibAntiSpam.Settings.SavedVars.Patterns);
+		if (GetOption('UseInternalPatterns')) then
+			CheckPatterns(player, normalized, X4D_LibAntiSpam.InternalPatterns);
+		end		
+		CheckPatterns(player, normalized, GetOption('Patterns'));
 		return player.IsSpam; -- new spammer detected
 	end
 	return false; -- may or may not be a spammer, but definitely not a 'new' spammer
@@ -447,7 +462,7 @@ function X4D_LibAntiSpam.Check(self, text, fromName)
 	else
 		local wasFlood = player.IsFlood;
 		if (UpdateFloodState(player, normalized) and (not wasFlood)) then
-			if (X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations) then
+			if (GetOption('ShowNormalizations')) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')');
 			end	
 		end
@@ -456,26 +471,54 @@ function X4D_LibAntiSpam.Check(self, text, fromName)
 	end
 	normalized = normalized .. pivot;
 	if (UpdateSpamState(player, normalized)) then
-		if (X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected) then
+		if (GetOption('NotifyWhenDetected')) then
 			local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName);
-			if (X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations) then
+			if (GetOption('ShowNormalizations')) then
 				local highlighted = normalized:gsub('(' .. player.SpamPattern .. ')', X4D_LibAntiSpam.Colors.X4D .. '%1' .. '|c993333');
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. highlighted .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')');
 			end	
 			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Spam from |cFFAE19' .. (fromLink or fromName or '') .. '|c5C5C5C [' .. player.SpamPattern .. ']');
 		end	
 	else
-		if (X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations and not (player.IsSpam or player.IsFlood)) then
+		if (GetOption('ShowNormalizations') and not (player.IsSpam or player.IsFlood)) then
 			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')');
 		end	
 	end
 	return player.IsSpam, player.IsFlood;
 end	
 
-_G['X4D_spamCheck'] = function(text, fromName)
+local function RejectSpammerGuildInvites()
+	for i=1,GetNumGuildInvites() do
+		local guildId, guildName, guildAlliance, fromName, note = GetGuildInviteInfo(i);		
+		if (guildId and guildId ~= 0) then
+			local L_note = nil;
+			local text = guildName;
+			L_note = GetGuildDescription(guildId);
+			if (L_note) then
+				text = text .. L_note;
+			end	
+			L_note = GetGuildMotD(guildId);
+			if (L_note) then
+				text = text .. L_note;
+			end
+			local isSpam, isFlood = X4D_LibAntiSpam:Check(text, fromName);
+			if (isSpam or isFlood) then
+				if (GetOption('NotifyWhenDetected')) then
+					local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName);
+					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Invite Spam from |cFFAE19' .. (fromLink or fromName));
+				end
+				RejectGuildInvite(guildId);
+				zo_callLater(RejectSpammerGuildInvites, 1000);
+				return;
+			end
+		end
+	end
+end
+
+_G['X4D_spamCheck'] = function(text)
 	local las = LibStub('LibAntiSpam');
 	if (las) then
-		las:Check(text, fromName or '@test2');
+		las:Check(text, '@test' .. tostring(GetGameTimeMilliseconds()));
 	end
 end
 
@@ -502,35 +545,9 @@ local function SetEditBoxValue(controlName, value, maxInputChars)
 end
 
 local function SetPatternsEditBoxText()
-	local patterns = table.concat(X4D_LibAntiSpam.Settings.SavedVars.Patterns, '\n');
+	local patterns = table.concat(GetOption('Patterns'), '\n');
 	SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', patterns, 8192);
 	return patterns;
-end
-
-local function MergePatterns()
-	local merged = {};
-	for _,pattern in pairs(X4D_LibAntiSpam.Settings.SavedVars.Patterns) do
-		local diff = X4D_LibAntiSpam.PatternDiff[pattern];
-		if (not diff or diff == 'add') then
-			table.insert(merged, pattern);
-		end		
-	end
-	for pattern,k in pairs(X4D_LibAntiSpam.PatternDiff) do
-		if (k == 'add') then
-			local exists = false;
-			for L_k,L_pattern in pairs(merged) do
-				if (L_pattern == pattern) then
-					exists = true;
-					break;
-				end
-			end
-			if (not exists) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) New Pattern: |cFFAE19' .. pattern);
-				table.insert(merged, pattern);
-			end
-		end
-	end
-	return merged;
 end
 
 function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
@@ -538,25 +555,28 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 		return;
 	end
 
-	X4D_LibAntiSpam.Settings.SavedVars = ZO_SavedVars:NewAccountWide(X4D_LibAntiSpam.NAME .. '_SV', 1.14, nil, X4D_LibAntiSpam.Settings.Defaults);
+	X4D_LibAntiSpam.Options.Saved = ZO_SavedVars:NewAccountWide(X4D_LibAntiSpam.NAME .. '_SV', 1.45, nil, X4D_LibAntiSpam.Options.Default);
 
 	local LAM = LibStub('LibAddonMenu-1.0');
 	local cplId = LAM:CreateControlPanel('X4D_LibAntiSpam_CPL', 'X4D |cFFAE19AntiSpam');	
 	LAM:AddHeader(cplId, 
 		'X4D_LIBANTISPAM_HEADER_SETTINGS', 'Settings');
+
 	LAM:AddCheckbox(cplId, 
 		'X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', 'Notify when detected Spam?', 
-		'When enabled,  Names are logged to the chat frame when spam is detected.', 
-		function() return X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected end,
-		function() X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected = not X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected end);
+		'When enabled, Names are logged to the chat frame when spam is detected.', 
+		function() return GetOption('NotifyWhenDetected') end,
+		function() SetOption('NotifyWhenDetected', not GetOption('NotifyWhenDetected')) end);
+
 	LAM:AddSlider(cplId,
 		'X4D_LIBANTISPAM_SLIDER_FLOODTIME', 'Max Flood Time',
 		'This determines mininum amount of time, in seconds, before repeated text is not considered Flooding. Flooding is when a user types the same thing into chat over and over.',
 		0, 900, 30,
-		function () return X4D_LibAntiSpam.Settings.SavedVars.FloodTime end,
-		function (v) X4D_LibAntiSpam.Settings.SavedVars.FloodTime = tonumber(tostring(v)) end);
+		function () return GetOption('FloodTime') end,
+		function (v) SetOption('FloodTime', tonumber(tostring(v))) end);
+
 	LAM:AddEditBox(cplId, 
-		'X4D_LIBANTISPAM_EDIT_PATTERNS', 'Spam Patterns', 
+		'X4D_LIBANTISPAM_EDIT_PATTERNS', 'User Patterns', 
 		'Line-delimited list of Spammer Patterns, each one should be on a new line.', 
 		true,
 		SetPatternsEditBoxText,
@@ -569,67 +589,47 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 					result[_] = x .. '+';
 				end
 			end
-			X4D_LibAntiSpam.Settings.SavedVars.Patterns = result;
+			SetOption('Patterns', result);
 		end);
 	SetPatternsEditBoxText();
+
+	LAM:AddCheckbox(cplId, 
+		'X4D_LIBANTISPAM_CHECK_USEINTERNAL', 'Use Internal Patterns?', 
+		'When enabled, an internal set of patterns are used (in addition to any "User Patterns" you define.)', 
+		function() return GetOption('UseInternalPatterns') end,
+		function() SetOption('UseInternalPatterns', not GetOption('UseInternalPatterns')) end);
+
 	LAM:AddCheckbox(cplId, 
 		'X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', '[DEV] Show normalized text.', 
 		'When enabled, all normalized text is dumped to the chat frame to aid in creating new patterns.', 
-		function() return X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations end,
-		function() X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations = not X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations end);
+		function() return GetOption('ShowNormalizations') end,
+		function() SetOption('ShowNormalizations', not GetOption('ShowNormalizations')) end);
 		
 	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
 			if (panel == cplId) then				
 				ZO_OptionsWindowResetToDefaultButton:SetCallback(function ()
 					if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == cplId) then
 
-						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', X4D_LibAntiSpam.Settings.Defaults.NotifyWhenDetected);
-						X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected = X4D_LibAntiSpam.Settings.Defaults.NotifyWhenDetected;
+						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected);
+						SetOption('NotifyWhenDetected', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected);
 						
-						SetSliderValue('X4D_LIBANTISPAM_SLIDER_FLOODTIME', X4D_LibAntiSpam.Settings.Defaults.FloodTime, 0, 900);
-						X4D_LibAntiSpam.Settings.SavedVars.FloodTime = X4D_LibAntiSpam.Settings.Defaults.FloodTime;
-						
-						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', X4D_LibAntiSpam.Settings.Defaults.ShowNormalizations);						
-						X4D_LibAntiSpam.Settings.SavedVars.ShowNormalizations = X4D_LibAntiSpam.Settings.Defaults.ShowNormalizations;
-												
-						local merged = MergePatterns();
-						SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', table.concat(merged, '\n'), 8192);
-						X4D_LibAntiSpam.Settings.SavedVars.Patterns = merged;
+						SetSliderValue('X4D_LIBANTISPAM_SLIDER_FLOODTIME', X4D_LibAntiSpam.Options.Default.FloodTime, 0, 900);
+						SetOption('FloodTime', X4D_LibAntiSpam.Options.Default.FloodTime);
+																		
+						SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', '', 8192);
+						SetOption('Patterns', '');
 
+						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_USEINTERNAL', X4D_LibAntiSpam.Options.Default.UseInternalPatterns);
+						SetOption('UseInternalPatterns', X4D_LibAntiSpam.Options.Default.UseInternalPatterns);
+
+						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', X4D_LibAntiSpam.Options.Default.ShowNormalizations);						
+						SetOption('ShowNormalizations', X4D_LibAntiSpam.Options.Default.ShowNormalizations);
 					end
 				end);
 			end
 		end);		
-		
-	X4D_LibAntiSpam.Register();
-end
 
-local function RejectSpammerGuildInvites()
-	for i=1,GetNumGuildInvites() do
-		local guildId, guildName, guildAlliance, fromName, note = GetGuildInviteInfo(i);		
-		if (guildId and guildId ~= 0) then
-			local L_note = nil;
-			local text = guildName;
-			L_note = GetGuildDescription(guildId);
-			if (L_note) then
-				text = text .. L_note;
-			end	
-			L_note = GetGuildMotD(guildId);
-			if (L_note) then
-				text = text .. L_note;
-			end
-			local isSpam, isFlood = X4D_LibAntiSpam:Check(text, fromName);
-			if (isSpam or isFlood) then
-				if (X4D_LibAntiSpam.Settings.SavedVars.NotifyWhenDetected) then
-					local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName);
-					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Invite Spam from |cFFAE19' .. (fromLink or fromName));
-				end
-				RejectGuildInvite(guildId);
-				zo_callLater(RejectSpammerGuildInvites, 1000);
-				return;
-			end
-		end
-	end
+	X4D_LibAntiSpam.Register();
 end
 
 function X4D_LibAntiSpam.OnGuildInviteAdded(id1, id2, guildName, id4, fromName)
@@ -644,7 +644,7 @@ function X4D_LibAntiSpam.Unregister()
 	ZO_ChatSystem_AddEventHandler(EVENT_CHAT_MESSAGE_CHANNEL, nil);
 end
 
-function DEC2HEX(input)
+local function DEC2HEX(input)
 	local h = (input / 16);
 	local l = (input - (h * 16));
 	return string.format('%x%x', h, l);
@@ -654,16 +654,19 @@ function X4D_LibAntiSpam.CreateColorCode(r, g, b)
 	return '|c' .. DEC2HEX(r * 255) .. DEC2HEX(g * 255) .. DEC2HEX(b * 255);
 end
 
+local _initialized = false;
+
 function X4D_LibAntiSpam.OnPlayerActivated()
 	zo_callLater(function() 
-		local merged = MergePatterns();
-		SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', table.concat(merged, '\n'), 8192);
-		X4D_LibAntiSpam.Settings.SavedVars.Patterns = merged;
 		RejectSpammerGuildInvites();
-	end, 2000);
-	local r, g, b = GetChatCategoryColor(CHAT_CATEGORY_SYSTEM);
-	if (r ~= nil) then
-		X4D_LibAntiSpam.Colors.SystemChannel = X4D_LibAntiSpam.CreateColorCode(r, g, b);
+	end, 3000);
+
+	if (not _initialized) then
+		_initialized = true;
+		local r, g, b = GetChatCategoryColor(CHAT_CATEGORY_SYSTEM);
+		if (r ~= nil) then
+			X4D_LibAntiSpam.Colors.SystemChannel = X4D_LibAntiSpam.CreateColorCode(r, g, b);
+		end
 	end
 end
 
