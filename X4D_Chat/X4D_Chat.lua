@@ -3,9 +3,10 @@ X4D_Chat = {};
 local X4D_LibAntiSpam = nil;
 local X4D_Loot = nil;
 local X4D_XP = nil;
+local X4D_Bank = nil;
 
 X4D_Chat.NAME = 'X4D_Chat';
-X4D_Chat.VERSION = 1.18;
+X4D_Chat.VERSION = 1.19;
 
 X4D_Chat.Settings = {};
 X4D_Chat.Settings.SavedVars = {};
@@ -618,7 +619,7 @@ function X4D_Chat.XPCallback(color, text)
 	end
 	if (text == nil or text:len() == 0) then
 		d('LootCallback.. bad text received');
-		text = 'loot?';
+		text = 'xp?';
 	end
 	d(GetTimestampPrefix(color) .. text);
 end
@@ -631,6 +632,18 @@ function X4D_Chat.AntiSpamEmitCallback(color, text)
 	if (text == nil or text:len() == 0) then
 		d('AntiSpamEmitCallback.. bad text received');
 		text = 'spam?';
+	end
+	d(GetTimestampPrefix(color) ..  text);
+end
+
+function X4D_Chat.BankEmitCallback(color, text)
+	if (color == nil or color:len() < 8) then
+		d('BankEmitCallback.. bad color received');
+		color = '|cFFFFFF';
+	end
+	if (text == nil or text:len() == 0) then
+		d('BankEmitCallback.. bad text received');
+		text = 'huh?';
 	end
 	d(GetTimestampPrefix(color) ..  text);
 end
@@ -691,20 +704,26 @@ function X4D_Chat.Register()
 	ZO_ChatSystem_AddEventHandler(EVENT_CHAT_MESSAGE_CHANNEL, X4D_Chat.OnChatMessageReceived);
 	if (not X4D_LibAntiSpam) then
 		X4D_LibAntiSpam = LibStub('LibAntiSpam', true);
-		if (X4D_LibAntiSpam) then
+		if (X4D_LibAntiSpam and X4D_LibAntiSpam.RegisterEmitCallback) then
 			X4D_LibAntiSpam:RegisterEmitCallback(X4D_Chat.AntiSpamEmitCallback);
 		end
 	end
 	if (not X4D_Loot) then
 		X4D_Loot = LibStub('X4D_Loot', true);
-		if (X4D_Loot) then
+		if (X4D_Loot and X4D_Loot.RegisterCallback) then
 			X4D_Loot:RegisterCallback(X4D_Chat.LootCallback);
 		end
 	end
 	if (not X4D_XP) then
 		X4D_XP = LibStub('X4D_XP', true);
-		if (X4D_XP) then
+		if (X4D_XP and X4D_XP.RegisterCallback) then
 			X4D_XP:RegisterCallback(X4D_Chat.XPCallback);
+		end
+	end
+	if (not X4D_Bank) then
+		X4D_Bank = LibStub('X4D_Bank', true);
+		if (X4D_Bank and X4D_Bank.RegisterEmitCallback) then
+			X4D_Bank:RegisterEmitCallback(X4D_Chat.BankEmitCallback);
 		end
 	end
 
