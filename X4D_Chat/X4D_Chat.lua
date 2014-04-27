@@ -6,7 +6,7 @@ local X4D_XP = nil;
 local X4D_Bank = nil;
 
 X4D_Chat.NAME = 'X4D_Chat';
-X4D_Chat.VERSION = 1.19;
+X4D_Chat.VERSION = 1.21;
 
 X4D_Chat.Settings = {};
 X4D_Chat.Settings.SavedVars = {};
@@ -117,7 +117,7 @@ local function GetTimestampPrefix(color)
 			end
 		end
 	elseif (X4D_Chat.Settings.SavedVars.RemoveSeconds) then
-		timeString = timeString:gsub('(%d%d).(%d%d).%d%d', hour .. '%1:%2');
+		timeString = timeString:gsub('(%d%d).(%d%d).%d%d', '%1:%2');
 	end
 
 	local highlightColor = X4D_Chat.DeriveHighlightColorCode(color);
