@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.46);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.47);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.46';
+X4D_LibAntiSpam.VERSION = '1.47';
 
 X4D_LibAntiSpam.Options = {};
 X4D_LibAntiSpam.Options.Saved = {};
@@ -366,6 +366,7 @@ local function PreScrub(input)
 	output = output:gsub('V\\/', 'W');
 	output = output:gsub('/\\/\\', 'M');
 	output = output:gsub('/V\\', 'M');	
+	output = output:gsub('/N\\', 'M');	
 	output = output:gsub('/\\/', 'N');
 	output = output:gsub('/V', 'N');
 	output = output:gsub('\\/V', 'W');
