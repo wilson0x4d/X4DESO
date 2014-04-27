@@ -555,7 +555,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 		return;
 	end
 
-	X4D_LibAntiSpam.Options.Saved = ZO_SavedVars:NewAccountWide(X4D_LibAntiSpam.NAME .. '_SV', 1.45, nil, X4D_LibAntiSpam.Options.Default);
+	X4D_LibAntiSpam.Options.Saved = ZO_SavedVars:NewAccountWide(X4D_LibAntiSpam.NAME .. '_SV', 1.45, nil, {});
 
 	local LAM = LibStub('LibAddonMenu-1.0');
 	local cplId = LAM:CreateControlPanel('X4D_LibAntiSpam_CPL', 'X4D |cFFAE19AntiSpam');	
