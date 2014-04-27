@@ -21,6 +21,10 @@ Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.20
+- Fix 12 hour timestamps showing as negative values.
+- Add option to remove the "seconds" component from timestamps.
+
 v1.19
 - Add Support for [URL="http://www.esoui.com/downloads/info347-X4DBank.html"][B]X4D [COLOR="DarkOrange"]Bank[/COLOR][/B][/URL]
 

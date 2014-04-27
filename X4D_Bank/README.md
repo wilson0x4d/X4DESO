@@ -24,8 +24,8 @@ v1.4
 - Fix bug with boolean options not being read correctly.
 
 v1.3
-- Settings are now Per-Character.
-- Now performs bank deposits.
+- Settings are now Per-Character, or Account-Wide, you decide.
+- Now performs bank deposits, thanks to users pointing out several add-ons which already make protected API calls.
 
 v1.2
 - Fix 'reset to defaults' bug in Options UI.

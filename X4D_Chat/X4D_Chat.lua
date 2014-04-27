@@ -23,6 +23,7 @@ X4D_Chat.Settings.Defaults = {
 	};
 	UseGuildNum = false,
 	TimestampOption = '24 Hour Format',
+	RemoveSeconds = false,
 	StripColors = false,
 	StripExcess = true,
 	PreventChatFade = true,
@@ -95,19 +96,28 @@ local function GetTimestampPrefix(color)
 
 	if (X4D_Chat.Settings.SavedVars.TimestampOption == '12 Hour Format') then
 		local hour = timeString:gmatch('(%d%d).%d%d.%d%d')();
-
 		if (tonumber(hour) > 12) then
 			hour = tostring(tonumber(hour) - 12);
 			if (hour:len() == 1) then
 				hour = '0' .. hour;
 			end
-			timeString = timeString:gsub('(%d%d).(%d%d).(%d%d)', (hour - 12) .. ':%2:%3 PM');
+			if (X4D_Chat.Settings.SavedVars.RemoveSeconds) then
+				timeString = timeString:gsub('%d%d.(%d%d).%d%d', hour .. ':%1 PM');
+			else
+				timeString = timeString:gsub('%d%d.(%d%d).(%d%d)', hour .. ':%1:%2 PM');
+			end
 		else
 			if (hour == "00") then
 				hour = "12";
 			end
-			timeString = timeString:gsub('(%d%d).(%d%d).(%d%d)', hour .. ':%2:%3 AM');
+			if (X4D_Chat.Settings.SavedVars.RemoveSeconds) then
+				timeString = timeString:gsub('%d%d.(%d%d).%d%d', hour .. ':%1 AM');
+			else
+				timeString = timeString:gsub('%d%d.(%d%d).(%d%d)', hour .. ':%1:%2 AM');
+			end
 		end
+	elseif (X4D_Chat.Settings.SavedVars.RemoveSeconds) then
+		timeString = timeString:gsub('(%d%d).(%d%d).%d%d', hour .. '%1:%2');
 	end
 
 	local highlightColor = X4D_Chat.DeriveHighlightColorCode(color);
@@ -439,15 +449,23 @@ function X4D_Chat.OnAddOnLoaded(event, addonName)
 		end);
 
 	LAM:AddCheckbox(cplId, 
+		'X4D_CHAT_CHECK_REMOVESECONDS', 'Remove "Seconds" Component', 
+		'When enabled, the "Seconds" component is removed from timestamps.', 
+		function() return X4D_Chat.Settings.SavedVars.RemoveSeconds end,
+		function() X4D_Chat.Settings.SavedVars.RemoveSeconds = not X4D_Chat.Settings.SavedVars.RemoveSeconds end);
+
+	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_GUILD_CHARNAMES', 'Show Character Names in Guild Chat', 
 		'When enabled, Player Names are replaced with Character Names in Guild Chat.', 
 		function() return X4D_Chat.Settings.SavedVars.GuildCharNames end,
 		function() X4D_Chat.Settings.SavedVars.GuildCharNames = not X4D_Chat.Settings.SavedVars.GuildCharNames end);
+	
 	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_GUILD_PLAYERNAMES', 'Show Player Names in Guild Chat', 
 		'When enabled, Player Names are replaced with Character Names in Guild Chat.', 
 		function() return X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
 		function() X4D_Chat.Settings.SavedVars.GuildPlayerNames = not X4D_Chat.Settings.SavedVars.GuildPlayerNames end);
+	
 	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_GUILD_ABBR', 'Use Guild Abbrevations', 
 		'When enabled, Guild Names are replaced with an Abbreviation. Abbrevations are set in the Guild Description e.g. [FOO], or inferred as the capital letters of the guild.', 
@@ -456,6 +474,7 @@ function X4D_Chat.OnAddOnLoaded(event, addonName)
 			X4D_Chat.Settings.SavedVars.UseGuildAbbr = not X4D_Chat.Settings.SavedVars.UseGuildAbbr;
 			X4D_Chat.Guilds = {};
 		end);
+	
 	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_GUILD_NUM', 'Use Guild Number', 
 		'When enabled, Guild Names are replaced with their corresponding Number.', 
@@ -464,21 +483,25 @@ function X4D_Chat.OnAddOnLoaded(event, addonName)
 			X4D_Chat.Settings.SavedVars.UseGuildNum = not X4D_Chat.Settings.SavedVars.UseGuildNum;
 			X4D_Chat.Guilds = {};
 		end);
+	
 	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_STRIP_COLORS', 'Strip Colors', 
 		'When enabled, color codes are stripped from chat messages.', 
 		function() return X4D_Chat.Settings.SavedVars.StripColors end,
 		function() X4D_Chat.Settings.SavedVars.StripColors = not X4D_Chat.Settings.SavedVars.StripColors end);
+	
 	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_STRIP_EXCESS', 'Strip Excess Text', 
 		'When enabled, excess text is stripped from chat messages.', 
 		function() return X4D_Chat.Settings.SavedVars.StripExcess end,
 		function() X4D_Chat.Settings.SavedVars.StripExcess = not X4D_Chat.Settings.SavedVars.StripExcess end);
+	
 	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_PREVENT_FADE', 'Prevent Chat Fade', 
 		'When enabled, Chat Window will not Fade.', 
 		function() return X4D_Chat.Settings.SavedVars.PreventChatFade end,
 		function() X4D_Chat.Settings.SavedVars.PreventChatFade = not X4D_Chat.Settings.SavedVars.PreventChatFade end);
+	
 	LAM:AddCheckbox(cplId, 
 		'X4D_CHAT_CHECK_DISABLE_FRIEND_STATUS', 'Disable Friend Status Messages', 
 		'When enabled, Friend Online/Offline Status Messages are not displayed.', 
