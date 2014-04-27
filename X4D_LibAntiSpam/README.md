@@ -25,6 +25,10 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.46
+- Modified CharMap.
+- Modified Patterns.
+
 v1.45
 - Default Patterns now termed "Internal Patterns".
 - New option to disable use of "Internal Patterns".

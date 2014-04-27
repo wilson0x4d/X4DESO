@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.45);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.46);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.45';
+X4D_LibAntiSpam.VERSION = '1.46';
 
 X4D_LibAntiSpam.Options = {};
 X4D_LibAntiSpam.Options.Saved = {};
@@ -58,7 +58,7 @@ X4D_LibAntiSpam.InternalPatterns = {
 	[3] = 'p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[op][mn]+',
 	[4] = 'p.?[vm]+.?p.?b.?a.?n.?k.*c.?[op].?[mn]+',
 	[5] = 'o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[op].?[mn]+',
-	[6] = 'e.?z.?o.?o.?[mn].?c.?[op].?[mn]+',
+	[6] = 'e.?[zm].?o.?o.?[mn].?c.?[op].?[mn]+',
 	[7] = 'g.?g.?a.?t.?[mn].?c.?[op].?[mn]+',
 	[8] = '[mn].?[mn].?[op].?[wvm]+.?i.?n.?c.?[op].?[mn]+',
 	[9] = 'g.?a.?e.?z.?c.?[op]?.?[mn]+',
@@ -95,7 +95,7 @@ local L_charMap = {
 	['1'] = 'l', ['3'] = 'e', ['4'] = 'a', ['7'] = 'T', ['0'] = 'O', ['('] = 'c', ['2'] = 'R',
 	[')'] = 'o', ['·'] = '.', ['°'] = '.', ['¸'] = '.', ['¯'] = '-', [','] = '.', ['*'] = '.',
 	['$'] = 'S', ['/'] = 'm', ['¿'] = '?', ['5'] = 'S', ['9'] = 'g', ['\\'] = 'v', ['ß'] = 'b',
-	['{'] = 'c', ['}'] = 'o', 
+	['{'] = 'c', ['}'] = 'o', ['<'] = 'c', ['>'] = 'o', 
 };
 
 for inp,v in pairs(L_charMap) do
