@@ -1,10 +1,10 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.5);
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.6);
 if (not X4D_Bank) then
 	return;
 end
 
 X4D_Bank.NAME = 'X4D_Bank';
-X4D_Bank.VERSION = 1.5;
+X4D_Bank.VERSION = 1.6;
 
 X4D_Bank.Options = {};
 X4D_Bank.Options.Saved = {};
@@ -17,6 +17,135 @@ X4D_Bank.Options.Default = {
 	AutoDepositItems = true,
 	StartNewStacks = true,
 	AutoWithdrawReserve = true,
+};
+
+local _itemOptions = {
+	'Leave Alone',
+	'Deposit',
+	'Withdraw',
+};
+
+local _itemGroups = {
+	--[11] = {
+	--	Title = 'Other Items',
+	--	Types = {
+	--		ITEMTYPE_ADDITIVE,
+	--		ITEMTYPE_AVA_REPAIR,
+	--		ITEMTYPE_COLLECTIBLE,
+	--		ITEMTYPE_CONTAINER,
+	--		ITEMTYPE_COSTUME,
+	--		ITEMTYPE_DISGUISE,
+	--		ITEMTYPE_FOOD,
+	--		ITEMTYPE_LOCKPICK,
+	--		ITEMTYPE_NONE,
+	--		ITEMTYPE_PLUG,
+	--		ITEMTYPE_POISON,
+	--		ITEMTYPE_POTION,
+	--		ITEMTYPE_RAW_MATERIAL,
+	--		ITEMTYPE_SCROLL,
+	--		ITEMTYPE_SIEGE,
+	--		ITEMTYPE_STYLE_MATERIAL,
+	--		ITEMTYPE_TABARD,
+	--		ITEMTYPE_TOOL,
+	--		ITEMTYPE_TRASH,
+	--		ITEMTYPE_DRINK
+	--	}
+	--},
+	[0] = {
+		Title = 'Alchemy Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_ALCHEMY_BASE,
+			ITEMTYPE_REAGENT,
+		},
+	},
+	[1] = {
+		Title = 'Armor Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_ARMOR,
+			ITEMTYPE_ARMOR_BOOSTER,
+			ITEMTYPE_ARMOR_TRAIT,
+		},
+	},
+	[2] = {
+		Title = 'Blacksmithing Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_BLACKSMITHING_BOOSTER,
+			ITEMTYPE_BLACKSMITHING_MATERIAL,
+			ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
+		},
+	},
+	[3] = {
+		Title = 'Clothier Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_CLOTHIER_BOOSTER,
+			ITEMTYPE_CLOTHIER_MATERIAL,
+			ITEMTYPE_CLOTHIER_RAW_MATERIAL,
+		},
+	},
+	[4] = {
+		Title = 'Cooking Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_RECIPE,
+			ITEMTYPE_INGREDIENT,
+			ITEMTYPE_FLAVORING,
+			ITEMTYPE_SPICE,
+		},
+	},
+	[5] = {
+		Title = 'Enchanting Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_ENCHANTING_RUNE,
+			ITEMTYPE_ENCHANTMENT_BOOSTER,
+			ITEMTYPE_GLYPH_ARMOR,
+			ITEMTYPE_GLYPH_JEWELRY,
+			ITEMTYPE_GLYPH_WEAPON,
+		},
+	},
+	[6] = {
+		Title = 'Fishing Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_LURE,
+		},
+	},
+	[7] = {
+		Title = 'Mystic Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_SOUL_GEM,
+		},
+	},
+	[8] = {
+		Title = 'Trophies and Disguises',
+		Description = '',
+		Types = {
+			ITEMTYPE_TROPHY,
+		},
+	},
+	[9] = {
+		Title = 'Weapon Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_WEAPON,
+			ITEMTYPE_WEAPON_BOOSTER,
+			ITEMTYPE_WEAPON_TRAIT,
+		},
+	},
+	[10] = {
+		Title = 'Woodworking Items',
+		Description = '',
+		Types = {
+			ITEMTYPE_WOODWORKING_BOOSTER,
+			ITEMTYPE_WOODWORKING_MATERIAL,
+			ITEMTYPE_WOODWORKING_RAW_MATERIAL,
+		},
+	},
 };
 
 local function GetOption(name)
@@ -99,7 +228,6 @@ local function InvokeCallbackSafe(color, text)
 	end
 end
 
-
 local function CreateIcon(filename, width, height)	
 	-- example: /zgoo EsoStrings[SI_BANK_GOLD_AMOUNT_BANKED]:gsub('%|', '!')
 	-- gladly accepting gold donations in-game, thanks.
@@ -112,40 +240,54 @@ local function TryGetBagState(bagId)
 		Id = bagId,
 		BagIcon = CreateIcon(bagIcon),
 		SlotCount = numSlots,
-		SlotsFree = 0,
 		Slots = { },
+		FreeSlotCount = 0,
+		FreeSlots = { },
+		PartialSlotCount = 0,
+		PartialSlots = { },
 	};
-	for slotIndex = 0, bagState.SlotCount do
+	for slotIndex = 0, (bagState.SlotCount-1) do
 		local itemName = GetItemName(bagId, slotIndex);
 		local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bagId, slotIndex);
 		if (itemName ~= nil and itemName:len() > 0) then
 			local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex);
 			local itemLink, itemColor = GetItemLinkInternal(bagId, slotIndex);
-			bagState.Slots[slotIndex] = {
+			local itemType = GetItemType(bagId, slotIndex);
+			local slot = {
 				Id = slotIndex,
 				IsEmpty = false,
 				ItemIcon = CreateIcon(iconFilename),
 				ItemName = itemName, 
 				ItemLink = itemLink, 
 				ItemColor = itemColor,
+				ItemType = itemType,
 				StackCount = stackCount,
-				StackMax = stackMax,
+				StackMax = stackMax,				
 			};
+			bagState.Slots[slotIndex] = slot;
+			if (stackMax > 0 and stackCount < stackMax) then
+				bagState.PartialSlotCount = bagState.PartialSlotCount + 1;
+				table.insert(bagState.PartialSlots, slot);
+			end
 		else
-			bagState.SlotsFree = bagState.SlotsFree + 1;
-			bagState.Slots[slotIndex] = {
+			bagState.FreeSlotCount = bagState.FreeSlotCount + 1;
+			local slot = {
 				Id = slotIndex,
 				IsEmpty = true,
 			};
+			bagState.Slots[slotIndex] = slot;
+			table.insert(bagState.FreeSlots, slot);
 		end
 	end
 	return bagState;
 end
 
-local function TryDepositItems()
+local function TryFillPartialStacks()
 	if (not GetOption('AutoDepositItems')) then
 		return;
 	end
+
+    ClearCursor();
 
 	local inventoryState = TryGetBagState(1);
 	local bankState = TryGetBagState(2);
@@ -176,7 +318,7 @@ local function TryDepositItems()
 		end
 	end
 
-	if ((not GetOption('StartNewStacks')) or (bankState.SlotsFree == 0)) then
+	if ((not GetOption('StartNewStacks')) or (bankState.FreeSlotCount == 0)) then
 		return;
 	end
 
@@ -241,6 +383,143 @@ local function TryWithdrawReserveAmount()
 	end
 end
 
+local function ShouldDepositItem(slot, itemTypeDirections)
+	return 'Deposit' == (itemTypeDirections[slot.ItemType] or 'Leave Alone');
+end
+
+local function ShouldWithdrawItem(slot, itemTypeDirections)
+	return 'Withdraw' == (itemTypeDirections[slot.ItemType] or 'Leave Alone');
+end
+
+local function CreateDropdownName(v)
+	return 'X4D_CHAT_OPTION_DW_' .. v.Title:upper():gsub(' ', '_');
+end
+
+local function GetItemTypeDirectionalities()
+	local itemTypeDirections = {};
+	for i = 0, 10 do
+		local v = _itemGroups[i];
+		local dropdownName = CreateDropdownName(v);
+		local direction = GetOption(dropdownName) or 'Leave Alone';
+		for _,t in pairs(v.Types) do
+			itemTypeDirections[t] = direction;
+		end			
+	end
+	return itemTypeDirections;
+end
+
+local function TryCombinePartialStacks(bagState, depth)
+	if (depth == nil) then
+		depth = 3;
+	end
+	ClearCursor();
+	local combines = {};
+	local combineCount = 0;
+	for i = 1, bagState.PartialSlotCount - 1 do
+		local lval = bagState.PartialSlots[i];
+		for j = i + 1, bagState.PartialSlotCount do
+			local rval = bagState.PartialSlots[j];
+			if (lval.Id ~= rval.Id and lval.ItemName == rval.ItemName and (not bagState.Slots[lval.Id].IsEmpty) and (not bagState.Slots[rval.Id].IsEmpty) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0)) then
+				table.insert(combines, { [1] = lval, [2] = rval });
+				combineCount = combineCount + 1;
+				break;
+			end
+		end
+	end
+	for i = 1, combineCount do
+		local lval, rval = combines[i][1], combines[i][2];
+		local countToMove = (rval.StackMax - rval.StackCount);
+		if (lval.StackCount < countToMove) then
+			countToMove = lval.StackCount;
+		end
+		if (countToMove > 0) then
+			rval.StackCount = rval.StackCount + countToMove;
+			lval.StackCount = lval.StackCount - countToMove;
+			CallSecureProtected('PickupInventoryItem', bagState.Id, lval.Id, countToMove);
+			CallSecureProtected('PlaceInInventory', bagState.Id, rval.Id);
+			InvokeCallbackSafe(lval.ItemColor, 'Restacked ' .. lval.ItemIcon .. lval.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. countToMove);
+		end
+	end
+	if (combineCount > 0 and depth > 0) then
+		TryCombinePartialStacks(bagState, depth - 1);
+	end
+end
+
+local function TryDepositsAndWithdrawals()
+	local itemTypeDirections = GetItemTypeDirectionalities();
+	local inventoryState = TryGetBagState(1);
+	local bankState = TryGetBagState(2);
+	local pendingDeposits = {};
+	local pendingDepositCount = 0;
+	local pendingWithdrawals = {};
+	local pendingWithdrawalCount = 0;
+
+	for _,slot in pairs(inventoryState.Slots) do
+		if (not slot.IsEmpty) then
+			if (ShouldDepositItem(slot, itemTypeDirections)) then
+				pendingDepositCount = pendingDepositCount + 1;
+				table.insert(pendingDeposits, slot);
+			end
+		end
+	end
+
+	for _,slot in pairs(bankState.Slots) do
+		if (not slot.IsEmpty) then
+			if (ShouldWithdrawItem(slot, itemTypeDirections)) then
+				pendingWithdrawalCount = pendingWithdrawalCount + 1;
+				table.insert(pendingWithdrawals, slot);
+			end
+		end
+	end
+
+	TryCombinePartialStacks(inventoryState);
+	TryCombinePartialStacks(bankState);
+
+	ClearCursor();
+	while ((inventoryState.FreeSlotCount > 0 and pendingWithdrawalCount > 0) or (bankState.FreeSlotCount > 0 and pendingDepositCount > 0)) do	
+		if (inventoryState.FreeSlotCount > 0 and pendingWithdrawalCount > 0) then
+			local bankSlotInfo = table.remove(pendingWithdrawals);
+			pendingWithdrawalCount = pendingWithdrawalCount - 1;
+			local inventorySlotInfo = table.remove(inventoryState.FreeSlots);
+			inventoryState.Slots[inventorySlotInfo.Id] = bankSlotInfo;
+			inventoryState.FreeSlotCount = inventoryState.FreeSlotCount - 1;
+			bankState.FreeSlotCount = bankState.FreeSlotCount + 1;
+			table.insert(bankState.FreeSlots, {
+				Id = bankSlotInfo.Id,
+				IsEmpty = true,
+			});
+			if (bankSlotInfo.StackMax > bankSlotInfo.StackCount) then
+				table.insert(inventoryState.PartialSlots, bankSlotInfo);
+				inventoryState.PartialSlotCount = inventoryState.PartialSlotCount + 1;
+			end
+			CallSecureProtected('PickupInventoryItem', 2, bankSlotInfo.Id, bankSlotInfo.StackCount);
+			CallSecureProtected('PlaceInInventory', 1, inventorySlotInfo.Id);
+			InvokeCallbackSafe(bankSlotInfo.ItemColor, 'Withdrew ' .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. bankSlotInfo.StackCount);
+		end
+		if (bankState.FreeSlotCount > 0 and pendingDepositCount > 0) then
+			local inventorySlotInfo = table.remove(pendingDeposits);
+			local bankSlotInfo = table.remove(bankState.FreeSlots);
+			bankState.Slots[bankSlotInfo.Id] = inventorySlotInfo;
+			pendingDepositCount = pendingDepositCount - 1;
+			bankState.FreeSlotCount = bankState.FreeSlotCount - 1;
+			inventoryState.FreeSlotCount = inventoryState.FreeSlotCount + 1;
+			table.insert(inventoryState.FreeSlots, {
+				Id = inventorySlotInfo.Id,
+				IsEmpty = true,
+			});
+			if (inventorySlotInfo.StackMax > inventorySlotInfo.StackCount) then
+				table.insert(bankState.PartialSlots, inventorySlotInfo);
+				bankState.PartialSlotCount = bankState.PartialSlotCount + 1;
+			end
+			CallSecureProtected('PickupInventoryItem', 1, inventorySlotInfo.Id, inventorySlotInfo.StackCount);
+			CallSecureProtected('PlaceInInventory', 2, bankSlotInfo.Id);
+			InvokeCallbackSafe(inventorySlotInfo.ItemColor, 'Deposited ' .. inventorySlotInfo.ItemIcon .. inventorySlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. inventorySlotInfo.StackCount);
+		end
+		TryCombinePartialStacks(inventoryState);
+		TryCombinePartialStacks(bankState);
+	end
+end
+
 local function OnOpenBank(eventCode)
 	if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
 		_nextAutoDepositTime = GetGameTimeMilliseconds() + (GetOption('AutoDepositDowntime') * 1000);
@@ -248,7 +527,8 @@ local function OnOpenBank(eventCode)
 		TryDepositPercentage(availableAmount);
 	end
 	TryWithdrawReserveAmount();
-	TryDepositItems();
+	TryDepositsAndWithdrawals();
+	zo_callLater(TryFillPartialStacks, 1000);
 end
 
 local function SetComboboxValue(controlName, value)
@@ -263,9 +543,14 @@ local function SetComboboxValue(controlName, value)
 end
 
 local function SetCheckboxValue(controlName, value)
-	local checkbox = _G[controlName]:GetNamedChild('Checkbox');
-	checkbox:SetState(value and 1 or 0);
-	checkbox:toggleFunction(value);
+	local control = _G[controlName];
+	if (control ~= nil) then
+		local checkbox = control:GetNamedChild('Checkbox');
+		if (checkbox ~= nil) then
+			checkbox:SetState(value and 1 or 0);
+			checkbox:toggleFunction(value);
+		end
+	end
 end
 
 local function SetSliderValue(controlName, value, minValue, maxValue)
@@ -282,14 +567,18 @@ local function InitializeOptionsUI()
 	local cplId = LAM:CreateControlPanel('X4D_BANK_CPL', 'X4D |cFFAE19Bank');
 
 	LAM:AddHeader(cplId, 
-		'X4D_BANK_HEADER', 'Settings');
+		'X4D_BANK_HEADER_DEFAULT', 'Settings');
 
 	LAM:AddDropdown(cplId, 'X4D_CHAT_OPTION_SETTINGSARE', 'Settings Are..',
 		'Settings Option', {'Account-Wide', 'Per-Character'},
 		function() return X4D_Bank.Options.Saved.SettingsAre or 'Account-Wide' end,
 		function(option)
 			X4D_Bank.Options.Saved.SettingsAre = option;
+			ReloadUI();
 		end);
+
+	LAM:AddHeader(cplId, 
+		'X4D_BANK_HEADER_GOLD', 'Gold Deposits and Withdrawals');
 
 	LAM:AddSlider(cplId,
 		'X4D_BANK_SLIDER_AUTODEPOSIT_RESERVE', 'Reserve Amount',
@@ -325,25 +614,39 @@ local function InitializeOptionsUI()
 		function () return GetOption('AutoDepositDowntime') end,
 		function (v) SetOption('AutoDepositDowntime', tonumber(tostring(v))) end);
 
+	LAM:AddHeader(cplId, 
+		'X4D_BANK_HEADER_ITEMS', 'Item Deposits and Withdrawals');
+
 	LAM:AddCheckbox(cplId, 
-		'X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', 'Auto-Deposit Items?', 
-		'When enabled, partial stacks in the bank will be filled from your inventory.', 
+		'X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', 'Fill Partial Stacks?', 
+		'When enabled, partial stacks in the bank will be filled from your inventory, regardless of the item type.', 
 		function() return GetOption('AutoDepositItems') end,
 		function() SetOption('AutoDepositItems', not GetOption('AutoDepositItems')) end);
 
-	LAM:AddCheckbox(cplId, 
-		'X4D_BANK_CHECK_START_NEW_STACKS', 'Start New Stacks?', 
-		'When enabled, when partial stacks are filled, new stacks of those item types will be created from your inventory.', 
-		function() return GetOption('StartNewStacks') end,
-		function() SetOption('StartNewStacks', not GetOption('StartNewStacks')) end);
+	--LAM:AddCheckbox(cplId, 
+	--	'X4D_BANK_CHECK_START_NEW_STACKS', 'Start New Stacks?', 
+	--	'When enabled, new stacks of items will be created in your bank after partial stacks are filled.', 
+	--	function() return GetOption('StartNewStacks') end,
+	--	function() SetOption('StartNewStacks', not GetOption('StartNewStacks')) end);
+
+	for i= 0, 10 do
+		local v = _itemGroups[i];
+		local dropdownName = CreateDropdownName(v);
+		LAM:AddDropdown(cplId, dropdownName, v.Title,
+			v.Title .. ' Option', _itemOptions,
+			function() return GetOption(dropdownName) or 'Leave Alone' end,
+			function(option)
+				SetOption(dropdownName, option);
+			end);
+	end
 
 	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
 			if (panel == cplId) then				
 				ZO_OptionsWindowResetToDefaultButton:SetCallback(function ()
 					if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == cplId) then
 
-						SetComboboxValue('X4D_CHAT_OPTION_SETTINGSARE', X4D_Bank.Options.Saved.SettingsAre);
-						X4D_Bank.Options.Saved.SettingsAre = X4D_Bank.Options.Default.SettingsAre;
+						--SetComboboxValue('X4D_CHAT_OPTION_SETTINGSARE', X4D_Bank.Options.Saved.SettingsAre);
+						--X4D_Bank.Options.Saved.SettingsAre = X4D_Bank.Options.Default.SettingsAre;
 
 						SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_DOWNTIME', X4D_Bank.Options.Default.AutoDepositDowntime, 0, 3600);
 						SetOption('AutoDepositDowntime', X4D_Bank.Options.Default.AutoDepositDowntime);
@@ -363,8 +666,16 @@ local function InitializeOptionsUI()
 						SetCheckboxValue('X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', X4D_Bank.Options.Default.AutoDepositItems);
 						SetOption('AutoDepositItems', X4D_Bank.Options.Default.AutoDepositItems);
 
-						SetCheckboxValue('X4D_BANK_CHECK_START_NEW_STACKS', X4D_Bank.Options.Default.StartNewStacks);
-						SetOption('StartNewStacks', X4D_Bank.Options.Default.StartNewStacks);												
+						--SetCheckboxValue('X4D_BANK_CHECK_START_NEW_STACKS', X4D_Bank.Options.Default.StartNewStacks);
+						--SetOption('StartNewStacks', X4D_Bank.Options.Default.StartNewStacks);												
+
+						for i= 0, 10 do
+							local v = _itemGroups[i];
+							local dropdownName = CreateDropdownName(v);
+							SetComboboxValue(dropdownName, 'Leave Alone');
+							SetOption(dropdownName, 'Leave Alone');
+						end
+
 					end
 				end);
 			end

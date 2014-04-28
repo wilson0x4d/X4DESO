@@ -8,6 +8,7 @@ X4D Bank is LibStub-compatible Add-On that performs regular Bank deposits.
 * Specify a Reserve Amount.
 * Specify Deposit Down-Time, such as depositing only once an hour.
 * Auto-Deposit Items (fill incomplete stacks, start new stacks)
+* Deposit and Withdraw Items based on Item Type
 
 ## Planned Features
 
@@ -20,6 +21,11 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.6
+- Add ability to Deposit and Withdraw Items based on Item Type.
+- Add ability to combine partial stacks in inventory and bank.
+- Removed option to create new stacks, this behavior is now implied.
+
 v1.5
 - Modified how auto-deposit amounts are determined, so that 'all non-reserve gold' can be deposited on every visit.
 
