@@ -21,6 +21,9 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.8
+- Fixed Descriptions
+
 v1.7
 - Fix error when restacking.
 - Removed call deferral for 'new stacks' functionality.

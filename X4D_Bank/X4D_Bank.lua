@@ -50,7 +50,7 @@ local _itemGroups = {
 		},
 	},
 	[1] = {
-		Title = 'Armor Items',
+		Title = 'Armor Equipment',
 		Description = 'Standard Armor Equipment',
 		Types = {
 			ITEMTYPE_ARMOR,
@@ -147,7 +147,7 @@ local _itemGroups = {
 		},
 	},
 	[12] = {
-		Title = 'Weapon',
+		Title = 'Weapon Equipment',
 		Description = 'Standard Weapon Equipment',
 		Types = {
 			ITEMTYPE_WEAPON,
@@ -667,7 +667,7 @@ local function InitializeOptionsUI()
 		end
 		local dropdownName = CreateDropdownName(v);
 		LAM:AddDropdown(cplId, dropdownName, v.Title,
-			v.Title .. ' Option', _itemOptions,
+			v.Description, _itemOptions,
 			function() return GetOption(dropdownName) or 'Leave Alone' end,
 			function(option)
 				SetOption(dropdownName, option);
