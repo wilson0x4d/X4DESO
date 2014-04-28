@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.47);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.48);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.47';
+X4D_LibAntiSpam.VERSION = '1.48';
 
 X4D_LibAntiSpam.Options = {};
 X4D_LibAntiSpam.Options.Saved = {};
@@ -261,12 +261,21 @@ local function AddPlayer(fromName)
 	return GetPlayer(fromName);
 end
 
+local function GetEightyPercent(input)
+	local len80 = input:len() * 0.8;
+	if (len80 == 0) then
+		return '';
+	else
+		return input:sub(1, len80);
+	end
+end
+
 local function UpdateFloodState(player, normalized)
 	if (player.IsWhitelist or (GetOption('FloodTime') == 0)) then
 		player.IsFlood = false;
 		return false;
 	end
-	if (normalized ~= nil and normalized:len() > 0 and player.TextLatest == normalized) then
+	if (normalized ~= nil and normalized:len() and GetEightyPercent(player.TextLatest) == GetEightyPercent(normalized)) then
 		player.Time = GetGameTimeMilliseconds();
 		if (not player.IsFlood) then
 			player.IsFlood = true;
@@ -359,7 +368,10 @@ local function FromCharMap(inp)
 	return res or inp; 
 end
 		
-local function PreScrub(input)
+local function PreScrub(input, level)
+	if (level == nil) then
+		level = 3;
+	end
 	local output = input:upper();
 	output = output:gsub('\\/\\/', 'W');
 	output = output:gsub('\\/V', 'W');
@@ -376,7 +388,12 @@ local function PreScrub(input)
 	output = output:gsub('VWVW', 'www');
 	output = output:gsub('WVWV', 'www');
 	output = output:gsub('[%(%{%%[][%)%}%]]', 'o');
-	return output;
+
+	if (level > 0) then		
+		return PreScrub(output, level - 1);
+	else
+		return output;
+	end
 end
 
 local function Strip(input)
@@ -430,12 +447,22 @@ local function ToASCII(input)
 	return output;
 end
 
-local function PostScrub(input)
+local function PostScrub(input, level)
+	if (level == nil) then
+		level = 3;
+	end
 	local output = input:gsub('[%{%}%|%-~%s\1-\44\58-\63\91-\96\123-\255]', '');
+	output = output:gsub('c+([^co])o+', '%1');
 	output = output:gsub('c+', 'c');
+	output = output:gsub('o+', 'o');
 	output = output:gsub('n+', 'n');
+	output = output:gsub('coco', 'co');
 	output = output:gsub('[%|/l]v[%|\\l]', 'm');
-	return output;
+	if (level > 0) then
+		return PostScrub(output, level - 1);
+	else
+		return output;
+	end
 end
 
 local function Condense(input)
@@ -455,7 +482,7 @@ local function Normalize(input)
 end
 
 function X4D_LibAntiSpam.Check(self, text, fromName)
-	local normalized, pivot = Normalize(text);	
+	local normalized, pivot = Normalize(text);
 	local player = GetPlayer(fromName);
 	if (not player) then
 		player = AddPlayer(fromName);
