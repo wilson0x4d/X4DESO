@@ -26,34 +26,24 @@ local _itemOptions = {
 };
 
 local _itemGroups = {
-	--[11] = {
+	--[?] = {
 	--	Title = 'Other Items',
 	--	Types = {
-	--		ITEMTYPE_ADDITIVE,
 	--		ITEMTYPE_AVA_REPAIR,
-	--		ITEMTYPE_COLLECTIBLE,
 	--		ITEMTYPE_CONTAINER,
-	--		ITEMTYPE_COSTUME,
-	--		ITEMTYPE_DISGUISE,
-	--		ITEMTYPE_FOOD,
 	--		ITEMTYPE_LOCKPICK,
 	--		ITEMTYPE_NONE,
 	--		ITEMTYPE_PLUG,
-	--		ITEMTYPE_POISON,
-	--		ITEMTYPE_POTION,
-	--		ITEMTYPE_RAW_MATERIAL,
 	--		ITEMTYPE_SCROLL,
 	--		ITEMTYPE_SIEGE,
-	--		ITEMTYPE_STYLE_MATERIAL,
 	--		ITEMTYPE_TABARD,
 	--		ITEMTYPE_TOOL,
 	--		ITEMTYPE_TRASH,
-	--		ITEMTYPE_DRINK
 	--	}
 	--},
 	[0] = {
 		Title = 'Alchemy Items',
-		Description = '',
+		Description = 'Alchemy Items and Reagents',
 		Types = {
 			ITEMTYPE_ALCHEMY_BASE,
 			ITEMTYPE_REAGENT,
@@ -61,14 +51,14 @@ local _itemGroups = {
 	},
 	[1] = {
 		Title = 'Armor Items',
-		Description = '',
+		Description = 'Standard Armor Equipment',
 		Types = {
 			ITEMTYPE_ARMOR,
 		},
 	},
 	[2] = {
 		Title = 'Armor Traits',
-		Description = '',
+		Description = 'Armor Traits and Boosters',
 		Types = {
 			ITEMTYPE_ARMOR_BOOSTER,
 			ITEMTYPE_ARMOR_TRAIT,
@@ -76,7 +66,7 @@ local _itemGroups = {
 	},
 	[3] = {
 		Title = 'Blacksmithing Items',
-		Description = '',
+		Description = 'Blacksmithing Materials and Boosters',
 		Types = {
 			ITEMTYPE_BLACKSMITHING_BOOSTER,
 			ITEMTYPE_BLACKSMITHING_MATERIAL,
@@ -85,7 +75,7 @@ local _itemGroups = {
 	},
 	[4] = {
 		Title = 'Clothier Items',
-		Description = '',
+		Description = 'Clothier Materials and Boosters',
 		Types = {
 			ITEMTYPE_CLOTHIER_BOOSTER,
 			ITEMTYPE_CLOTHIER_MATERIAL,
@@ -94,17 +84,18 @@ local _itemGroups = {
 	},
 	[5] = {
 		Title = 'Cooking Items',
-		Description = '',
+		Description = 'Cooking Recipes, Ingredients, etc',
 		Types = {
 			ITEMTYPE_RECIPE,
 			ITEMTYPE_INGREDIENT,
 			ITEMTYPE_FLAVORING,
 			ITEMTYPE_SPICE,
+			ITEMTYPE_ADDITIVE,
 		},
 	},
 	[6] = {
 		Title = 'Enchanting Items',
-		Description = '',
+		Description = 'Enchanting Runes, Boosters and Glyphs',
 		Types = {
 			ITEMTYPE_ENCHANTING_RUNE,
 			ITEMTYPE_ENCHANTMENT_BOOSTER,
@@ -115,43 +106,64 @@ local _itemGroups = {
 	},
 	[7] = {
 		Title = 'Fishing Items',
-		Description = '',
+		Description = 'Lures',
 		Types = {
 			ITEMTYPE_LURE,
 		},
 	},
 	[8] = {
-		Title = 'Mystic Items',
-		Description = '',
+		Title = 'Food and Drink',
+		Description = 'Food, Drink, Potions and Poisons',
 		Types = {
-			ITEMTYPE_SOUL_GEM,
+			ITEMTYPE_DRINK,
+			ITEMTYPE_FOOD,
+			ITEMTYPE_POTIONS,
+			ITEMTYPE_POISON,
 		},
 	},
 	[9] = {
-		Title = 'Trophies and Disguises',
+		Title = 'Mystic Items',
+		Description = 'Soul Gems',
+		Types = {
+			ITEMTYPE_SOUL_GEM,
+		},
+	},	
+	[10] = {
+		Title = 'Styles and Raw Materials',
+		Description = 'Styles and Raw Materials',
+		Types = {
+			ITEMTYPE_STYLE_MATERIAL,
+			ITEMTYPE_RAW_MATERIAL,
+		},
+	},
+	[11] = {
+		Title = 'Costumes, Collectibles and Trophies',
 		Description = '',
 		Types = {
 			ITEMTYPE_TROPHY,
+			ITEMTYPE_COLLECTIBLE,
+			ITEMTYPE_COSTUME,
+			ITEMTYPE_DISGUISE,
 		},
 	},
-	[10] = {
-		Title = 'Weapon Items',
-		Description = '',
+	[12] = {
+		Title = 'Weapon',
+		Description = 'Standard Weapon Equipment',
 		Types = {
 			ITEMTYPE_WEAPON,
 		},
 	},
-	[11] = {
+	[13] = {
 		Title = 'Weapon Traits',
-		Description = '',
+		Description = 'Weapon Traits and Boosters',
 		Types = {
 			ITEMTYPE_WEAPON_BOOSTER,
 			ITEMTYPE_WEAPON_TRAIT,
 		},
 	},
-	[12] = {
+	[14] = {
 		Title = 'Woodworking Items',
-		Description = '',
+		Description = 'Woodworking Materials and Boosters',
 		Types = {
 			ITEMTYPE_WOODWORKING_BOOSTER,
 			ITEMTYPE_WOODWORKING_MATERIAL,
@@ -434,7 +446,9 @@ local function TryCombinePartialStacks(bagState, depth)
 			for j = i + 1, bagState.PartialSlotCount do
 				local rval = bagState.PartialSlots[j];
 				if (rval ~= nil) then
-					if (lval.Id ~= rval.Id and lval.ItemName == rval.ItemName and (not bagState.Slots[lval.Id].IsEmpty) and (not bagState.Slots[rval.Id].IsEmpty) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0)) then
+					local lslot = bagState.Slots[lval.Id];
+					local rslot = bagState.Slots[rval.Id];
+					if (lval.Id ~= rval.Id and lval.ItemName == rval.ItemName and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and (not lslot.IsEmpty) and (not rslot.IsEmpty)) then
 						table.insert(combines, { [1] = lval, [2] = rval });
 						combineCount = combineCount + 1;
 						break;

@@ -22,9 +22,10 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 v1.7
-- Fix bug when restacking.
+- Fix error when restacking.
 - Removed call deferral for 'new stacks' functionality.
 - Split "Armor Items" and "Weapon Items" into two additional groups "Armor Traits" and "Weapon Traits".
+- Added Additional Groups for previously missing item items.
 
 v1.6
 - Add ability to Deposit and Withdraw Items based on Item Type.
