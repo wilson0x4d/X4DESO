@@ -187,7 +187,7 @@ local function StringPivot(s, delimiter, sk)
 end
 
 local function IsSelf(fromName)
-	return (fromName == GetDisplayName());
+	return (fromName == GetUnitName('player'));
 end
 
 local function IsInGroup(fromName)
@@ -452,7 +452,7 @@ local function PostScrub(input, level)
 		level = 3;
 	end
 	local output = input:gsub('[%{%}%|%-~%s\1-\44\58-\63\91-\96\123-\255]', '');
-	output = output:gsub('c+([^co])o+', '%1');
+	output = output:gsub('[co]+([^co])[co]+', '%1');
 	output = output:gsub('c+', 'c');
 	output = output:gsub('o+', 'o');
 	output = output:gsub('n+', 'n');
