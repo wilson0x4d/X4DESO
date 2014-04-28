@@ -1,10 +1,10 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.4);
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.5);
 if (not X4D_Bank) then
 	return;
 end
 
 X4D_Bank.NAME = 'X4D_Bank';
-X4D_Bank.VERSION = 1.4;
+X4D_Bank.VERSION = 1.5;
 
 X4D_Bank.Options = {};
 X4D_Bank.Options.Saved = {};
@@ -207,28 +207,25 @@ local function TryDepositItems()
 end
 
 local function TryDepositFixedAmount()
-	if (GetOption('AutoDepositFixedAmount') <= 0) then
-		return;
-	end
-	local carriedAmount = GetCurrentMoney();
-	if (carriedAmount > GetOption('AutoDepositFixedAmount')) then
-		if ((carriedAmount - GetOption('AutoDepositFixedAmount')) > GetOption('AutoDepositReserve')) then
-			DepositMoneyIntoBank(GetOption('AutoDepositFixedAmount'));
+	local availableAmount = GetCurrentMoney() - GetOption('AutoDepositReserve');
+	local depositAmount = GetOption('AutoDepositFixedAmount');
+	if (depositAmount > 0) then
+		if (availableAmount < depositAmount) then
+			depositAmount = availableAmount;
+		end
+		if (availableAmount >= depositAmount) then
+			DepositMoneyIntoBank(depositAmount);
 		end
 	end
+	return availableAmount - depositAmount;
 end
 
-local function TryDepositPercentage()
-	if (GetOption('AutoDepositPercentage') <= 0) then
-		return;
+local function TryDepositPercentage(availableAmount)
+	local depositAmount = (availableAmount * (GetOption('AutoDepositPercentage') / 100));
+	if (depositAmount > 0) then
+		DepositMoneyIntoBank(depositAmount);
 	end
-	local carriedAmount = GetCurrentMoney();
-	local percentageOfCarried = (carriedAmount * (GetOption('AutoDepositPercentage') / 100));
-	if (percentageOfCarried > 0 and carriedAmount >= percentageOfCarried) then
-		if ((carriedAmount - percentageOfCarried) > GetOption('AutoDepositReserve')) then
-			DepositMoneyIntoBank(percentageOfCarried);
-		end
-	end
+	return availableAmount - depositAmount;
 end
 
 local function TryWithdrawReserveAmount()
@@ -247,8 +244,8 @@ end
 local function OnOpenBank(eventCode)
 	if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
 		_nextAutoDepositTime = GetGameTimeMilliseconds() + (GetOption('AutoDepositDowntime') * 1000);
-		TryDepositFixedAmount();
-		TryDepositPercentage();
+		local availableAmount = TryDepositFixedAmount();
+		TryDepositPercentage(availableAmount);
 	end
 	TryWithdrawReserveAmount();
 	TryDepositItems();
@@ -296,7 +293,7 @@ local function InitializeOptionsUI()
 
 	LAM:AddSlider(cplId,
 		'X4D_BANK_SLIDER_AUTODEPOSIT_RESERVE', 'Reserve Amount',
-		'If non-zero, will NOT auto-deposit if it would drop you below the specified amount.',
+		'If non-zero, the specified amount of carried gold will never be auto-deposited.',
 		0, 10000, 100,
 		function () return GetOption('AutoDepositReserve') end,
 		function (v) SetOption('AutoDepositReserve', tonumber(tostring(v))) end);
@@ -309,14 +306,14 @@ local function InitializeOptionsUI()
 
 	LAM:AddSlider(cplId,
 		'X4D_BANK_SLIDER_AUTODEPOSIT_FIXED_AMOUNT', 'Auto-Deposit Fixed Amount',
-		'If non-zero, will auto-deposit fixed amount when accessing the bank.',
+		'If non-zero, will auto-deposit up to the configured amount when accessing the bank.',
 		0, 1000, 100,
 		function () return GetOption('AutoDepositFixedAmount') end,
 		function (v) SetOption('AutoDepositFixedAmount', tonumber(tostring(v))) end);
 
 	LAM:AddSlider(cplId,
 		'X4D_BANK_SLIDER_AUTODEPOSIT_PERCENTAGE', 'Auto-Deposit Percentage',
-		'If non-zero, will auto-deposit percentage when accessing the bank.',
+		'If non-zero, will auto-deposit percentage of non-reserve gold when accessing the bank.',
 		0, 100, 1,
 		function () return GetOption('AutoDepositPercentage') end,
 		function (v) SetOption('AutoDepositPercentage', tonumber(tostring(v))) end);
@@ -330,13 +327,13 @@ local function InitializeOptionsUI()
 
 	LAM:AddCheckbox(cplId, 
 		'X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', 'Auto-Deposit Items?', 
-		'When enabled, partial stacks in the bank will be filled.', 
+		'When enabled, partial stacks in the bank will be filled from your inventory.', 
 		function() return GetOption('AutoDepositItems') end,
 		function() SetOption('AutoDepositItems', not GetOption('AutoDepositItems')) end);
 
 	LAM:AddCheckbox(cplId, 
 		'X4D_BANK_CHECK_START_NEW_STACKS', 'Start New Stacks?', 
-		'When enabled, if partial stacks are filled, new stacks will be started.', 
+		'When enabled, when partial stacks are filled, new stacks of those item types will be created from your inventory.', 
 		function() return GetOption('StartNewStacks') end,
 		function() SetOption('StartNewStacks', not GetOption('StartNewStacks')) end);
 

@@ -20,6 +20,9 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.5
+- Modified how auto-deposit amounts are determined, so that 'all non-reserve gold' can be deposited on every visit.
+
 v1.4
 - Fix bug with boolean options not being read correctly.
 
