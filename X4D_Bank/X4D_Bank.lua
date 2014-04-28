@@ -1,10 +1,10 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.6);
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.7);
 if (not X4D_Bank) then
 	return;
 end
 
 X4D_Bank.NAME = 'X4D_Bank';
-X4D_Bank.VERSION = 1.6;
+X4D_Bank.VERSION = 1.7;
 
 X4D_Bank.Options = {};
 X4D_Bank.Options.Saved = {};
@@ -64,11 +64,17 @@ local _itemGroups = {
 		Description = '',
 		Types = {
 			ITEMTYPE_ARMOR,
+		},
+	},
+	[2] = {
+		Title = 'Armor Traits',
+		Description = '',
+		Types = {
 			ITEMTYPE_ARMOR_BOOSTER,
 			ITEMTYPE_ARMOR_TRAIT,
 		},
 	},
-	[2] = {
+	[3] = {
 		Title = 'Blacksmithing Items',
 		Description = '',
 		Types = {
@@ -77,7 +83,7 @@ local _itemGroups = {
 			ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
 		},
 	},
-	[3] = {
+	[4] = {
 		Title = 'Clothier Items',
 		Description = '',
 		Types = {
@@ -86,7 +92,7 @@ local _itemGroups = {
 			ITEMTYPE_CLOTHIER_RAW_MATERIAL,
 		},
 	},
-	[4] = {
+	[5] = {
 		Title = 'Cooking Items',
 		Description = '',
 		Types = {
@@ -96,7 +102,7 @@ local _itemGroups = {
 			ITEMTYPE_SPICE,
 		},
 	},
-	[5] = {
+	[6] = {
 		Title = 'Enchanting Items',
 		Description = '',
 		Types = {
@@ -107,37 +113,43 @@ local _itemGroups = {
 			ITEMTYPE_GLYPH_WEAPON,
 		},
 	},
-	[6] = {
+	[7] = {
 		Title = 'Fishing Items',
 		Description = '',
 		Types = {
 			ITEMTYPE_LURE,
 		},
 	},
-	[7] = {
+	[8] = {
 		Title = 'Mystic Items',
 		Description = '',
 		Types = {
 			ITEMTYPE_SOUL_GEM,
 		},
 	},
-	[8] = {
+	[9] = {
 		Title = 'Trophies and Disguises',
 		Description = '',
 		Types = {
 			ITEMTYPE_TROPHY,
 		},
 	},
-	[9] = {
+	[10] = {
 		Title = 'Weapon Items',
 		Description = '',
 		Types = {
 			ITEMTYPE_WEAPON,
+		},
+	},
+	[11] = {
+		Title = 'Weapon Traits',
+		Description = '',
+		Types = {
 			ITEMTYPE_WEAPON_BOOSTER,
 			ITEMTYPE_WEAPON_TRAIT,
 		},
 	},
-	[10] = {
+	[12] = {
 		Title = 'Woodworking Items',
 		Description = '',
 		Types = {
@@ -292,9 +304,6 @@ local function TryFillPartialStacks()
 	local inventoryState = TryGetBagState(1);
 	local bankState = TryGetBagState(2);
 
-	local emptyBankSlotIndex = 0;
-	local emptyBankSlots = {};
-
 	for _,bankSlotInfo in pairs(bankState.Slots) do
 		if (not bankSlotInfo.IsEmpty) then		
 			for _,inventorySlotInfo in pairs(inventoryState.Slots) do
@@ -307,14 +316,17 @@ local function TryFillPartialStacks()
 						if (stackRemaining > 0) then
 							CallSecureProtected("PickupInventoryItem", inventoryState.Id, inventorySlotInfo.Id, stackRemaining);
 							CallSecureProtected("PlaceInInventory", bankState.Id, bankSlotInfo.Id);
-							InvokeCallbackSafe(bankSlotInfo.ItemColor, 'Deposited ' .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. stackRemaining);
+							InvokeCallbackSafe(bankSlotInfo.ItemColor, 'Deposited ' .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. stackRemaining);							
+							inventorySlotInfo.StackCount = inventorySlotInfo.StackCount - stackRemaining;
+							if (inventorySlotInfo.StackCount == 0) then
+								table.insert(inventoryState.FreeSlots, inventorySlotInfo);
+								inventoryState.FreeSlotCount = inventoryState.FreeSlotCount + 1;
+								inventorySlotInfo.IsEmpty = true;
+							end
 						end
 					end
 				end
 			end
-		else
-			emptyBankSlots[emptyBankSlotIndex] = bankSlotInfo;
-			emptyBankSlotIndex = emptyBankSlotIndex + 1;
 		end
 	end
 
@@ -322,19 +334,17 @@ local function TryFillPartialStacks()
 		return;
 	end
 
-	zo_callLater(function()
-		inventoryState = TryGetBagState(1);
-		emptyBankSlotIndex = 0;
-		for _,bankSlotInfo in pairs(bankState.Slots) do
-			if (not bankSlotInfo.IsEmpty) then		
-				for _,inventorySlotInfo in pairs(inventoryState.Slots) do
+	for _,bankSlotInfo in pairs(bankState.Slots) do
+		if (not bankSlotInfo.IsEmpty) then		
+			for _,inventorySlotInfo in pairs(inventoryState.Slots) do
+				if (bankState.FreeSlotCount > 0) then
 					if (not inventorySlotInfo.IsEmpty) then
 						if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName) then
 							local stackRemaining = inventorySlotInfo.StackCount;
 							if (stackRemaining > 0) then
-								local emptyBankSlot = emptyBankSlots[emptyBankSlotIndex];
+								local emptyBankSlot = table.remove(bankState.FreeSlots);
+								bankState.FreeSlotCount = bankState.FreeSlotCount - 1;
 								if (emptyBankSlot ~= nil) then
-									emptyBankSlotIndex = emptyBankSlotIndex + 1;
 									CallSecureProtected("PickupInventoryItem", inventoryState.Id, inventorySlotInfo.Id, stackRemaining);
 									CallSecureProtected("PlaceInInventory", bankState.Id, emptyBankSlot.Id);
 									InvokeCallbackSafe(inventorySlotInfo.ItemColor, 'Deposited ' .. inventorySlotInfo.ItemIcon .. inventorySlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. stackRemaining);
@@ -345,7 +355,7 @@ local function TryFillPartialStacks()
 				end
 			end
 		end
-	end, 1500);
+	end
 end
 
 local function TryDepositFixedAmount()
@@ -397,8 +407,11 @@ end
 
 local function GetItemTypeDirectionalities()
 	local itemTypeDirections = {};
-	for i = 0, 10 do
+	for i = 0, 100 do
 		local v = _itemGroups[i];
+		if (v == nil) then
+			break;
+		end
 		local dropdownName = CreateDropdownName(v);
 		local direction = GetOption(dropdownName) or 'Leave Alone';
 		for _,t in pairs(v.Types) do
@@ -417,12 +430,16 @@ local function TryCombinePartialStacks(bagState, depth)
 	local combineCount = 0;
 	for i = 1, bagState.PartialSlotCount - 1 do
 		local lval = bagState.PartialSlots[i];
-		for j = i + 1, bagState.PartialSlotCount do
-			local rval = bagState.PartialSlots[j];
-			if (lval.Id ~= rval.Id and lval.ItemName == rval.ItemName and (not bagState.Slots[lval.Id].IsEmpty) and (not bagState.Slots[rval.Id].IsEmpty) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0)) then
-				table.insert(combines, { [1] = lval, [2] = rval });
-				combineCount = combineCount + 1;
-				break;
+		if (lval ~= nil) then
+			for j = i + 1, bagState.PartialSlotCount do
+				local rval = bagState.PartialSlots[j];
+				if (rval ~= nil) then
+					if (lval.Id ~= rval.Id and lval.ItemName == rval.ItemName and (not bagState.Slots[lval.Id].IsEmpty) and (not bagState.Slots[rval.Id].IsEmpty) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0)) then
+						table.insert(combines, { [1] = lval, [2] = rval });
+						combineCount = combineCount + 1;
+						break;
+					end
+				end
 			end
 		end
 	end
@@ -629,8 +646,11 @@ local function InitializeOptionsUI()
 	--	function() return GetOption('StartNewStacks') end,
 	--	function() SetOption('StartNewStacks', not GetOption('StartNewStacks')) end);
 
-	for i= 0, 10 do
+	for i= 0, 100 do
 		local v = _itemGroups[i];
+		if (v == nil) then
+			break;
+		end
 		local dropdownName = CreateDropdownName(v);
 		LAM:AddDropdown(cplId, dropdownName, v.Title,
 			v.Title .. ' Option', _itemOptions,
@@ -671,6 +691,9 @@ local function InitializeOptionsUI()
 
 						for i= 0, 10 do
 							local v = _itemGroups[i];
+							if (v == nil) then
+								break;
+							end
 							local dropdownName = CreateDropdownName(v);
 							SetComboboxValue(dropdownName, 'Leave Alone');
 							SetOption(dropdownName, 'Leave Alone');

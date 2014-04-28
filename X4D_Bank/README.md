@@ -21,6 +21,11 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.7
+- Fix bug when restacking.
+- Removed call deferral for 'new stacks' functionality.
+- Split "Armor Items" and "Weapon Items" into two additional groups "Armor Traits" and "Weapon Traits".
+
 v1.6
 - Add ability to Deposit and Withdraw Items based on Item Type.
 - Add ability to combine partial stacks in inventory and bank.
