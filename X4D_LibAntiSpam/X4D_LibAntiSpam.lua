@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1.50);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 151);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.50';
+X4D_LibAntiSpam.VERSION = '1.51';
 
 X4D_LibAntiSpam.Options = {};
 X4D_LibAntiSpam.Options.Saved = {};
@@ -388,7 +388,8 @@ local function PreScrub(input, level)
 	output = output:gsub('VWVW', 'www');
 	output = output:gsub('WVWV', 'www');
 	output = output:gsub('[%(%{%%[][%)%}%]]', 'o');
-	output = output:gsub('[%(%{%%[%)%}%]]+([^%(%{%%[%)%}%]])[%(%{%%[%)%}%]]+', '%1');
+	output = output:gsub('[%<%(%{%%[%)%}%]]+%s+([^%<%(%{%%[%)%}%]%>%s])%s+[%(%{%%[%)%}%]%>]+', '%1');
+	output = output:gsub('[%<%(%{%%[%)%}%]]+([^%<%(%{%%[%)%}%]%>])[%(%{%%[%)%}%]%>]+', '%1');
 
 	if (level > 0) then		
 		return PreScrub(output, level - 1);

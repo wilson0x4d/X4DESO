@@ -25,6 +25,9 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.51
+- Modified Scrub.
+
 v1.50
 - Fix bad reference to LibAddonMenu.
 
