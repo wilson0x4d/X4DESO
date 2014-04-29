@@ -1,7 +1,7 @@
 ## Title: X4D |cFFAE19Bank
 ## Author: @wilson0x4d
 ## Notes: Performs regular bank deposits.
-## Version: 1.7
+## Version: 1.8
 ## APIVersion: 100003
 ## SavedVariables: X4D_Bank_SV
 ## OptionalDependsOn: LibAddonMenu-1.0

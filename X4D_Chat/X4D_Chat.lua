@@ -6,7 +6,7 @@ local X4D_XP = nil;
 local X4D_Bank = nil;
 
 X4D_Chat.NAME = 'X4D_Chat';
-X4D_Chat.VERSION = 1.21;
+X4D_Chat.VERSION = 1.22;
 
 X4D_Chat.Settings = {};
 X4D_Chat.Settings.SavedVars = {};

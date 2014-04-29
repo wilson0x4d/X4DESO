@@ -1,10 +1,10 @@
-local X4D_Loot = LibStub:NewLibrary('X4D_Loot', 1.5);
+local X4D_Loot = LibStub:NewLibrary('X4D_Loot', 1.6);
 if (not X4D_Loot) then
 	return;
 end
 
 X4D_Loot.NAME = 'X4D_Loot';
-X4D_Loot.VERSION = 1.5;
+X4D_Loot.VERSION = 1.6;
 
 X4D_Loot.Settings = {};
 X4D_Loot.Settings.SavedVars = {};

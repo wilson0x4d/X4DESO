@@ -1,10 +1,10 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.7);
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.8);
 if (not X4D_Bank) then
 	return;
 end
 
 X4D_Bank.NAME = 'X4D_Bank';
-X4D_Bank.VERSION = 1.7;
+X4D_Bank.VERSION = 1.8;
 
 X4D_Bank.Options = {};
 X4D_Bank.Options.Saved = {};

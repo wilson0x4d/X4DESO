@@ -17,24 +17,32 @@ Open the Archive and copy the **X4D_Loot** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.6
+- Fix bad reference to LibAddonMenu.
+
 v1.5
 - Fix crafting tables not updating bag states.
+
 v1.4
 - Fix items in slot 0 would not display updates.
 - Fix certain bag updates were not being tracked, and would result in 'spam'.
 - Fix typo that was causing an error dialog to appear in rare cases.
+
 v1.3
 - Icons for all loot and monetary displays.
 - Fixed bug where some quest tools did not display correctly.
 - Bag Space Low/Full Notifications now seen less often.
 - Gold amounts display with thousands separators.
+
 v1.2
 - Removed prefixes on some output.
 - Added color for subtext.
+
 v1.1
 - Fixed a bug where, sometimes, loot would not be displayed.
 - Fixed a bug where, sometimes, non-loot would be displayed.
 - Added support for displaying 'quest items'.
+
 v1.0
 - Initial release.
 

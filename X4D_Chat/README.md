@@ -21,6 +21,9 @@ Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.22
+- Fix bad reference to LibAddonMenu.
+
 v1.21
 - Fix bug in "Remove Seconds Component" option.
 

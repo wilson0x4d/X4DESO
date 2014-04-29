@@ -23,6 +23,7 @@ If ESO is already running, execute **/reloadui** command.
 ## Versions
 v1.8
 - Fixed Descriptions
+- Fix bad reference to LibAddonMenu
 
 v1.7
 - Fix error when restacking.
