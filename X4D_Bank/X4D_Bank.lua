@@ -1,10 +1,10 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1.8);
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 19);
 if (not X4D_Bank) then
 	return;
 end
 
 X4D_Bank.NAME = 'X4D_Bank';
-X4D_Bank.VERSION = 1.8;
+X4D_Bank.VERSION = '1.9';
 
 X4D_Bank.Options = {};
 X4D_Bank.Options.Saved = {};
@@ -272,11 +272,12 @@ local function TryGetBagState(bagId)
 	};
 	for slotIndex = 0, (bagState.SlotCount-1) do
 		local itemName = GetItemName(bagId, slotIndex);
-		local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bagId, slotIndex);
+		local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, itemQuality = GetItemInfo(bagId, slotIndex);
 		if (itemName ~= nil and itemName:len() > 0) then
 			local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex);
 			local itemLink, itemColor = GetItemLinkInternal(bagId, slotIndex);
 			local itemType = GetItemType(bagId, slotIndex);
+			local itemLevel = GetItemLevel(bagId, slotIndex);
 			local slot = {
 				Id = slotIndex,
 				IsEmpty = false,
@@ -284,6 +285,8 @@ local function TryGetBagState(bagId)
 				ItemName = itemName, 
 				ItemLink = itemLink, 
 				ItemColor = itemColor,
+				ItemQuality = itemQuality,
+				ItemLevel = itemLevel,
 				ItemType = itemType,
 				StackCount = stackCount,
 				StackMax = stackMax,				
@@ -320,7 +323,7 @@ local function TryFillPartialStacks()
 		if (not bankSlotInfo.IsEmpty) then		
 			for _,inventorySlotInfo in pairs(inventoryState.Slots) do
 				if (not inventorySlotInfo.IsEmpty) then
-					if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName) then
+					if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName and bankSlotInfo.ItemLevel == inventorySlotInfo.ItemLevel and bankSlotInfo.ItemQuality == inventorySlotInfo.ItemQuality) then
 						local stackRemaining = bankSlotInfo.StackMax - bankSlotInfo.StackCount;
 						if (inventorySlotInfo.StackCount < stackRemaining) then
 							stackRemaining = inventorySlotInfo.StackCount;
@@ -447,8 +450,8 @@ local function TryCombinePartialStacks(bagState, depth)
 				local rval = bagState.PartialSlots[j];
 				if (rval ~= nil) then
 					local lslot = bagState.Slots[lval.Id];
-					local rslot = bagState.Slots[rval.Id];
-					if (lval.Id ~= rval.Id and lval.ItemName == rval.ItemName and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and (not lslot.IsEmpty) and (not rslot.IsEmpty)) then
+					local rslot = bagState.Slots[rval.Id];					
+					if ((lval.Id ~= rval.Id) and (lval.ItemLevel == rval.ItemLevel) and (lval.ItemQuality == rval.ItemQuality) and (lval.ItemName == rval.ItemName) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and (not lslot.IsEmpty) and (not rslot.IsEmpty)) then
 						table.insert(combines, { [1] = lval, [2] = rval });
 						combineCount = combineCount + 1;
 						break;

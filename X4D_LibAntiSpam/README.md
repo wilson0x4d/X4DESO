@@ -25,6 +25,16 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.53
+- Optimized Scrubs, and fixed a bug with item stripping.
+- Optimized CharMap Lookup.
+
+v1.52 
+- Flood Time increment changed from 30 seconds to 5 seconds so users can choose a lower setting.
+- Modified Scrub.
+- Modified CharMap.
+- Modified Patterns.
+
 v1.51
 - Modified Scrub.
 

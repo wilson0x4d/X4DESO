@@ -22,7 +22,8 @@ In your code:
 ```
 local X4D = LibStub('X4D');
 if (X4D) then
-	X4D.Debug('Hello, World!');
+	X4D.Verbose('Hello, World!');
+	X4D.Error({ ['HELLO'] = 'WORLD' });
 end
 ```
 
@@ -39,15 +40,15 @@ Including X4D_Core along with your add-on is **NOT** recommended, but it is poss
 ## OptionalDependsOn: LibAddonMenu-1.0, X4D_Core
 lib/LibStub/LibStub.lua
 lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
-lib/X4D_Core/X4D_Debug.lua
-lib/X4D_Core/X4D_Conversions.lua
 lib/X4D_Core/X4D_Colors.lua
+lib/X4D_Core/X4D_Debug.lua
+lib/X4D_Core/X4D_Convert.lua
 lib/X4D_Core/X4D_SavedVars.lua
 lib/X4D_Core/X4D_Async.lua
 lib/X4D_Core/X4D_Items.lua
 lib/X4D_Core/X4D_Guilds.lua
 lib/X4D_Core/X4D_Players.lua
-lib/X4D_Core/X4D_LibAddonMenu.lua
+lib/X4D_Core/X4D_Options.lua
 lib/X4D_Core/X4D_Conversions.lua
 lib/X4D_Core/X4D_Core.lua
 ```

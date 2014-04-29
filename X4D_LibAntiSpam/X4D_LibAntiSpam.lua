@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 151);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 153);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.51';
+X4D_LibAntiSpam.VERSION = '1.53';
 
 X4D_LibAntiSpam.Options = {};
 X4D_LibAntiSpam.Options.Saved = {};
@@ -77,6 +77,7 @@ X4D_LibAntiSpam.InternalPatterns = {
 	[22] = 'e.?g.?p.?a.?[li].?.c[op]*[mn]+',
 	[23] = '[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+',
 	[24] = 'w.?t.?s.?m.?m.?o.?c.?o.?[mn]+',
+	[25] = 'v.?g.?[op].?l.?d.?s.?c.?[op].?[mn]+',
 };
 
 X4D_LibAntiSpam.CharMap = {};
@@ -93,7 +94,7 @@ local L_charMap = {
 	['ô'] = 'o', ['õ'] = 'o', ['ö'] = 'o', ['÷'] = 't', ['ø'] = 'o', ['ù'] = 'u', ['ú'] = 'u', 
 	['û'] = 'u', ['ü'] = 'u', ['ý'] = 'y', ['þ'] = 'b', ['ÿ'] = 'y', ['®'] = 'r', ['@'] = 'o',
 	['1'] = 'l', ['3'] = 'e', ['4'] = 'a', ['7'] = 'T', ['0'] = 'O', ['('] = 'c', ['2'] = 'R',
-	[')'] = 'o', ['·'] = '.', ['°'] = '.', ['¸'] = '.', ['¯'] = '-', [','] = '.', ['*'] = '.',
+	[')'] = 'o', ['·'] = '', ['°'] = '', ['¸'] = '', ['¯'] = '-', [','] = '', ['*'] = '',
 	['$'] = 'S', ['/'] = 'm', ['¿'] = '?', ['5'] = 'S', ['9'] = 'g', ['\\'] = 'v', ['ß'] = 'b',
 	['{'] = 'c', ['}'] = 'o', ['<'] = 'c', ['>'] = 'o', 
 };
@@ -353,8 +354,8 @@ function X4D_LibAntiSpam.OnChatMessageReceived(messageType, fromName, text)
 end
 
 local function FromCharMap(inp)
-	local res = nil;
-	if (inp) then
+	local res = X4D_LibAntiSpam.CharMap[inp];
+	if (inp and (not res)) then
 		local b1, b2 = inp:byte(1, 2);
 		if (b2) then
 			res = X4D_LibAntiSpam.CharMap[string.format('%x%x', b1, b2)];
@@ -362,17 +363,20 @@ local function FromCharMap(inp)
 			res = X4D_LibAntiSpam.CharMap[string.format('%x', b1)];
 		end
 	end
-	if (not res) then
-		res = X4D_LibAntiSpam.CharMap[inp];
-	end		
 	return res or inp; 
 end
 		
-local function PreScrub(input, level)
-	if (level == nil) then
-		level = 3;
+local function PreScrub(input, depth)
+	if (depth == nil) then
+		depth = 3;
 	end
-	local output = input:upper();
+
+	local output = input:gsub('%|c%x%x%x%x%x%x', '');
+	output = output:gsub('%|r', '');
+	output = output:gsub('%|t[^%|]*%|t', '');
+	output = output:gsub('%|u[^%|]*%|u', '');
+	output = output:gsub('%|H[^%|]*%|h%[?([^%]%|]*)%]?%|h', '%[%1%]');
+	output = output:upper();
 	output = output:gsub('\\/\\/', 'W');
 	output = output:gsub('\\/V', 'W');
 	output = output:gsub('V\\/', 'W');
@@ -384,29 +388,19 @@ local function PreScrub(input, level)
 	output = output:gsub('\\/V', 'W');
 	output = output:gsub('\\/', 'V');
 	output = output:gsub('[%|/l]V[%|\\l]', 'M');
-	output = output:gsub('VV', 'w');
-	output = output:gsub('VWVW', 'www');
-	output = output:gsub('WVWV', 'www');
-	output = output:gsub('[%(%{%%[][%)%}%]]', 'o');
+	output = output:gsub('VV', 'W');
+	output = output:gsub('VWVW', 'WWW');
+	output = output:gsub('WVWV', 'WWW');
+	output = output:gsub('%.', '');
+	output = output:gsub('[%(%{%%[][%)%}%]]', 'O');
 	output = output:gsub('[%<%(%{%%[%)%}%]]+%s+([^%<%(%{%%[%)%}%]%>%s])%s+[%(%{%%[%)%}%]%>]+', '%1');
 	output = output:gsub('[%<%(%{%%[%)%}%]]+([^%<%(%{%%[%)%}%]%>])[%(%{%%[%)%}%]%>]+', '%1');
 
-	if (level > 0) then		
-		return PreScrub(output, level - 1);
+	if (depth > 0 and input ~= output) then		
+		return PreScrub(output, depth - 1);
 	else
 		return output;
 	end
-end
-
-local function Strip(input)
-	local output = input:gsub('%|', '!');
-	output = output:gsub('!c%x%x%x%x%x%x', '');
-	output = output:gsub('!r', '');
-	output = output:gsub('!t[^!]*!t', '');
-	output = output:gsub('!u[^!]*!u', '');
-	output = output:gsub('!H[^!]*!h%[?([^%]!]*)%]?!h', '%[%1%]');
-	output = output:gsub('[%[%]]*', '');
-	return output;
 end
 
 local function ToASCII(input)
@@ -422,13 +416,6 @@ local function ToASCII(input)
 			if (chA ~= nil) then
 				local chB = output:utf8sub(iB, iB);
 				if (chB ~= nil) then
-					--local b1, b2 = chB:byte(1, 2);
-					--local b3 = chA:byte(1)
-					--if (b2) then
-					--	d(chA .. chB .. ' ' .. string.format('%x %x%x', b3, b1, b2));
-					--else
-					--	d(chA .. chB .. ' ' .. string.format('%x %x', b3, b1));
-					--end
 					if (chA == chB) then
 						stripped = stripped .. FromCharMap(chA);
 						iA = iA + 1;
@@ -453,13 +440,14 @@ local function PostScrub(input, level)
 	if (level == nil) then
 		level = 3;
 	end
-	local output = input:gsub('[%{%}%|%-~%s\1-\44\58-\63\91-\96\123-\255]', '');
+	local output = input:gsub('[%|%-~%s\1-\44\58-\63\91-\96\123-\255]', '');
 	output = output:gsub('c+', 'c');
 	output = output:gsub('o+', 'o');
 	output = output:gsub('n+', 'n');
 	output = output:gsub('coco', 'co');
 	output = output:gsub('[%|/l]v[%|\\l]', 'm');
-	if (level > 0) then
+
+	if (level > 0 and input ~= output) then
 		return PostScrub(output, level - 1);
 	else
 		return output;
@@ -467,17 +455,16 @@ local function PostScrub(input, level)
 end
 
 local function Condense(input)
-	local output = input:gsub('%.+', '.');
-	while (output ~= input) do
-		input = output;
-		output = input:gsub('%.+', '.');
-	end
-	return output;
+	--local output = input:gsub('%.+', '.');
+	--while (output ~= input) do
+	--	input = output;
+	--	output = input:gsub('%.+', '.');
+	--end
+	return input:gsub('%.+', '');
 end
 
 local function Normalize(input)
 	local output = PreScrub(input);
-	output = Strip(output);
 	output = ToASCII(output);
 	return Condense(PostScrub(output)), Condense(PostScrub(StringPivot(output)));
 end
@@ -600,7 +587,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 	LAM:AddSlider(cplId,
 		'X4D_LIBANTISPAM_SLIDER_FLOODTIME', 'Max Flood Time',
 		'This determines mininum amount of time, in seconds, before repeated text is not considered Flooding. Flooding is when a user types the same thing into chat over and over.',
-		0, 900, 30,
+		0, 900, 5,
 		function () return GetOption('FloodTime') end,
 		function (v) SetOption('FloodTime', tonumber(tostring(v))) end);
 

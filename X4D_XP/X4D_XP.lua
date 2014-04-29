@@ -1,10 +1,10 @@
-local X4D_XP = LibStub:NewLibrary('X4D_XP', 1.2);
+local X4D_XP = LibStub:NewLibrary('X4D_XP', 13);
 if (not X4D_XP) then
 	return;
 end
 
 X4D_XP.NAME = 'X4D_XP';
-X4D_XP.VERSION = 1.2;
+X4D_XP.VERSION = '1.3';
 
 X4D_XP.Settings = {};
 X4D_XP.Settings.SavedVars = {};
@@ -51,31 +51,20 @@ local function GetExpReason(reasonIndex)
 end
 
 local _vpReasons = { };
-_vpReasons[0] = 'Kill';
-_vpReasons[1] = 'Quest';
-_vpReasons[2] = 'POI';
-_vpReasons[3] = 'Discovery';
-_vpReasons[4] = 'Command';
-_vpReasons[5] = 'Keep';
-_vpReasons[6] = 'Battleground'
-_vpReasons[7] = 'Event';
-_vpReasons[8] = 'Medal';
-_vpReasons[9] = 'Finesse';
-_vpReasons[10] = 'Lockpicking';
-_vpReasons[11] = 'Book';
-_vpReasons[12] = 'Skill';
-_vpReasons[13] = 'Action';
-_vpReasons[14] = 'Guild';
-_vpReasons[15] = 'PvP';
-_vpReasons[16] = 'Tradeskill';
-_vpReasons[17] = 'Reward';
-_vpReasons[18] = 'Acheivement';
-_vpReasons[19] = 'Quest';
-_vpReasons[20] = 'Consumption';
-_vpReasons[21] = 'Harvest';
-_vpReasons[22] = 'Recipe'
-_vpReasons[23] = 'Trait';
-_vpReasons[24] = 'Boss';
+_vpReasons[VP_REASON_ALLIANCE_POINTS] = 'AP';
+_vpReasons[VP_REASON_MONSTER_KILL] = 'Kill';
+_vpReasons[VP_REASON_COMMAND] = 'Command';
+_vpReasons[VP_REASON_DUNGEON_CHALLENGE_A] = 'Challenge';
+_vpReasons[VP_REASON_DUNGEON_CHALLENGE_B] = 'Challenge';
+_vpReasons[VP_REASON_DUNGEON_CHALLENGE_C] = 'Challenge';
+_vpReasons[VP_REASON_DUNGEON_CHALLENGE_D] = 'Challenge';
+_vpReasons[VP_REASON_DUNGEON_CHALLENGE_E] = 'Challenge';
+_vpReasons[VP_REASON_OVERLAND_BOSS_KILL] = 'Boss';
+_vpReasons[VP_REASON_PVE_COMPLETE_POI] = 'POI';
+_vpReasons[VP_REASON_PVP_EMPEROR] = 'Emperor';
+_vpReasons[VP_REASON_QUEST_HIGH] = 'Quest';
+_vpReasons[VP_REASON_QUEST_LOW] = 'Quest';
+_vpReasons[VP_REASON_QUEST_MED] = 'Quest';
 
 local function GetVPReason(reasonIndex)
 	return _vpReasons[reasonIndex];
@@ -115,8 +104,10 @@ local function InvokeCallbackSafe(color, text)
 	end
 end
 
-local function OnQuestCompleteExperience(eventCode, questName, xpGained)
-	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' XP for ' .. X4D_XP.Colors.X4D .. questName);
+local _pointType = 'XP';
+
+local function OnQuestCompleteExperience(eventCode, questName, xpGained)	
+	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D_XP.Colors.X4D .. questName);
 end
 
 local function OnExperienceGain(eventCode, xpGained, reasonIndex)
@@ -127,15 +118,15 @@ local function OnExperienceGain(eventCode, xpGained, reasonIndex)
 end
 
 local function OnDiscoveryExperienceGain(eventCode, areaName, xpGained)
-	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' XP for Discovery ' .. X4D_XP.Colors.X4D .. areaName);
+	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for Discovery ' .. X4D_XP.Colors.X4D .. areaName);
 end
 
 local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, xpGained)
 	local objectiveName, objectiveLevel, startDescription, finishedDescription = GetPOIInfo(zoneIndex, poiIndex);
 	if (objectiveName ~= nil and objectiveName:len() > 0) then
-		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' XP for ' .. X4D_XP.Colors.X4D .. objectiveName);
+		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D_XP.Colors.X4D .. objectiveName);
 	else
-		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' XP for POI ');
+		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for POI ');
 	end
 end
 
@@ -166,6 +157,8 @@ local function OnVeteranPointsUpdate(eventCode, unitTag, currentVP, maxVP, reaso
 		local reason = GetVPReason(reasonIndex);
 		if (reason ~= nil) then
 			InvokeCallbackSafe(X4D_XP.Colors.VP, vpGained .. ' VP for ' .. reason);
+		else
+			InvokeCallbackSafe(X4D_XP.Colors.VP, vpGained .. ' VP');
 		end
 	end
 	_currentVP = currentVP;
@@ -195,6 +188,9 @@ function X4D_XP.OnPlayerActivated()
 	_currentExp = GetUnitXP('player');
 	if (IsUnitVeteran('player')) then
 		_currentVP = GetUnitVeteranPoints('player');
+		_pointType = 'VP';
+	else
+		_pointType = 'XP';
 	end
 end
 

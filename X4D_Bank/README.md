@@ -21,6 +21,9 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.9
+- Fix to prevent attempting to stack items of different levels/qualities.
+
 v1.8
 - Fixed Descriptions
 - Fix bad reference to LibAddonMenu
