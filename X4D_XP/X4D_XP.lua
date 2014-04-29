@@ -1,10 +1,10 @@
-local X4D_XP = LibStub:NewLibrary('X4D_XP', 1.1);
+local X4D_XP = LibStub:NewLibrary('X4D_XP', 1.2);
 if (not X4D_XP) then
 	return;
 end
 
 X4D_XP.NAME = 'X4D_XP';
-X4D_XP.VERSION = 1.1;
+X4D_XP.VERSION = 1.2;
 
 X4D_XP.Settings = {};
 X4D_XP.Settings.SavedVars = {};
@@ -14,6 +14,7 @@ X4D_XP.Settings.Defaults = {
 
 X4D_XP.Colors = {
 	XP = '|cAA33FF',
+	VP = '|cAA33FF',
 	Gray = '|cC5C5C5',
 	X4D = '|cFFAE19',
 };
@@ -47,6 +48,37 @@ _expReasons[24] = 'Boss';
 
 local function GetExpReason(reasonIndex)
 	return _expReasons[reasonIndex];
+end
+
+local _vpReasons = { };
+_vpReasons[0] = 'Kill';
+_vpReasons[1] = 'Quest';
+_vpReasons[2] = 'POI';
+_vpReasons[3] = 'Discovery';
+_vpReasons[4] = 'Command';
+_vpReasons[5] = 'Keep';
+_vpReasons[6] = 'Battleground'
+_vpReasons[7] = 'Event';
+_vpReasons[8] = 'Medal';
+_vpReasons[9] = 'Finesse';
+_vpReasons[10] = 'Lockpicking';
+_vpReasons[11] = 'Book';
+_vpReasons[12] = 'Skill';
+_vpReasons[13] = 'Action';
+_vpReasons[14] = 'Guild';
+_vpReasons[15] = 'PvP';
+_vpReasons[16] = 'Tradeskill';
+_vpReasons[17] = 'Reward';
+_vpReasons[18] = 'Acheivement';
+_vpReasons[19] = 'Quest';
+_vpReasons[20] = 'Consumption';
+_vpReasons[21] = 'Harvest';
+_vpReasons[22] = 'Recipe'
+_vpReasons[23] = 'Trait';
+_vpReasons[24] = 'Boss';
+
+local function GetVPReason(reasonIndex)
+	return _vpReasons[reasonIndex];
 end
 
 local function DefaultCallback(color, text)
@@ -123,6 +155,22 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
 	_currentExp = currentExp;
 end
 
+local _currentVP = 0;
+
+local function OnVeteranPointsUpdate(eventCode, unitTag, currentVP, maxVP, reasonIndex)
+	if (unitTag ~= 'player') then
+		return;
+	end
+	local vpGained = currentVP - _currentVP;
+	if (vpGained > 0) then
+		local reason = GetVPReason(reasonIndex);
+		if (reason ~= nil) then
+			InvokeCallbackSafe(X4D_XP.Colors.VP, vpGained .. ' VP for ' .. reason);
+		end
+	end
+	_currentVP = currentVP;
+end
+
 function X4D_XP.OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_XP.NAME) then
 		return;
@@ -137,6 +185,7 @@ function X4D_XP.Register()
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_GAIN_DISCOVERY, OnDiscoveryExperienceGain);
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_OBJECTIVE_COMPLETED, OnObjectiveCompleted);
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_UPDATE, OnExperienceUpdate);
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_VETERAN_POINTS_UPDATE, OnVeteranPointsUpdate);
 end
 
 function X4D_XP.Unregister()
@@ -144,6 +193,9 @@ end
 
 function X4D_XP.OnPlayerActivated()
 	_currentExp = GetUnitXP('player');
+	if (IsUnitVeteran('player')) then
+		_currentVP = GetUnitVeteranPoints('player');
+	end
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, X4D_XP.OnAddOnLoaded);

@@ -15,10 +15,14 @@ Open the Archive and copy the **X4D_XP** folder into **%USERPROFILE%\Documents\E
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.2
+- Added support for Veteran Points (untesteed as I lack access to a veteran rank character).
+
 v1.1
 - Quest, Objective and Discovery XP now identifies the source (e.g. Quest names, POI names, etc)
 - XP output format changed for readability.
 - Colors adjusted for readability.
+
 v1.0
 - Initial release.
 

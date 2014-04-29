@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 7
+local MAJOR, MINOR = "LibAddonMenu-1.0", 6
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -25,13 +25,10 @@ function lam:CreateControlPanel(controlPanelID, controlPanelName)
 
 	--disables Defaults button because we don't need it, but keybind still works :/ ...
 	panelID = _G[controlPanelID]
-	ZO_PreHook("ZO_OptionsWindow_ChangePanels", 
-		function(panel)
-			-- FIX: only set button to enabled when currentPanel == panelID -- in any other case assume other code is responsible for button state
-			if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == panelID) then
-				ZO_OptionsWindowResetToDefaultButton:SetEnabled(true);
-				ZO_OptionsWindowResetToDefaultButton:SetKeybindEnabled(true);
-			end
+	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
+			local enable = (panel ~=  panelID)
+			ZO_OptionsWindowResetToDefaultButton:SetEnabled(enable)
+			ZO_OptionsWindowResetToDefaultButton:SetKeybindEnabled(enable)
 		end)
 	
 	return panelID
@@ -51,7 +48,7 @@ function lam:AddHeader(panelID, controlName, text)
 	ZO_OptionsWindow_InitializeControl(header)
 	
 	lastAddedControl[panelID] = header
-		
+	
 	return header
 end
 
@@ -100,16 +97,6 @@ function lam:AddSlider(panelID, controlName, text, tooltip, minValue, maxValue, 
 	
 	lastAddedControl[panelID] = slider
 	
-	slider.setFunc = setFunc;
-	slider.range = range;
-	slider.SetSliderValue = function(self, value)
-		local L_slidercontrol = self:GetNamedChild("Slider");
-		local L_slidervalue = self:GetNamedChild("ValueLabel");
-		L_slidercontrol:SetValue((value - self.showValueMin)/self.range);
-		L_slidervalue:SetText(tostring(value));
-		self.setFunc(value);
-	end
-	
 	return slider
 end
 
@@ -146,13 +133,6 @@ function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getF
 	
 	lastAddedControl[panelID] = dropdown
 
-	dropdown.setFunc = setFunc;
-	dropdown.SetDropdownValue = function(self, value)
-		local L_dropmenu = GetControl(self, "Dropdown");
-		L_dropmenu:SetSelectedItem(value);
-		self.setFunc(value);
-	end
-	
 	return dropdown
 end
 
@@ -183,14 +163,6 @@ function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, 
 	ZO_OptionsWindow_InitializeControl(checkbox)
 	
 	lastAddedControl[panelID] = checkbox
-	
-	checkbox.setFunc = setFunc;
-	checkbox.SetCheckboxValue = function(self, value)
-		local L_checkboxButton = self:GetNamedChild("Checkbox");
-		L_checkboxButton:SetState(value and 1 or 0);
-		L_checkboxButton:toggleFunction(value);
-		self.setFunc(value);
-	end
 	
 	return checkbox
 end
@@ -262,12 +234,6 @@ function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFun
 	
 	lastAddedControl[panelID] = colorpicker
 	
-	colorpicker.setFunc = setFunc;
-	colorpicker.SetColorPickerValue = function(self, r, g, b, a)
-		self.color.thumb:SetColor(r, g, b, a or 1);
-		self.setFunc(r, g, b, a or 1);
-	end
-	
 	return colorpicker
 end
 
@@ -311,18 +277,6 @@ function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFun
 	
 	lastAddedControl[panelID] = editbox
 	
-	editbox.setFunc = setFunc;
-	editbox.SetEditBoxValue = function(self, value)
-		self.edit:SetText(value);		
-		self.setFunc(value);
-	end
-
-	editbox.SetMaxInputChars = function(self, value)
-		if (value and value > 0) then
-			self.edit:SetMaxInputChars(value);
-		end
-	end
-
 	return editbox
 end
 
@@ -356,7 +310,7 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 	ZO_OptionsWindow_InitializeControl(button)
 
 	lastAddedControl[panelID] = button
-		
+	
 	return button
 end
 
