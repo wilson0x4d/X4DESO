@@ -1,6 +1,6 @@
-local X4D_SavedVars = LibStub:NewLibrary('X4D_SavedVars', 1.0);
+local X4D_SavedVars = LibStub:NewLibrary('X4D_SavedVars', 1.0)
 if (not X4D_SavedVars) then
-	return;
+	return
 end
 
 --[[

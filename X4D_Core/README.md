@@ -20,10 +20,10 @@ All X4D Add-Ons rely on this Framework.
 
 In your code:
 ```
-local X4D = LibStub('X4D');
+local X4D = LibStub('X4D')
 if (X4D) then
-	X4D.Verbose('Hello, World!');
-	X4D.Error({ ['HELLO'] = 'WORLD' });
+	X4D.Verbose('Hello, World!')
+	X4D.Error({ ['HELLO'] = 'WORLD' })
 end
 ```
 

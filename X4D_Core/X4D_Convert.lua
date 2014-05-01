@@ -1,9 +1,9 @@
-local X4D_Convert = LibStub:NewLibrary('X4D_Convert', 1.0);
+local X4D_Convert = LibStub:NewLibrary('X4D_Convert', 1.0)
 if (not X4D_Convert) then
-	return;
+	return
 end
-X4D_Convert.NAME = 'X4D_Convert';
-X4D_Convert.VERSION = 1.0;
+X4D_Convert.NAME = 'X4D_Convert'
+X4D_Convert.VERSION = 1.0
 
 local _chatChannelCategories = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,
@@ -41,18 +41,18 @@ local _chatChannelCategories = {
 	[CHAT_CHANNEL_ZONE_LANGUAGE_1] = CHAT_CATEGORY_ZONE_ENGLISH,
 	[CHAT_CHANNEL_ZONE_LANGUAGE_2] = CHAT_CATEGORY_ZONE_FRENCH,
 	[CHAT_CHANNEL_ZONE_LANGUAGE_3] = CHAT_CATEGORY_ZONE_GERMAN,
-};
+}
 
-local _chatCategoryChannels = {};
+local _chatCategoryChannels = {}
 
 for ch,ca in pairs(_chatChannelCategories) do
-	_chatCategoryChannels[ca] = ch;
+	_chatCategoryChannels[ca] = ch
 end
 
 function X4D_Convert.ChannelToCategory(self, channel)
-	return _chatChannelCategories[channel] or CHAT_CATEGORY_SYSTEM;
+	return _chatChannelCategories[channel] or CHAT_CATEGORY_SYSTEM
 end
 
 function X4D_Convert.CategoryToChannel(self, category)
-	return _chatCategoryChannels[category] or CHAT_CHANNEL_SYSTEM;
+	return _chatCategoryChannels[category] or CHAT_CHANNEL_SYSTEM
 end
