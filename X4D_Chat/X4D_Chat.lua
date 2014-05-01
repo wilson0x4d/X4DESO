@@ -20,7 +20,7 @@ X4D_Chat.Settings.Defaults = {
 		[3] = '',
 		[4] = '',
 		[5] = '',
-	}
+	},
 	UseGuildNum = false,
 	TimestampOption = '24 Hour Format',
 	RemoveSeconds = false,
@@ -431,7 +431,7 @@ local function SetEditBoxValue(controlName, value, maxInputChars)
 	_G[controlName]['edit']:SetText(value)
 end
 
-function X4D_Chat.OnAddOnLoaded(event, addonName)
+local function OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Chat.NAME) then
 		return
 	end	
@@ -804,9 +804,9 @@ function X4D_Chat.Unregister()
 	ZO_ChatSystem_AddEventHandler(EVENT_CHAT_MESSAGE_CHANNEL, nil)
 end
 
-function X4D_Chat.OnPlayerActivated()
+local function OnPlayerActivated()
 	zo_callLater(X4D_Chat.Register, 3000)
 end
 
-EVENT_MANAGER:RegisterForEvent(X4D_Chat.NAME, EVENT_ADD_ON_LOADED, X4D_Chat.OnAddOnLoaded)
-EVENT_MANAGER:RegisterForEvent(X4D_Chat.NAME, EVENT_PLAYER_ACTIVATED, X4D_Chat.OnPlayerActivated)
+EVENT_MANAGER:RegisterForEvent(X4D_Chat.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
+EVENT_MANAGER:RegisterForEvent(X4D_Chat.NAME, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
