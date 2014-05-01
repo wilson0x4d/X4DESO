@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 153);
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 154);
 if (not X4D_LibAntiSpam) then
 	return;
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam';
-X4D_LibAntiSpam.VERSION = '1.53';
+X4D_LibAntiSpam.VERSION = '1.54';
 
 X4D_LibAntiSpam.Options = {};
 X4D_LibAntiSpam.Options.Saved = {};
@@ -52,32 +52,35 @@ X4D_LibAntiSpam.Colors = {
 };
 
 X4D_LibAntiSpam.InternalPatterns = {
-	[0] = 'h.?a.?n.?%a.?w.?o.?r.?k',
-	[1] = 'i.?i.?i.?i.?i.?c.?o.?[mn]+',
-	[2] = '%w?%w?%w?%w?%w?.?g.?[op].?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[op].?[mn]+',
-	[3] = 'p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[op][mn]+',
-	[4] = 'p.?[vm]+.?p.?b.?a.?n.?k.*c.?[op].?[mn]+',
-	[5] = 'o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[op].?[mn]+',
-	[6] = 'e.?[zm].?o.?o.?[mn].?c.?[op].?[mn]+',
-	[7] = 'g.?g.?a.?t.?[mn].?c.?[op].?[mn]+',
-	[8] = '[mn].?[mn].?[op].?[wvm]+.?i.?n.?c.?[op].?[mn]+',
-	[9] = 'g.?a.?e.?z.?c.?[op]?.?[mn]+',
-	[10] = 'g.?a.?[mn].?e.?c.?b.?o.?c.?[op].?[mn]+',	
-	[11] = 'w.?o.?w.?g.?[li].?c.?[op].?[mn]+',	
-	[12] = 'g.?a.?[mn].?e.?[li].?[mn].?c.?[op].?[mn]+',
-	[13] = 'u.?t.?[mn].?[mn].?o.?c.?[op].?[mn]+',
-	[14] = 'g.?g.?a.?t.?[mn].?c.?[op].?[mn]+',
-	[15] = 'g.?o.?l.?d[^e]?a[^c]?h',
-	[16] = 's[ea][fl]eandfast',
-	[17] = 'cheap.*g[op][li]d.*usd',	
-	[18] = 'cheap.*fast.*sa[fl]e',
-	[19] = '[li].?.?f.?.?d.?.?p.?.?s.?.?c.?.?[op].?.?[mn]+',
-	[20] = 'g.?[op].?[li].?d.?c.?e.?[op].?.?.?c.?[op].?[mn]+',
-	[21] = '[mn].?[mn].?[op].?[mn].?a.?r.?t.?c.?[op].?[mn]+',
-	[22] = 'e.?g.?p.?a.?[li].?.c[op]*[mn]+',
-	[23] = '[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+',
-	[24] = 'w.?t.?s.?m.?m.?o.?c.?o.?[mn]+',
-	[25] = 'v.?g.?[op].?l.?d.?s.?c.?[op].?[mn]+',
+	'h.?a.?n.?%a.?w.?o.?r.?k',
+	'i.?i.?i.?i.?i.?c.?o.?[mn]+',
+	'xcom',
+	'ww.*wo.*wc.*go',
+	'cheap.*g[op][li]d.*usd',
+	's[ea][fl]e.*fast',
+	'fast.*s[ea][fl]e',
+	'%w?%w?%w?%w?%w?.?g.?[op].?[li].?d.?%w?%w?%w?%w?%w?%.?c.?[op].?[mn]+',
+	'p[vm]+p.?.?.?.?ba[vmn]+k.?.?.?.?[op][mn]+',
+	'p.?[vm]+.?p.?b.?a.?n.?k.*c.?[op].?[mn]+',
+	'o.?k.?a.?y.?g.?[co].?[co].?d.?s.?c.?[op].?[mn]+',
+	'e.?[zm].?o.?o.?[mn].?c.?[op].?[mn]+',
+	'g.?g.?a.?t.?[mn].?c.?[op].?[mn]+',
+	'[mn].?[mn].?[op].?[wvm]+.?i.?n.?c.?[op].?[mn]+',
+	'g.?a.?e.?z.?c.?[op]?.?[mn]+',
+	'g.?a.?[mn].?e.?c.?b.?o.?c.?[op].?[mn]+',
+	'w.?o.?w.?g.?[li].?c.?[op].?[mn]+',
+	'www.?g.?[li].?w.?o.?w',
+	'g.?a.?[mn].?e.?[li].?[mn].?c.?[op].?[mn]+',
+	'u.?t.?[mn].?[mn].?o.?c.?[op].?[mn]+',
+	'g.?g.?a.?t.?[mn].?c.?[op].?[mn]+',
+	'g.?o.?l.?d[^e]?a[^c]?h',
+	'[li].?.?f.?.?d.?.?p.?.?s.?.?c.?.?[op].?.?[mn]+',
+	'g.?[op].?[li].?d.?c.?e.?[op].?.?.?c.?[op].?[mn]+',
+	'[mn].?[mn].?[op].?[mn].?a.?r.?t.?c.?[op].?[mn]+',
+	'e.?g.?p.?a.?[li].?.c[op]*[mn]+',
+	'[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+',
+	'w.?t.?s.?m.?m.?o.?c.?[op].?[mn]+',
+	'v.?g.?[op].?l.?d.?s.?c.?[op].?[mn]+',
 };
 
 X4D_LibAntiSpam.CharMap = {};
@@ -97,11 +100,14 @@ local L_charMap = {
 	[')'] = 'o', ['·'] = '', ['°'] = '', ['¸'] = '', ['¯'] = '-', [','] = '', ['*'] = '',
 	['$'] = 'S', ['/'] = 'm', ['¿'] = '?', ['5'] = 'S', ['9'] = 'g', ['\\'] = 'v', ['ß'] = 'b',
 	['{'] = 'c', ['}'] = 'o', ['<'] = 'c', ['>'] = 'o', 
+	['c2a4'] = 'o', --['e28094'] = '', ['efbc81'] = '', ['e38081'] = '',
 };
 
 for inp,v in pairs(L_charMap) do
-	local b1, b2, res = inp:byte(1, 2);
-	if (b2) then
+	local b1, b2, b3, res = inp:byte(1, 3);
+	if (b3) then
+		X4D_LibAntiSpam.CharMap[string.format('%x%x%x', b1, b2, b3)] = v;
+	elseif (b2) then
 		X4D_LibAntiSpam.CharMap[string.format('%x%x', b1, b2)] = v;
 	elseif (b1) then
 		X4D_LibAntiSpam.CharMap[string.format('%x', b1)] = v;
@@ -356,14 +362,18 @@ end
 local function FromCharMap(inp)
 	local res = X4D_LibAntiSpam.CharMap[inp];
 	if (inp and (not res)) then
-		local b1, b2 = inp:byte(1, 2);
-		if (b2) then
+		local b1, b2, b3 = inp:byte(1, 3);
+		if (b3) then
+			res = X4D_LibAntiSpam.CharMap[string.format('%x%x%x', b1, b2, b3)];
+		elseif (b2) then
 			res = X4D_LibAntiSpam.CharMap[string.format('%x%x', b1, b2)];
 		elseif (b1) then
 			res = X4D_LibAntiSpam.CharMap[string.format('%x', b1)];
 		end
+		return res or inp, b1, b2, b3;
+	else
+		return res or inp;
 	end
-	return res or inp; 
 end
 		
 local function PreScrub(input, depth)
@@ -403,8 +413,9 @@ local function PreScrub(input, depth)
 	end
 end
 
-local function ToASCII(input)
+local function ToASCII(input, fromName)
 	local output = input;
+	local ustrips = '';
 	if (output ~= nil) then
 		output = output:utf8replace(utf8_scrub1);
 		output = output:utf8replace(utf8_scrub2);
@@ -421,6 +432,20 @@ local function ToASCII(input)
 						iA = iA + 1;
 						iB = iB + 1;
 					else
+						local chC, x1, x2, x3 = FromCharMap(chB);
+						if (chB ~= chC) then
+							stripped = stripped .. FromCharMap(chC);
+						else
+							if (GetOption('ShowNormalizations')) then
+								if (x3) then
+									ustrips = ustrips .. string.format(' %s+%x+%x+%x', chB, x1, x2, x3);
+								elseif (x2) then
+									ustrips = ustrips .. string.format(' %s+%x+%x', chB, x1, x2);
+								else
+									ustrips = ustrips .. string.format(' %s+%x', chB, x1);
+								end
+							end
+						end
 						iA = iA + chB:utf8charbytes()
 						iB = iB + 1;						
 					end
@@ -432,6 +457,9 @@ local function ToASCII(input)
 			end
 		end
 		output = stripped:lower();
+	end
+	if (GetOption('ShowNormalizations') and ustrips:len() > 0) then
+		InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. ustrips .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')');
 	end
 	return output;
 end
@@ -463,14 +491,14 @@ local function Condense(input)
 	return input:gsub('%.+', '');
 end
 
-local function Normalize(input)
+local function Normalize(input, fromName)
 	local output = PreScrub(input);
-	output = ToASCII(output);
+	output = ToASCII(output, fromName);
 	return Condense(PostScrub(output)), Condense(PostScrub(StringPivot(output)));
 end
 
 function X4D_LibAntiSpam.Check(self, text, fromName)
-	local normalized, pivot = Normalize(text);
+	local normalized, pivot = Normalize(text, fromName);
 	local player = GetPlayer(fromName);
 	if (not player) then
 		player = AddPlayer(fromName);
@@ -640,6 +668,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 
 						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', X4D_LibAntiSpam.Options.Default.ShowNormalizations);						
 						SetOption('ShowNormalizations', X4D_LibAntiSpam.Options.Default.ShowNormalizations);
+
 					end
 				end);
 			end

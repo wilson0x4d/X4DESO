@@ -25,6 +25,11 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.54
+- Adding more [DEV] output to assist with pattern creation.
+- Modified CharMap
+- New Patterns.
+
 v1.53
 - Optimized Scrubs, and fixed a bug with item stripping.
 - Optimized CharMap Lookup.
