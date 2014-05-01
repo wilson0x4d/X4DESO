@@ -16,14 +16,21 @@ All X4D Add-Ons rely on this Framework.
 * LibAddonMenu Extensions
 * Misc. Conversion Functions
 
+## Installation
+
+Open the Archive and copy the **X4D_Core** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
+
+
+If ESO is already running, execute **/reloadui** command.
+
 ## Integration
 
 In your code:
 ```
 local X4D = LibStub('X4D')
 if (X4D) then
-	X4D.Verbose('Hello, World!')
-	X4D.Error({ ['HELLO'] = 'WORLD' })
+	X4D.Debug.Verbose('Hello, World!')
+	X4D.Debug.Error({ ['HELLO'] = 'WORLD' })
 end
 ```
 
@@ -54,13 +61,6 @@ lib/X4D_Core/X4D_Core.lua
 ```
 
 *NOTE: LibAddonMenu-1.0 is Optional, X4D_Core does not require it, but will extend it if present.*
-
-## Installation
-
-Open the Archive and copy the **X4D_Core** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
-
-
-If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 v1.0
