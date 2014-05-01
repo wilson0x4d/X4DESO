@@ -1,4 +1,4 @@
-local X4D_Debug = LibStub:NewLibrary('X4D_Debug', 1.0)
+local X4D_Debug = LibStub:NewLibrary('X4D_Debug', 1000)
 if (not X4D_Debug) then
 	return
 end
@@ -44,7 +44,7 @@ local TRACE_FORMATS_NOSOURCE = {
 
 local _minTraceLevel = X4D_Debug.TRACE_LEVELS.WARNING
 
-function X4D_Debug.SetTraceLevel(self, level)
+function X4D_Debug:SetTraceLevel(level)
 	_minTraceLevel = level
 end
 

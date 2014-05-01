@@ -1,4 +1,4 @@
-local X4D_Convert = LibStub:NewLibrary('X4D_Convert', 1.0)
+local X4D_Convert = LibStub:NewLibrary('X4D_Convert', 1000)
 if (not X4D_Convert) then
 	return
 end

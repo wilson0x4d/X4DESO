@@ -1,4 +1,4 @@
-local X4D = LibStub:NewLibrary('X4D', 1.0)
+local X4D = LibStub:NewLibrary('X4D', 1000)
 if (not X4D) then	
 	return
 end
@@ -13,9 +13,6 @@ X4D.Items = LibStub('X4D_Items')
 X4D.Guilds = LibStub('X4D_Guilds')
 X4D.Players = LibStub('X4D_Players')
 X4D.Options = LibStub('X4D_Options')
-if (X4D.Options) then
-	X4D.Options:Extend()
-end
 
 --[[
 

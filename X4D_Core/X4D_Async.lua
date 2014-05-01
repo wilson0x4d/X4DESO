@@ -1,9 +1,9 @@
-local X4D_Async = LibStub:NewLibrary('X4D_Async', 1.0)
+local X4D_Async = LibStub:NewLibrary('X4D_Async', 1000)
 if (not X4D_Async) then
 	return
 end
 
-X4D_Timer = {}
+local X4D_Timer = {}
 
 --- <summary>
 --- <para>Create a new instance of X4D_Timer</para>
@@ -15,10 +15,10 @@ X4D_Timer = {}
 --- </params>
 function X4D_Timer:New(callback, interval, state)
 	local proto = {
-		_enabled = false
-		_callback = callback or (function() self:Stop() end)
-		_interval = interval or 1000
-		_state = state or {}
+		_enabled = false,
+		_callback = callback or (function() self:Stop() end),
+		_interval = interval or 1000,
+		_state = state or {},
 	}
 	setmetatable(proto, self)
 	self.__index = self
