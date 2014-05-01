@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 154)
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1056)
 if (not X4D_LibAntiSpam) then
 	return
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam'
-X4D_LibAntiSpam.VERSION = '1.54'
+X4D_LibAntiSpam.VERSION = '1.56'
 
 X4D_LibAntiSpam.Options = {}
 X4D_LibAntiSpam.Options.Saved = {}
@@ -387,10 +387,12 @@ local function PreScrub(input, depth)
 	output = output:gsub('%|u[^%|]*%|u', '')
 	output = output:gsub('%|H[^%|]*%|h%[?([^%]%|]*)%]?%|h', '%[%1%]')
 	output = output:upper()
+	output = output:gsub('/%-\\', 'A')
 	output = output:gsub('\\/\\/', 'W')
 	output = output:gsub('\\/V', 'W')
 	output = output:gsub('V\\/', 'W')
 	output = output:gsub('/\\/\\', 'M')
+	output = output:gsub('/%^+\\', 'M')	
 	output = output:gsub('/V\\', 'M')	
 	output = output:gsub('/N\\', 'M')	
 	output = output:gsub('/\\/', 'N')
@@ -398,13 +400,17 @@ local function PreScrub(input, depth)
 	output = output:gsub('\\/V', 'W')
 	output = output:gsub('\\/', 'V')
 	output = output:gsub('[%|/l]V[%|\\l]', 'M')
+	output = output:gsub('[%|/l]%-[%|\\l]', 'H')
+	output = output:gsub('[%|/l]_[%|\\l]', 'U')
+	output = output:gsub('[%|\\/l]_[%|\\/l][%|\\/l]?_[%|\\/l]', 'W')
 	output = output:gsub('VV', 'W')
 	output = output:gsub('VWVW', 'WWW')
 	output = output:gsub('WVWV', 'WWW')
 	output = output:gsub('%.', '')
 	output = output:gsub('[%(%{%%[][%)%}%]]', 'O')
-	output = output:gsub('[%<%(%{%%[%)%}%]]+%s+([^%<%(%{%%[%)%}%]%>%s])%s+[%(%{%%[%)%}%]%>]+', '%1')
-	output = output:gsub('[%<%(%{%%[%)%}%]]+([^%<%(%{%%[%)%}%]%>])[%(%{%%[%)%}%]%>]+', '%1')
+	local endcaps = '%<%(%{%%[%)%}%]%>%-%*%^%|%=%+%_\\/%&%%%$%#%@%!';
+	output = output:gsub('[' .. endcaps ..']+([^' .. endcaps ..'])[' .. endcaps ..']+', '%1')
+	output = output:gsub('[' .. endcaps ..']+%s+([^' .. endcaps ..'%s])%s+[' .. endcaps .. ']+', '%1')
 
 	if (depth > 0 and input ~= output) then		
 		return PreScrub(output, depth - 1)
