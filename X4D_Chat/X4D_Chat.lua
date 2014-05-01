@@ -82,7 +82,7 @@ X4D_Chat.Guilds = {
 }
 
 X4D_Chat.Colors = {
-	SystemChannel = '|cFFFF00',
+	SYSTEM = '|cFFFF00',
 }
 
 local function GetTimestampPrefix(color)
@@ -679,7 +679,7 @@ local function OnFriendPlayerStatusChanged(displayName, oldStatus, newStatus)
 		return
 	end
     local characterLink = X4D_Chat.CreateCharacterLink(displayName)
-	local timestamp = GetTimestampPrefix(X4D_Chat.Colors.SystemChannel)
+	local timestamp = GetTimestampPrefix(X4D_Chat.Colors.SYSTEM)
     if (newStatus == PLAYER_STATUS_OFFLINE) then
 	    return timestamp .. zo_strformat(SI_FRIENDS_LIST_FRIEND_LOGGED_OFF, characterLink)
     else
@@ -690,37 +690,37 @@ end
 local _onServerShutdownInfo = nil
 
 local function OnServerShutdownInfo(action, timeRemaining)
-	return GetTimestampPrefix(X4D_Chat.Colors.SystemChannel) .. _onServerShutdownInfo(action, timeRemaining)
+	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onServerShutdownInfo(action, timeRemaining)
 end
 
 local _onIgnoreAdded = nil
 
 local function OnIgnoreAdded(displayName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SystemChannel) .. _onIgnoreAdded(displayName)
+	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onIgnoreAdded(displayName)
 end
 
 local _onIgnoreRemoved = nil
 
 local function OnIgnoreRemoved(displayName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SystemChannel) .. _onIgnoreRemoved(displayName)
+	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onIgnoreRemoved(displayName)
 end
 
 local _onGroupMemberJoined = nil
 
 local function OnGroupMemberJoined(characterName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SystemChannel) .. _onGroupMemberJoined(characterName)
+	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onGroupMemberJoined(characterName)
 end
 
 local _onGroupMemberLeft = nil
 
 local function OnGroupMemberLeft(characterName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SystemChannel) .. _onGroupMemberLeft(characterName)
+	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onGroupMemberLeft(characterName)
 end
 
 local _onGroupTypeChanged = nil
 
 local function OnGroupTypeChanged(largeGroup)
-	return GetTimestampPrefix(X4D_Chat.Colors.SystemChannel) .. _onGroupTypeChanged(largeGroup)
+	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onGroupTypeChanged(largeGroup)
 end
 
 function X4D_Chat.Register()
@@ -752,7 +752,7 @@ function X4D_Chat.Register()
 
 	local r, g, b = GetChatCategoryColor(CHAT_CATEGORY_SYSTEM)
 	if (r ~= nil) then
-		X4D_Chat.Colors.SystemChannel = X4D_Chat.CreateColorCode(r, g, b)
+		X4D_Chat.Colors.SYSTEM = X4D_Chat.CreateColorCode(r, g, b)
 	end
 
 	local handlers = ZO_ChatSystem_GetEventHandlers()

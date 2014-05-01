@@ -53,14 +53,14 @@ end
 -- 'state' is passed into timer callback
 -- 'interval' is optional, and can be used to change the timer interval during execution
 function X4D_Timer:Start(state, interval)
-	if (self._enabled) then
-		return
-	end
 	if (state) then
 		self._state = state
 	end
 	if (interval) then
 		self._interval = interval
+	end
+	if (self._enabled) then
+		return
 	end
 	self._enabled = true
 	zo_callLater(function() self:Elapsed() end, self._interval)

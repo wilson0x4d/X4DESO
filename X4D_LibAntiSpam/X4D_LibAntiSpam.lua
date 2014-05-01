@@ -48,7 +48,7 @@ end
 
 X4D_LibAntiSpam.Colors = {
 	X4D = '|cFFAE19',
-	SystemChannel = '|cFFFF00',
+	SYSTEM = '|cFFFF00',
 }
 
 X4D_LibAntiSpam.InternalPatterns = {
@@ -287,7 +287,7 @@ local function UpdateFloodState(player, normalized)
 		if (not player.IsFlood) then
 			player.IsFlood = true
 			if (GetOption('NotifyWhenDetected') and (not player.IsSpam)) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From)
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From)
 			end
 			return true
 		end
@@ -312,7 +312,7 @@ local function CheckPatterns(player, normalized, patterns)
 			end
 		end
 		end)) then
-			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Bad Pattern: |cFF7777' .. patterns[i])
+			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Bad Pattern: |cFF7777' .. patterns[i])
 		end
 	end
 end
@@ -459,7 +459,7 @@ local function ToASCII(input, fromName)
 		output = stripped:lower()
 	end
 	if (GetOption('ShowNormalizations') and ustrips:len() > 0) then
-		InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. ustrips .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+		InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. ustrips .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 	end
 	return output
 end
@@ -507,7 +507,7 @@ function X4D_LibAntiSpam.Check(self, text, fromName)
 		local wasFlood = player.IsFlood
 		if (UpdateFloodState(player, normalized) and (not wasFlood)) then
 			if (GetOption('ShowNormalizations')) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 			end	
 		end
 		player:AddText(normalized)
@@ -519,13 +519,13 @@ function X4D_LibAntiSpam.Check(self, text, fromName)
 			local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
 			if (GetOption('ShowNormalizations')) then
 				local highlighted = normalized:gsub('(' .. player.SpamPattern .. ')', X4D_LibAntiSpam.Colors.X4D .. '%1' .. '|c993333')
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. highlighted .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. highlighted .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 			end	
-			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Chat Spam from |cFFAE19' .. (fromLink or fromName or '') .. '|c5C5C5C [' .. player.SpamPattern .. ']')
+			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected Chat Spam from |cFFAE19' .. (fromLink or fromName or '') .. '|c5C5C5C [' .. player.SpamPattern .. ']')
 		end	
 	else
 		if (GetOption('ShowNormalizations') and not (player.IsSpam or player.IsFlood)) then
-			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 		end	
 	end
 	return player.IsSpam, player.IsFlood
@@ -549,7 +549,7 @@ local function RejectSpammerGuildInvites()
 			if (isSpam or isFlood) then
 				if (GetOption('NotifyWhenDetected')) then
 					local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
-					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SystemChannel, '(LibAntiSpam) Detected Invite Spam from |cFFAE19' .. (fromLink or fromName))
+					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected Invite Spam from |cFFAE19' .. (fromLink or fromName))
 				end
 				RejectGuildInvite(guildId)
 				zo_callLater(RejectSpammerGuildInvites, 1000)
@@ -710,7 +710,7 @@ function X4D_LibAntiSpam.OnPlayerActivated()
 		_initialized = true
 		local r, g, b = GetChatCategoryColor(CHAT_CATEGORY_SYSTEM)
 		if (r ~= nil) then
-			X4D_LibAntiSpam.Colors.SystemChannel = X4D_LibAntiSpam.CreateColorCode(r, g, b)
+			X4D_LibAntiSpam.Colors.SYSTEM = X4D_LibAntiSpam.CreateColorCode(r, g, b)
 		end
 	end
 end

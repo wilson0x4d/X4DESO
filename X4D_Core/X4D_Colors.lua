@@ -38,6 +38,8 @@ function X4D_Colors.DeriveHighlight(color)
 	return X4D_Colors.Lerp(color, '|cFFFFFF', 50)
 end
 
+X4D_Colors.X4D = '|cFFAE19'
+
 X4D_Colors.SYSTEM = '|cFFFF00'
 X4D_Colors.TRACE_VERBOSE = '|cC0C0C0'
 X4D_Colors.TRACE_INFORMATION = '|c6666FF'
@@ -45,7 +47,15 @@ X4D_Colors.TRACE_WARNING = '|cCC6600'
 X4D_Colors.TRACE_ERROR = '|c990000'
 X4D_Colors.TRACE_CRITICAL = '|cFF0033'
 
-
+X4D_Colors.AP = '|cAA33FF',
+X4D_Colors.BagSpaceLow = '|cFFd00b'
+X4D_Colors.BagSpaceFull = '|cAA0000'
+X4D_Colors.Gray = '|cC5C5C5'
+X4D_Colors.Gold = '|cFFD700'
+X4D_Colors.StackCount = '|cFFFFFF'
+X4D_Colors.Subtext = '|c5C5C5C'
+X4D_Colors.VP = '|cAA33FF',
+X4D_Colors.XP = '|cAA33FF',
 
 --[[
 
