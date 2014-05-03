@@ -479,6 +479,66 @@ local function TryCombinePartialStacks(bagState, depth)
 	end
 end
 
+local function FindTargetSlots(sourceSlot, targetBag)
+	local partials = {}
+	local empties = {}
+	local remaining = sourceSlot.StackCount
+	for _,slot in pairs(targetBag.Slots) do
+		if (slot.IsEmpty) then
+			table.insert(empties, slot)
+		elseif ((sourceSlot.Id ~= slot.Id) and (sourceSlot.ItemLevel == slot.ItemLevel) and (sourceSlot.ItemQuality == slot.ItemQuality) and (sourceSlot.ItemName == slot.ItemName) and (slot.StackCount < slot.StackMax)) then
+			table.insert(partials, slot)
+			remaining = slot.StackMax - slot.StackCount;
+			if (remaining <= 0) then
+				break;
+			end
+		end
+	end	
+	return partials, empties
+end
+
+local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, directionText)
+
+	local totalMoved = 0
+	local partialSlots, emptySlots = FindTargetSlots(sourceSlot, targetBag)
+	for _,targetSlot in pairs(partialSlots) do
+		local countToMove = targetSlot.StackMax - targetSlot.StackCount
+		if (countToMove > sourceSlot.StackCount) then
+			countToMove = sourceSlot.StackCount
+		end
+		CallSecureProtected('PickupInventoryItem', sourceBag.Id, sourceSlot.Id, countToMove)
+		CallSecureProtected('PlaceInInventory', targetBag.Id, targetSlot.Id)
+		totalMoved = totalMoved + countToMove
+		sourceSlot.StackCount = sourceSlot.StackCount - countToMove
+		if (sourceSlot.StackCount <= 0) then
+			sourceSlot.IsEmpty = true
+			break
+		end
+	end
+	if (not sourceSlot.IsEmpty) then
+		for _,targetSlot in pairs(emptySlots) do
+			if (targetSlot.IsEmpty) then
+				local countToMove = sourceSlot.StackCount
+				CallSecureProtected('PickupInventoryItem', sourceBag.Id, sourceSlot.Id, countToMove)
+				CallSecureProtected('PlaceInInventory', targetBag.Id, targetSlot.Id)
+				totalMoved = totalMoved + countToMove
+				sourceSlot.StackCount = sourceSlot.StackCount - countToMove
+				if (sourceSlot.StackCount <= 0) then
+					sourceSlot.IsEmpty = true
+					targetSlot.IsEmpty = false
+					break
+				end
+			end
+		end
+	end
+	if (totalMoved > 0) then
+		InvokeCallbackSafe(sourceSlot.ItemColor, directionText .. ' ' .. sourceSlot.ItemIcon .. sourceSlot.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. totalMoved)
+		return true
+	else
+		return false
+	end
+end
+
 local function TryDepositsAndWithdrawals()
 	local itemTypeDirections = GetItemTypeDirectionalities()
 	local inventoryState = TryGetBagState(1)
@@ -506,51 +566,36 @@ local function TryDepositsAndWithdrawals()
 		end
 	end
 
+	ClearCursor()	
+
 	TryCombinePartialStacks(inventoryState)
 	TryCombinePartialStacks(bankState)
 
-	ClearCursor()
-	while ((inventoryState.FreeSlotCount > 0 and pendingWithdrawalCount > 0) or (bankState.FreeSlotCount > 0 and pendingDepositCount > 0)) do	
-		if (inventoryState.FreeSlotCount > 0 and pendingWithdrawalCount > 0) then
-			local bankSlotInfo = table.remove(pendingWithdrawals)
-			pendingWithdrawalCount = pendingWithdrawalCount - 1
-			local inventorySlotInfo = table.remove(inventoryState.FreeSlots)
-			inventoryState.Slots[inventorySlotInfo.Id] = bankSlotInfo
-			inventoryState.FreeSlotCount = inventoryState.FreeSlotCount - 1
-			bankState.FreeSlotCount = bankState.FreeSlotCount + 1
-			table.insert(bankState.FreeSlots, {
-				Id = bankSlotInfo.Id,
-				IsEmpty = true,
-			})
-			if (bankSlotInfo.StackMax > bankSlotInfo.StackCount) then
-				table.insert(inventoryState.PartialSlots, bankSlotInfo)
-				inventoryState.PartialSlotCount = inventoryState.PartialSlotCount + 1
+	local changeWasMade = true
+	while (changeWasMade and ((pendingDepositCount > 0) or (pendingWithdrawalCount > 0))) do
+		changeWasMade = false
+		if (pendingDepositCount > 0) then
+			local sourceBag = inventoryState
+			local sourceSlot = table.remove(pendingDeposits, 1)
+			local targetBag = bankState
+			if (TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, 'Deposited')) then
+				changeWasMade = true
+				pendingDepositCount = pendingDepositCount - 1
+			else
+				table.insert(pendingDeposits, sourceSlot)
 			end
-			CallSecureProtected('PickupInventoryItem', 2, bankSlotInfo.Id, bankSlotInfo.StackCount)
-			CallSecureProtected('PlaceInInventory', 1, inventorySlotInfo.Id)
-			InvokeCallbackSafe(bankSlotInfo.ItemColor, 'Withdrew ' .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. bankSlotInfo.StackCount)
 		end
-		if (bankState.FreeSlotCount > 0 and pendingDepositCount > 0) then
-			local inventorySlotInfo = table.remove(pendingDeposits)
-			local bankSlotInfo = table.remove(bankState.FreeSlots)
-			bankState.Slots[bankSlotInfo.Id] = inventorySlotInfo
-			pendingDepositCount = pendingDepositCount - 1
-			bankState.FreeSlotCount = bankState.FreeSlotCount - 1
-			inventoryState.FreeSlotCount = inventoryState.FreeSlotCount + 1
-			table.insert(inventoryState.FreeSlots, {
-				Id = inventorySlotInfo.Id,
-				IsEmpty = true,
-			})
-			if (inventorySlotInfo.StackMax > inventorySlotInfo.StackCount) then
-				table.insert(bankState.PartialSlots, inventorySlotInfo)
-				bankState.PartialSlotCount = bankState.PartialSlotCount + 1
+		if (pendingWithdrawalCount > 0) then
+			local sourceBag = bankState
+			local sourceSlot = table.remove(pendingWithdrawals, 1)
+			local targetBag = inventoryState
+			if (TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, 'Withdrew')) then
+				changeWasMade = true
+				pendingWithdrawalCount = pendingWithdrawalCount - 1
+			else
+				table.insert(pendingDeposits, sourceSlot)
 			end
-			CallSecureProtected('PickupInventoryItem', 1, inventorySlotInfo.Id, inventorySlotInfo.StackCount)
-			CallSecureProtected('PlaceInInventory', 2, bankSlotInfo.Id)
-			InvokeCallbackSafe(inventorySlotInfo.ItemColor, 'Deposited ' .. inventorySlotInfo.ItemIcon .. inventorySlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. inventorySlotInfo.StackCount)
 		end
-		TryCombinePartialStacks(inventoryState)
-		TryCombinePartialStacks(bankState)
 	end
 end
 

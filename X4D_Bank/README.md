@@ -21,6 +21,12 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.10
+- More intelligent item deposit/withdraw logic.
+- Fixed "double-deposit to restack" bug.
+- Auto-Split when a single slot doesn't fit into target partial stack, additional partial slots and/or free slot is used.
+- Stack counts reported now report actual number of items counted (not the final stack size.)
+
 v1.9
 - Fix to prevent attempting to stack items of different levels/qualities.
 
