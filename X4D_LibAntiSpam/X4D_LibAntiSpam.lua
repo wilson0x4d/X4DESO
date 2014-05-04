@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1056)
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1057)
 if (not X4D_LibAntiSpam) then
 	return
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam'
-X4D_LibAntiSpam.VERSION = '1.56'
+X4D_LibAntiSpam.VERSION = '1.57'
 
 X4D_LibAntiSpam.Options = {}
 X4D_LibAntiSpam.Options.Saved = {}
@@ -81,6 +81,7 @@ X4D_LibAntiSpam.InternalPatterns = {
 	'[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+',
 	'w.?t.?s.?m.?m.?o.?c.?[op].?[mn]+',
 	'v.?g.?[op].?l.?d.?s.?c.?[op].?[mn]+',
+	'm.?m.?o.?a.?a.?c.?[op].?[mn]+',
 }
 
 X4D_LibAntiSpam.CharMap = {}
@@ -100,7 +101,7 @@ local L_charMap = {
 	[')'] = 'o', ['·'] = '', ['°'] = '', ['¸'] = '', ['¯'] = '-', [','] = '', ['*'] = '',
 	['$'] = 'S', ['/'] = 'm', ['¿'] = '?', ['5'] = 'S', ['9'] = 'g', ['\\'] = 'v', ['ß'] = 'b',
 	['{'] = 'c', ['}'] = 'o', ['<'] = 'c', ['>'] = 'o', 
-	['c2a4'] = 'o', --['e28094'] = '', ['efbc81'] = '', ['e38081'] = '',
+	['c2a4'] = 'o',
 }
 
 for inp,v in pairs(L_charMap) do
@@ -399,6 +400,7 @@ local function PreScrub(input, depth)
 	output = output:gsub('/V', 'N')
 	output = output:gsub('\\/V', 'W')
 	output = output:gsub('\\/', 'V')
+	output = output:gsub('\\/', 'V')
 	output = output:gsub('[%|/l]V[%|\\l]', 'M')
 	output = output:gsub('[%|/l]%-[%|\\l]', 'H')
 	output = output:gsub('[%|/l]_[%|\\l]', 'U')
@@ -408,9 +410,11 @@ local function PreScrub(input, depth)
 	output = output:gsub('WVWV', 'WWW')
 	output = output:gsub('%.', '')
 	output = output:gsub('[%(%{%%[][%)%}%]]', 'O')
-	local endcaps = '%<%(%{%%[%)%}%]%>%-%*%^%|%=%+%_\\/%&%%%$%#%@%!';
+	local endcaps = '%<%(%{%%[%)%}%]%>%-%*%^%|%=%+%_\\/%&%%%$%#%@%!'
 	output = output:gsub('[' .. endcaps ..']+([^' .. endcaps ..'])[' .. endcaps ..']+', '%1')
 	output = output:gsub('[' .. endcaps ..']+%s+([^' .. endcaps ..'%s])%s+[' .. endcaps .. ']+', '%1')
+	output = output:gsub('([' .. endcaps ..'])', FromCharMap)
+	output = output:gsub('[' .. endcaps ..']+', '')
 
 	if (depth > 0 and input ~= output) then		
 		return PreScrub(output, depth - 1)
@@ -511,7 +515,7 @@ function X4D_LibAntiSpam.Check(self, text, fromName)
 		player:AddText(normalized)
 	else
 		local wasFlood = player.IsFlood
-		if (UpdateFloodState(player, normalized) and (not wasFlood)) then
+		if (UpdateFloodState(player, normalized) and not (player.IsSpam or wasFlood)) then
 			if (GetOption('ShowNormalizations')) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 			end	
@@ -595,7 +599,11 @@ local function SetEditBoxValue(controlName, value, maxInputChars)
 end
 
 local function SetPatternsEditBoxText()
-	local patterns = table.concat(GetOption('Patterns'), '\n')
+	local petternsOption = GetOption('Patterns')
+	if (petternsOption == nil or type(petternsOption) == 'string') then
+		petternsOption = { }
+	end
+	local patterns = table.concat(petternsOption, '\n')
 	SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', patterns, 8192)
 	return patterns
 end
