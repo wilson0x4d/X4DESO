@@ -4,6 +4,7 @@ local X4D_LibAntiSpam = nil
 local X4D_Loot = nil
 local X4D_XP = nil
 local X4D_Bank = nil
+local X4D_Mail = nil
 
 X4D_Chat.NAME = 'X4D_Chat'
 X4D_Chat.VERSION = 1.22
@@ -637,11 +638,11 @@ end
 
 function X4D_Chat.XPCallback(color, text)
 	if (color == nil or color:len() < 8) then
-		d('LootCallback.. bad color received')
+		d('XPCallback.. bad color received')
 		color = '|cFFFFFF'
 	end
 	if (text == nil or text:len() == 0) then
-		d('LootCallback.. bad text received')
+		d('XPCallback.. bad text received')
 		text = 'xp?'
 	end
 	d(GetTimestampPrefix(color) .. text)
@@ -735,6 +736,12 @@ function X4D_Chat.Register()
 		X4D_Loot = LibStub('X4D_Loot', true)
 		if (X4D_Loot and X4D_Loot.RegisterCallback) then
 			X4D_Loot:RegisterCallback(X4D_Chat.LootCallback)
+		end
+	end
+	if (not X4D_Mail) then
+		X4D_Mail = LibStub('X4D_Mail', true)
+		if (X4D_Mail and X4D_Mail.RegisterEmitCallback) then
+			X4D_Mail:RegisterEmitCallback(X4D_Chat.LootCallback)
 		end
 	end
 	if (not X4D_XP) then

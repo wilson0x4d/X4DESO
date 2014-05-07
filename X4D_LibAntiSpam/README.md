@@ -25,11 +25,14 @@ Open the Archive and copy the **X4D_LibAntiSpam** folder into **%USERPROFILE%\Do
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.58
+- Modified Patterns.
+
 v1.57
 - Fix bug where normalized output would be displayed for a player already marked as a spammer.
 - Workaround for "patterns bug" some users experience after upgrading.
 - Modified Scrub.
-- New Patterns
+- New Patterns.
 
 v1.56
 - Modified Scrub.

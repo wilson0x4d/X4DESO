@@ -16,26 +16,34 @@ local function DEC2HEX(input)
 	return string.format('%x%x', h, l)
 end
 
-function X4D_Colors.Create(r, g, b)
+function X4D_Colors:Create(r, g, b)
 	return '|c' .. DEC2HEX(r * 255) .. DEC2HEX(g * 255) .. DEC2HEX(b * 255)
 end
 
-function X4D_Colors.Parse(color)
+function X4D_Colors:Parse(color)
 	return (HEX2DEC(color, 3) / 256), (HEX2DEC(color, 5) / 256), (HEX2DEC(color, 7) / 256), 1
 end
 
-function X4D_Colors.Lerp(colorFrom, colorTo, percent)
+function X4D_Colors:Lerp(colorFrom, colorTo, percent)
 	if (percent == nil) then
 		percent = 50
 	end
 	local factor = 1 + (percent / 100)
-	local rFrom, gFrom, bFrom = X4D_Colors.Parse(colorFrom)
-	local rTo, gTo, bTo = X4D_Colors.Parse(colorFrom)
-	return X4D_Colors.Create(rFrom + ((rTo - rFrom) * factor), gFrom + ((gTo - gFrom) * factor), bFrom + ((bTo - bFrom) * factor))
+	local rFrom, gFrom, bFrom = X4D_Colors:Parse(colorFrom)
+	local rTo, gTo, bTo = X4D_Colors:Parse(colorFrom)
+	return X4D_Colors:Create(rFrom + ((rTo - rFrom) * factor), gFrom + ((gTo - gFrom) * factor), bFrom + ((bTo - bFrom) * factor))
 end
 
-function X4D_Colors.DeriveHighlight(color)
-	return X4D_Colors.Lerp(color, '|cFFFFFF', 50)
+function X4D_Colors:DeriveHighlight(color)
+	return X4D_Colors:Lerp(color, '|cFFFFFF', 50)
+end
+
+function X4D_Colors:ExtractLinkColor(itemLink, defaultColor)
+	local itemColor = defaultColor
+	if (itemLink) then
+		itemColor = '|c' .. itemLink:sub(3, 8)
+	end
+	return itemColor
 end
 
 X4D_Colors.X4D = '|cFFAE19'

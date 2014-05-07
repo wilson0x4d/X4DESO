@@ -5,7 +5,7 @@
 ## APIVersion: 100003
 ## SavedVariables: X4D_Mail_SV
 ## DependsOn: X4D_Core
-## OptionalDependsOn: LibAddonMenu-1.0
+## OptionalDependsOn: LibAddonMenu-1.0, X4D_Loot, X4D_LibAntiSpam
 
 lib/LibStub/LibStub.lua
 lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
