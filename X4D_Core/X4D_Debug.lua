@@ -116,7 +116,7 @@ function X4D_Debug:Log(source, level, ...)
     for i = 1, select("#", ...) do
         local message = select(i, ...)
         if (message ~= nil) then
-	        if(type(message) == "table") then
+	        if(type(message) == 'table') then
 	            self:LogTable(source, level, message)
 	        else
 				if (type(message) ~= 'string') then
@@ -129,23 +129,26 @@ function X4D_Debug:Log(source, level, ...)
 end
 
 function X4D_Debug:Verbose(message, source)
-	self:Log(source, X4D_Debug.TRACE_LEVELS.VERBOSE, message)
+	X4D_Debug:Log(source, X4D_Debug.TRACE_LEVELS.VERBOSE, message)
 end
 
 function X4D_Debug:Information(message, source)
-	self:Log(source, X4D_Debug.TRACE_LEVELS.INFORMATION, message)
+	X4D_Debug:Log(source, X4D_Debug.TRACE_LEVELS.INFORMATION, message)
 end
 
 function X4D_Debug:Warning(message, source)
-	self:Log(source, X4D_Debug.TRACE_LEVELS.WARNING, message)
+	X4D_Debug:Log(source, X4D_Debug.TRACE_LEVELS.WARNING, message)
 end
 
 function X4D_Debug:Error(message, source)
-	self:Log(source, X4D_Debug.TRACE_LEVELS.ERROR, message)
+        	d(type(message))
+        	d(message)
+        	d(type(source))
+	X4D_Debug:Log(source, X4D_Debug.TRACE_LEVELS.ERROR, message)
 end
 
 function X4D_Debug:Critical(message, source)
-	self:Log(source, X4D_Debug.TRACE_LEVELS.CRITICAL, message)
+	X4D_Debug:Log(source, X4D_Debug.TRACE_LEVELS.CRITICAL, message)
 end
 
 --[[

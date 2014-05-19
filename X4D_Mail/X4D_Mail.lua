@@ -6,17 +6,22 @@ end
 X4D_Mail.NAME = 'X4D_Mail'
 X4D_Mail.VERSION = '1.0'
 
+-- 1.0
+-- X4D_Mail:IsMailReadable(mailId)
+-- X4D_Mail:HandleMailAttachments(mailId)
+-- X4D_Mail:HandleSpam(mailId)
+
 local X4D = LibStub('X4D')
 local X4D_Loot = LibStub('X4D_Loot')
-local X4D_LibAntiSpam = LibStub('LibAntiSpam')
+local X4D_LibAntiSpam = LibStub('LibAntiSpam', true)
 
 local function DefaultEmitCallback(color, text)
-	d(color .. text)
+	X4D.Debug.Info(color .. text, 'X4D Mail')
 end 
 
 local _emitCallback = DefaultEmitCallback
 
-function X4D_Mail.RegisterEmitCallback(self, callback)
+function X4D_Mail:RegisterEmitCallback(callback)
 	if (callback ~= nil) then
 		_emitCallback = callback
 	else
@@ -24,7 +29,7 @@ function X4D_Mail.RegisterEmitCallback(self, callback)
 	end
 end
 
-function X4D_Mail.UnregisterEmitCallback(self, callback)
+function X4D_Mail:UnregisterEmitCallback(callback)
 	if (_emitCallback == callback) then
 		self:RegisterEmitCallback(nil)
 	end
@@ -44,8 +49,6 @@ local function InvokeEmitCallbackSafe(color, text)
 end
 
 local function CreateIcon(filename, width, height)	
-	-- example: /zgoo EsoStrings[SI_BANK_GOLD_AMOUNT_BANKED]:gsub('%|', '!')
-	-- gladly accepting gold donations in-game, thanks.
 	return string.format('|t%u:%u:%s|t', width or 16, height or 16, filename)
 end
 
@@ -54,49 +57,102 @@ local function formatnum(n)
 	return left .. (num:reverse():gsub('(%d%d%d)','%1,'):reverse()) .. right
 end
 
-local function OnMailReadable(eventCode, mailId)
-	local senderDisplayName, senderCharacterName, subjectText, mailIcon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)		
-	local body = ReadMail(mailId)		
-	if (fromSystem and (not fromCustomerService)) then
-		if (X4D_Mail.Options.GetOption('AutoAcceptAttachments')) then
-			if (numAttachments > 0 or attachedMoney > 0) then
-				if (numAttachments > 0) then
-					for attachmentIndex = 1, numAttachments do
+local _readableMail = { }
+
+function X4D_Mail:IsMailReadable(mailId)
+	return _readableMail[mailId] ~= nil
+end
+
+function X4D_Mail:HandleMailAttachments(mailId)
+	if (not X4D_Mail:IsMailReadable(mailId)) then
+		X4D.Debug:Error({ 'HandleMailAttachments', '!IsMailReadable', mailId }, 'X4D Mail');
+		return
+	end
+	local mail = _readableMail[mailId];
+	if (mail.IsReturnedMail and X4D_Mail.Options:GetOption('LeaveReturnedMailAlone')) then
+		return
+	end
+	if (X4D_Mail.Options:GetOption('AutoAcceptAttachments')) then
+		if (mail.IsFromSystem and (not mail.IsCustomerService)) then
+			if (mail.AttachedItemsCount > 0 or mail.AttachedMoney > 0) then
+				if (mail.AttachedItemsCount > 0) then
+					for attachmentIndex = 1, mail.AttachedItemsCount do
 						local itemIcon, stackCount, creatorName = GetAttachedItemInfo(mailId, attachmentIndex)
 						local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
 						local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
-						InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. CreateIcon(itemIcon) .. itemLink .. ' x' .. stackCount);
+						InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. CreateIcon(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName);
 					end
 					TakeMailAttachedItems(mailId)
 				end
-				if (attachedMoney > 0) then
+				if (mail.AttachedMoney > 0) then
 					if (X4D_Loot == nil) then
-						local newMoney = GetCurrentMoney() + attachedMoney
-						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format('%s %s%s %s  (%s total)', 'Accepted', formatnum(attachedMoney), CreateIcon('EsoUI/Art/currency/currency_gold.dds'), X4D.Colors.Subtext, formatnum(newMoney)))
+						local newMoney = GetCurrentMoney() + mail.AttachedMoney
+						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format('%s %s%s %s  (%s total)', 'Accepted', formatnum(mail.AttachedMoney), CreateIcon('EsoUI/Art/currency/currency_gold.dds'), X4D.Colors.Subtext, formatnum(newMoney)))
 					end				
 					TakeMailAttachedMoney(mailId)
 				end
-				if (X4D_Mail.Options.GetOption('AutoDeleteMail')) then
+				if (X4D_Mail.Options:GetOption('AutoDeleteMail')) then
+					X4D.Debug.Verbose('Deleting mail from: ' .. mail.SenderDisplayName, 'X4D Mail')
 					DeleteMail(mailId, false)
 				end
 			end
 		end
-	elseif ((not fromCustomerService) and (X4D_LibAntiSpam ~= nil)) then
-		local isSpam, isFlood = X4D_LibAntiSpam:Check(subjectText .. ' ' .. body, senderDisplayName)
-		if (isSpam) then
-			if (X4D_Mail.Options.GetOption('AutoDeleteMail')) then
-				DeleteMail(mailId, false)
+	end
+end
+
+function X4D_Mail:HandleSpam(mailId)
+	if (not X4D_Mail:IsMailReadable(mailId)) then
+		X4D.Debug:Error({ 'HandleSpam', '!IsMailReadable', mailId }, 'X4D Mail');
+		return
+	end
+	local mail = _readableMail[mailId];
+	if (X4D_Mail.Options:GetOption('EnableAntiSpam')) then
+		if (not mail.IsCustomerService) then
+			if (X4D_LibAntiSpam ~= nil) then
+				local isSpam = X4D_LibAntiSpam:Check({
+						Text = mail.SubjectText .. ' ' .. mail.BodyText,
+						Name = mail.SenderDisplayName,
+						Reason = 'Mail',
+						NoFlood = true, -- we do not want mail to result in flood triggering
+					})
+				if (isSpam) then
+					mail.IsSpam = true
+					X4D.Debug.Verbose('Deleting mail from spammer: ' .. mail.SenderDisplayName, 'X4D Mail')
+					DeleteMail(mailId, false)
+				end
 			end
-		end
-	end	
+		end	
+	end
+	return mail.IsSpam
+end
+
+local function OnMailReadable(eventCode, mailId)
+	local senderDisplayName, senderCharacterName, subjectText, mailIcon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
+	local bodyText = ReadMail(mailId)
+	local mail = {
+		MailId = mailId,
+		MailIcon = mailIcon,
+		SubjectText = subjectText,
+		BodyText = bodyText,
+		IsUnread = unread,
+		IsFromSystem = fromSystem,
+		SenderDisplayName = senderDisplayName,
+		SenderCharacterName = senderCharacterName,		
+		IsCustomerService = fromCustomerService,
+		IsReturnedMail = returned, 
+		AttachedItemsCount = numAttachments, 
+		AttachedMoney = attachedMoney, 
+		CODAmount = codAmount, 
+		ExpiresInDays = expiresInDays, 
+		SecsSinceReceived = secsSinceReceived,
+		IsSpam = false,
+	}
+	_readableMail[mailId] = mail
+	X4D_Mail:HandleMailAttachments(mailId)
+	X4D_Mail:HandleSpam(mailId)
 end
 
 local function OnOpenMailbox(eventCode)
-	--X4D.Debug:Verbose({'OnOpenMailbox', eventCode, ...}, 'X4D_Mail')
-	--local hasUnreadMail = HasUnreadMail()
-	--if (not hasUnreadMail) then
-	--	return
-	--end
 	local mailId = GetNextMailId()
 	while (mailId ~= nil) do
 		RequestReadMail(mailId)
@@ -105,7 +161,10 @@ local function OnOpenMailbox(eventCode)
 end
 
 local function Register()
+	
+	-- TODO: comment this out when not testing changes
 	X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.VERBOSE)
+
 	EVENT_MANAGER:RegisterForEvent(X4D_Mail.NAME, EVENT_MAIL_OPEN_MAILBOX, OnOpenMailbox)
     EVENT_MANAGER:RegisterForEvent(X4D_Mail.NAME, EVENT_MAIL_READABLE, OnMailReadable)
 end
@@ -123,8 +182,10 @@ local function OnAddOnLoaded(event, addonName)
 		{
 			AutoAcceptAttachments = true,
 			AutoDeleteMail = true,
+			EnableAntiSpam = true,
+			LeaveReturnedMailAlone = true,
 		})
-	
+
 	Register()
 end
 
@@ -149,5 +210,3 @@ end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Mail.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
 EVENT_MANAGER:RegisterForEvent(X4D_Mail.NAME, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
-
-

@@ -80,8 +80,13 @@ X4D_LibAntiSpam.InternalPatterns = {
 	'e.?g.?p.?a.?[li].?.c[op]*[mn]+',
 	'[wvm]?.?t.?s.?i.?t.?e.?[mn].?c.?[op].?[mn]+',
 	'w.?t.?s.?m.?m.?o.?c.?[op].?[mn]+',
+	'wtsmmo',
 	'v.?g.?[op].?l.?d.?s.?c.?[op].?[mn]+',
 	'm.?m.?o.?a.?a.?c.?[op].?[mn]+',
+}
+
+X4D_LibAntiSpam.AgressivePatterns = {
+	'g[^a]?a[^m]*m[^e]*e[^i]*i[^m]*m[^c]*c[^o]*o[^m]*m',
 }
 
 X4D_LibAntiSpam.CharMap = {}
@@ -278,7 +283,7 @@ local function GetEightyPercent(input)
 	end
 end
 
-local function UpdateFloodState(player, normalized)
+local function UpdateFloodState(player, normalized, reason)
 	if (player.IsWhitelist or (GetOption('FloodTime') == 0)) then
 		player.IsFlood = false
 		return false
@@ -288,7 +293,7 @@ local function UpdateFloodState(player, normalized)
 		if (not player.IsFlood) then
 			player.IsFlood = true
 			if (GetOption('NotifyWhenDetected') and (not player.IsSpam)) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected Chat Flood from: |cFFAE19' .. player.From)
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected ' .. reason .. ' Flood from: |cFFAE19' .. player.From)
 			end
 			return true
 		end
@@ -389,7 +394,7 @@ local function PreScrub(input, depth)
 	output = output:gsub('%|H[^%|]*%|h%[?([^%]%|]*)%]?%|h', '%[%1%]')
 	output = output:upper()
 	output = output:gsub('/%-\\', 'A')
-	output = output:gsub('\\/\\/', 'W')
+	output = output:gsub('\\.?/\\.?/', 'W')
 	output = output:gsub('\\/V', 'W')
 	output = output:gsub('V\\/', 'W')
 	output = output:gsub('/\\/\\', 'M')
@@ -412,7 +417,7 @@ local function PreScrub(input, depth)
 	output = output:gsub('[%(%{%%[][%)%}%]]', 'O')
 	local endcaps = '%<%(%{%%[%)%}%]%>%-%*%^%|%=%+%_\\/%&%%%$%#%@%!'
 	output = output:gsub('[' .. endcaps ..']+([^' .. endcaps ..'])[' .. endcaps ..']+', '%1')
-	output = output:gsub('[' .. endcaps ..']+%s+([^' .. endcaps ..'%s])%s+[' .. endcaps .. ']+', '%1')
+	output = output:gsub('[' .. endcaps ..']+%s+([^' .. endcaps ..'])%s+[' .. endcaps .. ']+', '%1')
 	output = output:gsub('([' .. endcaps ..'])', FromCharMap)
 	output = output:gsub('[' .. endcaps ..']+', '')
 
@@ -507,36 +512,62 @@ local function Normalize(input, fromName)
 	return Condense(PostScrub(output)), Condense(PostScrub(StringPivot(output)))
 end
 
-function X4D_LibAntiSpam.Check(self, text, fromName)
+--[[
+	first param can also be a table with the following elements
+	local isSpam = X4D_LibAntiSpam:Check({
+			Text: 'Hello, World!', -- required param
+			Name: senderDisplayName, -- required param
+			Reason: 'Chat', -- optional
+			NoFlood: false, -- optional
+			NoSpam: false, -- optional
+		})
+]]
+function X4D_LibAntiSpam:Check(text, fromName, reason)
+	local noFlood = false
+	local noSpam = false
+	if (type(text) == 'table') then
+		reason = text['Reason']
+		fromName = text['Name']
+		noFlood = text['NoFlood'] or false
+		noSpam = text['NoSpam'] or false
+		text = text['Text']
+	end
+	if (reason == nil) then
+		reason = 'Chat' -- Guild Invite, Mail, etc
+	end
 	local normalized, pivot = Normalize(text, fromName)
 	local player = GetPlayer(fromName)
 	if (not player) then
 		player = AddPlayer(fromName)
 		player:AddText(normalized)
 	else
-		local wasFlood = player.IsFlood
-		if (UpdateFloodState(player, normalized) and not (player.IsSpam or wasFlood)) then
-			if (GetOption('ShowNormalizations')) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
-			end	
+		if (not noFlood) then
+			local wasFlood = player.IsFlood
+			if (UpdateFloodState(player, normalized, reason) and not (player.IsSpam or wasFlood)) then
+				if (GetOption('ShowNormalizations')) then
+					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+				end	
+			end
 		end
 		player:AddText(normalized)
 		normalized = player:GetTextAggregate()
-	end
-	normalized = normalized .. pivot
-	if (UpdateSpamState(player, normalized)) then
-		if (GetOption('NotifyWhenDetected')) then
-			local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
-			if (GetOption('ShowNormalizations')) then
-				local highlighted = normalized:gsub('(' .. player.SpamPattern .. ')', X4D_LibAntiSpam.Colors.X4D .. '%1' .. '|c993333')
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. highlighted .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+	end	
+	if (not noSpam) then		
+		normalized = normalized .. pivot
+		if (UpdateSpamState(player, normalized)) then
+			if (GetOption('NotifyWhenDetected')) then
+				local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
+				if (GetOption('ShowNormalizations')) then
+					local highlighted = normalized:gsub('(' .. player.SpamPattern .. ')', X4D_LibAntiSpam.Colors.X4D .. '%1' .. '|c993333')
+					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. highlighted .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+				end	
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected ' .. reason .. ' Spam from |cFFAE19' .. (fromLink or fromName or '') .. '|c5C5C5C [' .. player.SpamPattern .. ']')
 			end	
-			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected Chat Spam from |cFFAE19' .. (fromLink or fromName or '') .. '|c5C5C5C [' .. player.SpamPattern .. ']')
-		end	
-	else
-		if (GetOption('ShowNormalizations') and not (player.IsSpam or player.IsFlood)) then
-			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
-		end	
+		else
+			if (GetOption('ShowNormalizations') and not (player.IsSpam or player.IsFlood)) then
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
+			end	
+		end
 	end
 	return player.IsSpam, player.IsFlood
 end	
