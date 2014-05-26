@@ -1,10 +1,10 @@
-local X4D_XP = LibStub:NewLibrary('X4D_XP', 13)
+local X4D_XP = LibStub:NewLibrary('X4D_XP', 1004)
 if (not X4D_XP) then
 	return
 end
 
 X4D_XP.NAME = 'X4D_XP'
-X4D_XP.VERSION = '1.3'
+X4D_XP.VERSION = '1.4'
 
 X4D_XP.Settings = {}
 X4D_XP.Settings.SavedVars = {}

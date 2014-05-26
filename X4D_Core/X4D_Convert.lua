@@ -2,8 +2,6 @@ local X4D_Convert = LibStub:NewLibrary('X4D_Convert', 1000)
 if (not X4D_Convert) then
 	return
 end
-X4D_Convert.NAME = 'X4D_Convert'
-X4D_Convert.VERSION = 1.0
 
 local _chatChannelCategories = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,

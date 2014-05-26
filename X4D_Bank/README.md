@@ -21,6 +21,13 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.12
+- fixed bug where deposits/withdrawals would not be displayed
+- added support for Gold deposit/withdrawal information (normally provided by X4D_Loot add-on instead.)
+
+v1.11
+- ESO version update, no functional change
+
 v1.10
 - More intelligent item deposit/withdraw logic.
 - Fixed "double-deposit to restack" bug.

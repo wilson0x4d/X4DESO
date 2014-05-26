@@ -2,7 +2,7 @@
 ## Author: @wilson0x4d
 ## Notes: X4D Core Library and Shared APIs
 ## Version: 1.0
-## APIVersion: 100003
+## APIVersion: 100004
 ## OptionalDependsOn: LibAddonMenu-1.0
 
 lib/LibStub/LibStub.lua
@@ -12,11 +12,10 @@ X4D_Colors.lua
 X4D_Debug.lua
 
 X4D_Convert.lua
-X4D_SavedVars.lua
 X4D_Async.lua
+X4D_Options.lua
 X4D_Items.lua
 X4D_Guilds.lua
 X4D_Players.lua
-X4D_Options.lua
 X4D_Conversions.lua
 X4D_Core.lua

@@ -17,6 +17,9 @@ Open the Archive and copy the **X4D_Loot** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.7
+- ESO version update, no functional change
+
 v1.6
 - Fix bad reference to LibAddonMenu.
 

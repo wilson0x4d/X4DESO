@@ -50,19 +50,17 @@ lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
 lib/X4D_Core/X4D_Colors.lua
 lib/X4D_Core/X4D_Debug.lua
 lib/X4D_Core/X4D_Convert.lua
-lib/X4D_Core/X4D_SavedVars.lua
 lib/X4D_Core/X4D_Async.lua
+lib/X4D_Core/X4D_Options.lua
 lib/X4D_Core/X4D_Items.lua
 lib/X4D_Core/X4D_Guilds.lua
 lib/X4D_Core/X4D_Players.lua
-lib/X4D_Core/X4D_Options.lua
 lib/X4D_Core/X4D_Conversions.lua
 lib/X4D_Core/X4D_Core.lua
 ```
 
-*NOTE: LibAddonMenu-1.0 is Optional, X4D_Core does not require it, but will extend it if present.*
-
 ## Versions
 v1.0
 - Initial release.
+- multiple fixes
 

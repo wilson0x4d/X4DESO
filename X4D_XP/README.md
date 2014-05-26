@@ -15,6 +15,9 @@ Open the Archive and copy the **X4D_XP** folder into **%USERPROFILE%\Documents\E
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.4
+- ESO version update, no functional change
+
 v1.3
 - Additional support for Veteran Points
 

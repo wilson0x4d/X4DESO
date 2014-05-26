@@ -1,10 +1,10 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1057)
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1058)
 if (not X4D_LibAntiSpam) then
 	return
 end
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam'
-X4D_LibAntiSpam.VERSION = '1.57'
+X4D_LibAntiSpam.VERSION = '1.58'
 
 X4D_LibAntiSpam.Options = {}
 X4D_LibAntiSpam.Options.Saved = {}

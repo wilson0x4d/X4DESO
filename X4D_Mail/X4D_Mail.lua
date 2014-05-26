@@ -16,7 +16,7 @@ local X4D_Loot = LibStub('X4D_Loot')
 local X4D_LibAntiSpam = LibStub('LibAntiSpam', true)
 
 local function DefaultEmitCallback(color, text)
-	X4D.Debug.Info(color .. text, 'X4D Mail')
+	X4D.Debug:Info(color .. text, 'X4D Mail')
 end 
 
 local _emitCallback = DefaultEmitCallback
@@ -72,17 +72,24 @@ function X4D_Mail:HandleMailAttachments(mailId)
 	if (mail.IsReturnedMail and X4D_Mail.Options:GetOption('LeaveReturnedMailAlone')) then
 		return
 	end
+	local shouldDelete = false
 	if (X4D_Mail.Options:GetOption('AutoAcceptAttachments')) then
 		if (mail.IsFromSystem and (not mail.IsCustomerService)) then
+			shouldDelete = true
 			if (mail.AttachedItemsCount > 0 or mail.AttachedMoney > 0) then
 				if (mail.AttachedItemsCount > 0) then
-					for attachmentIndex = 1, mail.AttachedItemsCount do
-						local itemIcon, stackCount, creatorName = GetAttachedItemInfo(mailId, attachmentIndex)
-						local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
-						local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
-						InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. CreateIcon(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName);
+					if (CheckInventorySpaceSilently(mail.AttachedItemsCount)) then
+						for attachmentIndex = 1, mail.AttachedItemsCount do
+							local itemIcon, stackCount, creatorName = GetAttachedItemInfo(mailId, attachmentIndex)
+							local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
+							local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
+							InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. CreateIcon(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName);
+						end
+						TakeMailAttachedItems(mailId)
+					else
+						shouldDelete = false
+						InvokeEmitCallbackSafe('|cFFFFFF', 'Could not accept Attachments from ' .. mail.SenderDisplayName .. ', not enough bag space.');
 					end
-					TakeMailAttachedItems(mailId)
 				end
 				if (mail.AttachedMoney > 0) then
 					if (X4D_Loot == nil) then
@@ -91,13 +98,13 @@ function X4D_Mail:HandleMailAttachments(mailId)
 					end				
 					TakeMailAttachedMoney(mailId)
 				end
-				if (X4D_Mail.Options:GetOption('AutoDeleteMail')) then
-					X4D.Debug.Verbose('Deleting mail from: ' .. mail.SenderDisplayName, 'X4D Mail')
-					DeleteMail(mailId, false)
-				end
 			end
 		end
 	end
+end
+if (shouldDelete and X4D_Mail.Options:GetOption('AutoDeleteMail')) then
+	X4D.Debug:Verbose('Deleting mail from: ' .. mail.SenderDisplayName, 'X4D Mail')
+	DeleteMail(mailId, false)
 end
 
 function X4D_Mail:HandleSpam(mailId)
@@ -117,7 +124,7 @@ function X4D_Mail:HandleSpam(mailId)
 					})
 				if (isSpam) then
 					mail.IsSpam = true
-					X4D.Debug.Verbose('Deleting mail from spammer: ' .. mail.SenderDisplayName, 'X4D Mail')
+					X4D.Debug:Verbose('Deleting mail from spammer: ' .. mail.SenderDisplayName, 'X4D Mail')
 					DeleteMail(mailId, false)
 				end
 			end

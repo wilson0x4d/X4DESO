@@ -27,6 +27,7 @@ If ESO is already running, execute **/reloadui** command.
 ## Versions
 v1.58
 - Modified Patterns.
+- ESO version update
 
 v1.57
 - Fix bug where normalized output would be displayed for a player already marked as a spammer.

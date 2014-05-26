@@ -21,6 +21,9 @@ Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.23
+- ESO version update, no functional change
+
 v1.22
 - Fix bad reference to LibAddonMenu.
 

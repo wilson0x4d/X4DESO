@@ -2,7 +2,7 @@
 ## Author: @wilson0x4d
 ## Notes: Provides minor Mail enhancements.
 ## Version: 1.0
-## APIVersion: 100003
+## APIVersion: 100004
 ## SavedVariables: X4D_Mail_SV
 ## DependsOn: X4D_Core
 ## OptionalDependsOn: LibAddonMenu-1.0, X4D_Loot, X4D_LibAntiSpam

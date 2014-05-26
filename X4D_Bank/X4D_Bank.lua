@@ -1,10 +1,12 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1009)
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1012)
 if (not X4D_Bank) then
 	return
 end
 
+local X4D_Loot = LibStub('X4D_Loot', true)
+
 X4D_Bank.NAME = 'X4D_Bank'
-X4D_Bank.VERSION = '1.9'
+X4D_Bank.VERSION = '1.12'
 
 X4D_Bank.Options = {}
 X4D_Bank.Options.Saved = {}
@@ -211,7 +213,6 @@ X4D_Bank.Colors = {
 	Subtext = '|c5C5C5C',
 }
 
-
 local _nextAutoDepositTime = 0
 
 local function GetItemLinkInternal(bagId, slotIndex)
@@ -221,6 +222,10 @@ local function GetItemLinkInternal(bagId, slotIndex)
 		itemColor = '|c' .. itemLink:sub(3, 8)
 	end
 	return itemLink, itemColor
+end
+
+local function DefaultEmitCallback(color, text)
+	d(color .. text)
 end
 
 X4D_Bank.EmitCallback = DefaultEmitCallback
@@ -768,6 +773,40 @@ local function InitializeOptionsUI()
 
 end
 
+local function formatnum(n)
+	local left, num, right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
+	return left .. (num:reverse():gsub('(%d%d%d)','%1,'):reverse()) .. right
+end
+
+local _moneyUpdateReason = {
+	[0] = { 'Looted', 'Stored' },
+	[1] = { 'Earned', 'Spent' },
+	[2] = { 'Received', 'Sent' },
+	[4] = { 'Gained', 'Lost' },
+	[5] = { 'Earned', 'Spent' },
+	[19] = { 'Gained', 'Spent' },
+	[28] = { 'Gained', 'Spent' },
+	[29] = { 'Gained', 'Spent' },
+	[42] = { 'Withdrew', 'Deposited' },
+	[43] = { 'Withdrew', 'Deposited' },
+}	
+
+local function GetMoneyReason(reasonId)
+	return _moneyUpdateReason[reasonId] or { 'gained', 'lost' }
+end
+
+
+local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
+	local icon = CreateIcon('EsoUI/Art/currency/currency_gold.dds')
+	local reason = GetMoneyReason(reasonId)
+	local amount = newMoney - oldMoney
+	if (amount >= 0) then
+		InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format('%s %s%s %s  (%s total)', reason[1], formatnum(amount), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+	else
+		InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format('%s %s%s %s  (%s remaining)', reason[2], formatnum(math.abs(amount)), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+	end
+end
+
 local function OnAddOnLoaded(eventCode, addonName)
 	if (addonName ~= X4D_Bank.NAME) then
 		return
@@ -775,6 +814,9 @@ local function OnAddOnLoaded(eventCode, addonName)
 	X4D_Bank.Options.Saved = ZO_SavedVars:NewAccountWide(X4D_Bank.NAME .. '_SV', 1.0, nil, X4D_Bank.Options.Default)
 	InitializeOptionsUI()
 	EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_OPEN_BANK, OnOpenBank)
+	if (X4D_Loot == nil) then
+		EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_MONEY_UPDATE,OnMoneyUpdate)
+	end
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)

@@ -1,8 +1,8 @@
 ## Title: X4D |cFFAE19LibAntiSpam
 ## Author: @wilson0x4d
 ## Notes: A shared library that provides Anti-Spam functionality to other Add-Ons.
-## Version: 1.57
-## APIVersion: 100003
+## Version: 1.58
+## APIVersion: 100004
 ## SavedVariables: X4D_LibAntiSpam_SV
 ## OptionalDependsOn: LibAddonMenu-1.0
 
