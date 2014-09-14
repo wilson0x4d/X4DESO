@@ -1,3 +1,6 @@
+
+# NOTE: UNFINISHED WORK IN PROGRESS
+
 # X4D **Core**
 
 A LibStub-compatible Framework for Developing Add-Ons for ESO.
