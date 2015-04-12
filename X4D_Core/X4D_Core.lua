@@ -45,7 +45,7 @@ X4D.Test = function()
 			d('End Test of X4D Framework.')
 		end
 	end	
-	X4D_Timer:New(callback, 100, { counter = 0 }):Start()
+	local asyncTimer = X4D.Async.CreateTimer(callback, 100, { counter = 0 }):Start()
 
 	-- SavedVars API
 

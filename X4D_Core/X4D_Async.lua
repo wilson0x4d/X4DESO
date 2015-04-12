@@ -64,10 +64,12 @@ function X4D_Timer:Start(state, interval)
 	end
 	self._enabled = true
 	zo_callLater(function() self:Elapsed() end, self._interval)
+    return self
 end
 
 function X4D_Timer:Stop()
 	self._enabled = false
+    return self
 end
 
 setmetatable(X4D_Timer, { __call = X4D_Timer.New })
