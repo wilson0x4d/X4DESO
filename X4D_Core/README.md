@@ -63,12 +63,14 @@ lib/X4D_Core/X4D_Core.lua
 
 ## Versions
 v1.1
+
 - ESO Update 6
 - Removed LibAddonMenu-1.0 from /lib/ folder
 - DependsOn: LibAddonMenu-2.0
 
 
 v1.0
+
 - Initial release.
 - multiple fixes
 
