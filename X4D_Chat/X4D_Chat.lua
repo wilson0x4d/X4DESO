@@ -687,7 +687,7 @@ function X4D_Chat.BankEmitCallback(color, text)
 		d('BankEmitCallback.. bad text received')
 		text = 'huh?'
 	end
-	d(GetTimestampPrefix(color) ..  text)
+	d(GetTimestampPrefix(color) .. text)
 end
 
 local function OnFriendPlayerStatusChanged(displayName, oldStatus, newStatus)

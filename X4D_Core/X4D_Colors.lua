@@ -24,7 +24,7 @@ X4D_Colors.XP = '|cAA33FF'
 
 local function HEX2DEC(input, offset)
 	if (offset == nil) then
-		offset = 1
+		offset = 0
 	end
 	return (tonumber(input:sub(offset, offset), 16) * 16) + tonumber(input:sub(offset + 1, offset + 1), 16)
 end
@@ -35,12 +35,12 @@ local function DEC2HEX(input)
 	return string.format('%x%x', h, l)
 end
 
-function X4D_Colors:Create(r, g, b)
+function X4D_Colors:Create(r, g, b, a)
 	return '|c' .. DEC2HEX(r * 255) .. DEC2HEX(g * 255) .. DEC2HEX(b * 255)
 end
 
 function X4D_Colors:Parse(color)
-	return (HEX2DEC(color, 3) / 256), (HEX2DEC(color, 5) / 256), (HEX2DEC(color, 7) / 256), 1
+	return (HEX2DEC(color, 3) / 255), (HEX2DEC(color, 5) / 255), (HEX2DEC(color, 7) / 255), 1
 end
 
 function X4D_Colors:Lerp(colorFrom, colorTo, percent)

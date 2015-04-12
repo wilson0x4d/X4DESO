@@ -215,13 +215,20 @@ X4D_Bank.Colors = {
 
 local _nextAutoDepositTime = 0
 
+local _itemQualityColors = {
+    [0] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 0)):UnpackRGBA()),
+    [1] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 1)):UnpackRGBA()),
+    [2] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 2)):UnpackRGBA()),
+    [3] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 3)):UnpackRGBA()),
+    [4] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 4)):UnpackRGBA()),
+    [5] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 5)):UnpackRGBA()),
+}
+
 local function GetItemLinkInternal(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS):gsub('(%[%l)', function (i) return i:upper() end):gsub('(%s%l)', function (i) return i:upper() end):gsub('%^[^%]]*', '')
-	local itemColor = nil
-	if (itemLink) then
-		itemColor = '|c' .. itemLink:sub(3, 8)
-	end
-	return itemLink, itemColor
+    local itemQuality = GetItemLinkQuality(itemLink)
+	local itemColor = _itemQualityColors[itemQuality]
+	return itemLink, itemColor, itemQuality
 end
 
 local function DefaultEmitCallback(color, text)
@@ -284,7 +291,7 @@ local function TryGetBagState(bagId)
 		local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, itemQuality = GetItemInfo(bagId, slotIndex)
 		if (itemName ~= nil and itemName:len() > 0) then
 			local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex)
-			local itemLink, itemColor = GetItemLinkInternal(bagId, slotIndex)
+			local itemLink, itemColor, itemQuality = GetItemLinkInternal(bagId, slotIndex)
 			local itemType = GetItemType(bagId, slotIndex)
 			local itemLevel = GetItemLevel(bagId, slotIndex)
 			local slot = {
