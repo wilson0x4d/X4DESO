@@ -123,6 +123,7 @@ end
 
 local function AddBagInternal(bags, bagId)
 	local bagSlots = GetBagSize(bagId)
+    local bagIcon = nil
 	if (bagIcon == nil or bagIcon:len() == 0) then
 		bagIcon = 'EsoUI/Art/Icons/icon_missing.dds' -- TODO: how to know which icon to use? also, choose better default icon for this case
 	end
