@@ -126,7 +126,7 @@ local function GetTimestampPrefix(color)
 		timeString = timeString:gsub('(%d%d).(%d%d).%d%d', '%1:%2')
 	end
 
-	local highlightColor = X4D_Chat.DeriveHighlightColorCode(color)
+	local highlightColor = X4D.Colors:DeriveHighlight(color)
 	return color .. '[' .. highlightColor .. timeString .. color .. '] '
 end
 
@@ -179,10 +179,6 @@ end
 
 function X4D_Chat.ParseColorCode(color)
 	return HEX2DEC(color, 3)/256, HEX2DEC(color, 5)/256, HEX2DEC(color, 7)/256, 1
-end
-
-function X4D_Chat.DeriveHighlightColorCode(color)
-    return X4D.Colors:DeriveHighlight(color)
 end
 
 function X4D_Chat.CreateChannelLink(channelInfo, category)
