@@ -182,7 +182,7 @@ function X4D_Chat.ParseColorCode(color)
 end
 
 function X4D_Chat.DeriveHighlightColorCode(color)
-    return X4D.Colors.DeriveHighlight(color)
+    return X4D.Colors:DeriveHighlight(color)
 end
 
 function X4D_Chat.CreateChannelLink(channelInfo, category)
