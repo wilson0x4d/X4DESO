@@ -264,7 +264,11 @@ local function CreateIcon(filename, width, height)
 end
 
 local function TryGetBagState(bagId)
-	local bagIcon, numSlots = GetBagInfo(bagId)
+	local numSlots = GetBagSize(bagId)
+    local bagIcon = nil
+	if (bagIcon == nil or bagIcon:len() == 0) then
+		bagIcon = 'EsoUI/Art/Icons/icon_missing.dds' -- TODO: how to know which icon to use? also, choose better default icon for this case
+	end
 	local bagState = {
 		Id = bagId,
 		BagIcon = CreateIcon(bagIcon),
