@@ -3,6 +3,25 @@ if (not X4D_Colors) then
 	return
 end
 
+X4D_Colors.X4D = '|cFFAE19'
+
+X4D_Colors.SYSTEM = '|cFFFF00'
+X4D_Colors.TRACE_VERBOSE = '|cC0C0C0'
+X4D_Colors.TRACE_INFORMATION = '|c6666FF'
+X4D_Colors.TRACE_WARNING = '|cCC6600'
+X4D_Colors.TRACE_ERROR = '|c990000'
+X4D_Colors.TRACE_CRITICAL = '|cFF0033'
+
+X4D_Colors.AP = '|cAA33FF'
+X4D_Colors.BagSpaceLow = '|cFFd00b'
+X4D_Colors.BagSpaceFull = '|cAA0000'
+X4D_Colors.Gray = '|cC5C5C5'
+X4D_Colors.Gold = '|cFFD700'
+X4D_Colors.StackCount = '|cFFFFFF'
+X4D_Colors.Subtext = '|c5C5C5C'
+X4D_Colors.VP = '|cAA33FF'
+X4D_Colors.XP = '|cAA33FF'
+
 local function HEX2DEC(input, offset)
 	if (offset == nil) then
 		offset = 1
@@ -28,16 +47,46 @@ function X4D_Colors:Lerp(colorFrom, colorTo, percent)
 	if (percent == nil) then
 		percent = 50
 	end
+    if (colorTo == nil) then
+        colorTo = '|cFFFFFF' -- White
+    end
     if (colorFrom == nil) then
         colorFrom = X4D_Colors.SYSTEM
     end
-	local factor = 1 + (percent / 100)
-	local rFrom, gFrom, bFrom = X4D_Colors:Parse(colorFrom)
-	local rTo, gTo, bTo = X4D_Colors:Parse(colorFrom)
-	return X4D_Colors:Create(rFrom + ((rTo - rFrom) * factor), gFrom + ((gTo - gFrom) * factor), bFrom + ((bTo - bFrom) * factor))
+	local factor = (percent / 100)
+	local rFrom, gFrom, bFrom, aFrom = X4D_Colors:Parse(colorFrom)
+	local rTo, gTo, bTo, aTo = X4D_Colors:Parse(colorTo)
+    local r = rFrom + ((rTo - rFrom) * factor)
+    local g = gFrom + ((gTo - gFrom) * factor)
+    local b = bFrom + ((bTo - bFrom) * factor)
+    local a = aFrom + ((aTo - aFrom) * factor)
+    if (r > 1) then
+        r = 1
+    elseif (r < 0) then
+        r = 0
+    end
+    if (g > 1) then
+        g = 1
+    elseif (g < 0) then
+        g = 0
+    end
+    if (b > 1) then
+        b = 1
+    elseif (b < 0) then
+        b = 0
+    end
+    if (a > 1) then
+        a = 1
+    elseif (a < 0) then
+        a = 0
+    end
+	return X4D_Colors:Create(r, g, b)
 end
 
 function X4D_Colors:DeriveHighlight(color)
+    if (color == nil) then
+        d('color is nil')
+    end
 	return X4D_Colors:Lerp(color, '|cFFFFFF', 50)
 end
 
@@ -48,25 +97,6 @@ function X4D_Colors:ExtractLinkColor(itemLink, defaultColor)
 	end
 	return itemColor
 end
-
-X4D_Colors.X4D = '|cFFAE19'
-
-X4D_Colors.SYSTEM = '|cFFFF00'
-X4D_Colors.TRACE_VERBOSE = '|cC0C0C0'
-X4D_Colors.TRACE_INFORMATION = '|c6666FF'
-X4D_Colors.TRACE_WARNING = '|cCC6600'
-X4D_Colors.TRACE_ERROR = '|c990000'
-X4D_Colors.TRACE_CRITICAL = '|cFF0033'
-
-X4D_Colors.AP = '|cAA33FF'
-X4D_Colors.BagSpaceLow = '|cFFd00b'
-X4D_Colors.BagSpaceFull = '|cAA0000'
-X4D_Colors.Gray = '|cC5C5C5'
-X4D_Colors.Gold = '|cFFD700'
-X4D_Colors.StackCount = '|cFFFFFF'
-X4D_Colors.Subtext = '|c5C5C5C'
-X4D_Colors.VP = '|cAA33FF'
-X4D_Colors.XP = '|cAA33FF'
 
 --[[
 
