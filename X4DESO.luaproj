@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>E439935D-B2A2-46AE-856D-2AA408428F33</ProjectGuid>
+    <!--$guid1$-->
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>
+    </StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>X4DESO</Name>
+    <RootNamespace>X4DESO</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="X4D_Bank\" />
+    <Folder Include="X4D_Bank\lib\" />
+    <Folder Include="X4D_Bank\lib\LibStub\" />
+    <Folder Include="X4D_Chat\" />
+    <Folder Include="X4D_Chat\lib\" />
+    <Folder Include="X4D_Chat\lib\LibStub\" />
+    <Folder Include="X4D_Core\" />
+    <Folder Include="X4D_Core\lib\" />
+    <Folder Include="X4D_Core\lib\LibStub\" />
+    <Folder Include="X4D_LibAntiSpam\" />
+    <Folder Include="X4D_LibAntiSpam\lib\" />
+    <Folder Include="X4D_LibAntiSpam\lib\LibStub\" />
+    <Folder Include="X4D_LibAntiSpam\lib\utf8\" />
+    <Folder Include="X4D_Loot\" />
+    <Folder Include="X4D_Loot\lib\" />
+    <Folder Include="X4D_Loot\lib\LibStub\" />
+    <Folder Include="X4D_Mail\" />
+    <Folder Include="X4D_Mail\lib\" />
+    <Folder Include="X4D_Mail\lib\LibStub\" />
+    <Folder Include="X4D_XP\" />
+    <Folder Include="X4D_XP\lib\" />
+    <Folder Include="X4D_XP\lib\LibStub\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="X4D_Bank\lib\LibStub\LibStub.lua" />
+    <Compile Include="X4D_Bank\X4D_Bank.lua" />
+    <Compile Include="X4D_Chat\lib\LibStub\LibStub.lua" />
+    <Compile Include="X4D_Chat\X4D_Chat.lua" />
+    <Compile Include="X4D_Core\lib\LibStub\LibStub.lua" />
+    <Compile Include="X4D_Core\X4D_Async.lua" />
+    <Compile Include="X4D_Core\X4D_Colors.lua" />
+    <Compile Include="X4D_Core\X4D_Convert.lua" />
+    <Compile Include="X4D_Core\X4D_Core.lua" />
+    <Compile Include="X4D_Core\X4D_Debug.lua" />
+    <Compile Include="X4D_Core\X4D_Guilds.lua" />
+    <Compile Include="X4D_Core\X4D_Items.lua" />
+    <Compile Include="X4D_Core\X4D_Options.lua" />
+    <Compile Include="X4D_Core\X4D_Players.lua" />
+    <Compile Include="X4D_LibAntiSpam\lib\LibStub\LibStub.lua" />
+    <Compile Include="X4D_LibAntiSpam\lib\utf8\utf8.lua" />
+    <Compile Include="X4D_LibAntiSpam\lib\utf8\utf8data.lua" />
+    <Compile Include="X4D_LibAntiSpam\lib\utf8\utf8scrub.lua" />
+    <Compile Include="X4D_LibAntiSpam\X4D_LibAntiSpam.lua" />
+    <Compile Include="X4D_Loot\lib\LibStub\LibStub.lua" />
+    <Compile Include="X4D_Loot\X4D_Loot.lua" />
+    <Compile Include="X4D_Mail\lib\LibStub\LibStub.lua" />
+    <Compile Include="X4D_Mail\X4D_Mail.lua" />
+    <Compile Include="X4D_XP\lib\LibStub\LibStub.lua" />
+    <Compile Include="X4D_XP\X4D_XP.lua" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="LICENSE.md" />
+    <Content Include="README.md" />
+    <Content Include="X4D_Bank\LICENSE.md" />
+    <Content Include="X4D_Bank\README.md" />
+    <Content Include="X4D_Bank\X4D_Bank.txt" />
+    <Content Include="X4D_Bank\X4D_Bank.xml" />
+    <Content Include="X4D_Chat\LICENSE.md" />
+    <Content Include="X4D_Chat\README.md" />
+    <Content Include="X4D_Chat\X4D_Chat.txt" />
+    <Content Include="X4D_Chat\X4D_Chat.xml" />
+    <Content Include="X4D_Core\LICENSE.md" />
+    <Content Include="X4D_Core\README.md" />
+    <Content Include="X4D_Core\X4D_Core.txt" />
+    <Content Include="X4D_Core\X4D_Core.xml" />
+    <Content Include="X4D_LibAntiSpam\LICENSE.md" />
+    <Content Include="X4D_LibAntiSpam\README.md" />
+    <Content Include="X4D_LibAntiSpam\X4D_LibAntiSpam.txt" />
+    <Content Include="X4D_Loot\LICENSE.md" />
+    <Content Include="X4D_Loot\README.md" />
+    <Content Include="X4D_Loot\X4D_Loot.txt" />
+    <Content Include="X4D_Loot\X4D_Loot.xml" />
+    <Content Include="X4D_Mail\LICENSE.md" />
+    <Content Include="X4D_Mail\README.md" />
+    <Content Include="X4D_Mail\X4D_Mail.txt" />
+    <Content Include="X4D_Mail\X4D_Mail.xml" />
+    <Content Include="X4D_XP\LICENSE.md" />
+    <Content Include="X4D_XP\README.md" />
+    <Content Include="X4D_XP\X4D_XP.txt" />
+    <Content Include="X4D_XP\X4D_XP.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+</Project>
