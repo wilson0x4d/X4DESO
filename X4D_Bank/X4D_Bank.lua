@@ -215,19 +215,9 @@ X4D_Bank.Colors = {
 
 local _nextAutoDepositTime = 0
 
-local _itemQualityColors = {
-    [0] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 0)):UnpackRGBA()),
-    [1] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 1)):UnpackRGBA()),
-    [2] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 2)):UnpackRGBA()),
-    [3] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 3)):UnpackRGBA()),
-    [4] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 4)):UnpackRGBA()),
-    [5] = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 5)):UnpackRGBA()),
-}
-
 local function GetItemLinkInternal(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS):gsub('(%[%l)', function (i) return i:upper() end):gsub('(%s%l)', function (i) return i:upper() end):gsub('%^[^%]]*', '')
-    local itemQuality = GetItemLinkQuality(itemLink)
-	local itemColor = _itemQualityColors[itemQuality]
+    local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
 	return itemLink, itemColor, itemQuality
 end
 
@@ -247,7 +237,7 @@ end
 
 function X4D_Bank.UnregisterEmitCallback(self, callback)
 	if (X4D_Bank.EmitCallback == callback) then
-		self:RegisterEmiCallback(nil)
+		self:RegisterEmitCallback(nil)
 	end
 end
 

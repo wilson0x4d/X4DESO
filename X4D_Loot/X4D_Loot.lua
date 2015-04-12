@@ -80,11 +80,8 @@ end
 
 local function GetItemLinkInternal(bagId, slotId)
 	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS):gsub('(%[%l)', function (i) return i:upper() end):gsub('(%s%l)', function (i) return i:upper() end):gsub('%^[^%]]*', '')
-	local itemColor = ''
-	if (itemLink and itemLink:len() > 8) then
-		itemColor = '|c' .. itemLink:sub(3, 8)	
-	end
-	return itemLink, itemColor
+    local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
+	return itemLink, itemColor, itemQuality
 end
 
 X4D_Loot.Bags = {}

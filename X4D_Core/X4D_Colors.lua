@@ -90,12 +90,19 @@ function X4D_Colors:DeriveHighlight(color)
 	return X4D_Colors:Lerp(color, '|cFFFFFF', 50)
 end
 
+local _itemQualityColors = {
+    [0] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 0)):UnpackRGBA()),
+    [1] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 1)):UnpackRGBA()),
+    [2] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 2)):UnpackRGBA()),
+    [3] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 3)):UnpackRGBA()),
+    [4] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 4)):UnpackRGBA()),
+    [5] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 5)):UnpackRGBA()),
+}
+
 function X4D_Colors:ExtractLinkColor(itemLink, defaultColor)
-	local itemColor = defaultColor
-	if (itemLink) then
-		itemColor = '|c' .. itemLink:sub(3, 8)
-	end
-	return itemColor
+    local itemQuality = GetItemLinkQuality(itemLink)
+	local itemColor = _itemQualityColors[itemQuality]
+	return itemColor, itemQuality
 end
 
 --[[
