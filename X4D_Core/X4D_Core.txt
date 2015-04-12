@@ -1,12 +1,12 @@
+## APIVersion: 100011
 ## Title: X4D |cFFAE19Core
 ## Author: @wilson0x4d
-## Notes: X4D Core Library and Shared APIs
-## Version: 1.0
-## APIVersion: 100004
-## OptionalDependsOn: LibAddonMenu-1.0
+## Description: X4D Core Library and Shared APIs
+## Version: 1.1
+## SavedVariables: X4D_CORE_SV
+## DependsOn: LibAddonMenu-2.0
 
 lib/LibStub/LibStub.lua
-lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
 
 X4D_Colors.lua
 X4D_Debug.lua

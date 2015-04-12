@@ -21,6 +21,11 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.13
+- ESO Update 6
+- Removed LibAddonMenu-1.0 from /lib/ folder
+- Depends On: X4D_Core, LibAddonMenu-2.0
+
 v1.12
 - fixed bug where deposits/withdrawals would not be displayed
 - added support for Gold deposit/withdrawal information (normally provided by X4D_Loot add-on instead.)

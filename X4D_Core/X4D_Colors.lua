@@ -1,4 +1,4 @@
-local X4D_Colors = LibStub:NewLibrary('X4D_Colors', 1000)
+local X4D_Colors = LibStub:NewLibrary('X4D_Colors', 1001)
 if (not X4D_Colors) then
 	return
 end
@@ -28,6 +28,9 @@ function X4D_Colors:Lerp(colorFrom, colorTo, percent)
 	if (percent == nil) then
 		percent = 50
 	end
+    if (colorFrom == nil) then
+        colorFrom = X4D_Colors.SYSTEM
+    end
 	local factor = 1 + (percent / 100)
 	local rFrom, gFrom, bFrom = X4D_Colors:Parse(colorFrom)
 	local rTo, gTo, bTo = X4D_Colors:Parse(colorFrom)

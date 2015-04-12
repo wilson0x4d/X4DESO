@@ -1,13 +1,12 @@
+## APIVersion: 100011
 ## Title: X4D |cFFAE19Bank
 ## Author: @wilson0x4d
-## Notes: Performs regular bank deposits.
-## Version: 1.12
-## APIVersion: 100004
+## Description: Performs regular bank deposits.
+## Version: 1.13
 ## SavedVariables: X4D_Bank_SV
-## OptionalDependsOn: LibAddonMenu-1.0
+## DependsOn: X4D_Core
 
 lib/LibStub/LibStub.lua
-lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
 
 X4D_Bank.lua
 X4D_Bank.xml

@@ -1,10 +1,12 @@
-local X4D_Loot = LibStub:NewLibrary('X4D_Loot', 1007)
+local X4D_Loot = LibStub:NewLibrary('X4D_Loot', 1008)
 if (not X4D_Loot) then
 	return
 end
+local X4D = LibStub('X4D')
+X4D.Loot = X4D_Loot
 
 X4D_Loot.NAME = 'X4D_Loot'
-X4D_Loot.VERSION = '1.7'
+X4D_Loot.VERSION = '1.8'
 
 X4D_Loot.Settings = {}
 X4D_Loot.Settings.SavedVars = {}
@@ -120,9 +122,9 @@ local function AddBagSlotInternal(bag, slotIndex)
 end
 
 local function AddBagInternal(bags, bagId)
-	local bagIcon, bagSlots = GetBagInfo(bagId)
+	local bagSlots = GetBagSize(bagId)
 	if (bagIcon == nil or bagIcon:len() == 0) then
-		bagIcon = 'EsoUI/Art/Icons/icon_missing.dds'
+		bagIcon = 'EsoUI/Art/Icons/icon_missing.dds' -- TODO: how to know which icon to use? also, choose better default icon for this case
 	end
 	local bag = {
 		Id = bagId,
@@ -216,7 +218,7 @@ local function UpdateBagInternal(bags, bagId)
 			wasChangeDetected = true
 		end
 	else
-		local bagIcon, numSlots = GetBagInfo(bagId)
+		local  numSlots = GetBagSize(bagId)
 		for slotIndex = 0, numSlots do
 			if (UpdateBagSlotInternal(bag, slotIndex) and bagId == 1) then
 				wasChangeDetected = true

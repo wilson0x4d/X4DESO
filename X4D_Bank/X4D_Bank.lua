@@ -1,12 +1,12 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1012)
+local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1013)
 if (not X4D_Bank) then
 	return
 end
-
-local X4D_Loot = LibStub('X4D_Loot', true)
+local X4D = LibStub('X4D')
+X4D.Bank = X4D_Bank
 
 X4D_Bank.NAME = 'X4D_Bank'
-X4D_Bank.VERSION = '1.12'
+X4D_Bank.VERSION = '1.13'
 
 X4D_Bank.Options = {}
 X4D_Bank.Options.Saved = {}
@@ -647,66 +647,80 @@ local function SetSliderValue(controlName, value, minValue, maxValue)
 end
 
 local function InitializeOptionsUI()
-	local LAM = LibStub('LibAddonMenu-1.0')
-	local cplId = LAM:CreateControlPanel('X4D_BANK_CPL', 'X4D |cFFAE19Bank')
+	local LAM = LibStub('LibAddonMenu-2.0')
+	local cplId = LAM:RegisterAddonPanel('X4D_BANK_CPL', {
+        type = 'panel',
+        name = 'X4D |cFFAE19Bank',
+    })
 
-	LAM:AddHeader(cplId, 
-		'X4D_BANK_HEADER_DEFAULT', 'Settings')
-
-	LAM:AddDropdown(cplId, 'X4D_CHAT_OPTION_SETTINGSARE', 'Settings Are..',
-		'Settings Option', {'Account-Wide', 'Per-Character'},
-		function() return X4D_Bank.Options.Saved.SettingsAre or 'Account-Wide' end,
-		function(option)
-			X4D_Bank.Options.Saved.SettingsAre = option
-			ReloadUI()
-		end)
-
-	LAM:AddHeader(cplId, 
-		'X4D_BANK_HEADER_GOLD', 'Gold Deposits and Withdrawals')
-
-	LAM:AddSlider(cplId,
-		'X4D_BANK_SLIDER_AUTODEPOSIT_RESERVE', 'Reserve Amount',
-		'If non-zero, the specified amount of carried gold will never be auto-deposited.',
-		0, 10000, 100,
-		function () return GetOption('AutoDepositReserve') end,
-		function (v) SetOption('AutoDepositReserve', tonumber(tostring(v))) end)
-
-	LAM:AddCheckbox(cplId, 
-		'X4D_BANK_CHECK_AUTOWITHDRAW_RESERVE', 'Auto-Withdraw Reserve', 
-		'When enabled, if you are carrying less than your specified reserve the difference will be withdrawn from the bank.', 
-		function() return GetOption('AutoWithdrawReserve') end,
-		function() SetOption('AutoWithdrawReserve', not GetOption('AutoWithdrawReserve')) end)
-
-	LAM:AddSlider(cplId,
-		'X4D_BANK_SLIDER_AUTODEPOSIT_FIXED_AMOUNT', 'Auto-Deposit Fixed Amount',
-		'If non-zero, will auto-deposit up to the configured amount when accessing the bank.',
-		0, 1000, 100,
-		function () return GetOption('AutoDepositFixedAmount') end,
-		function (v) SetOption('AutoDepositFixedAmount', tonumber(tostring(v))) end)
-
-	LAM:AddSlider(cplId,
-		'X4D_BANK_SLIDER_AUTODEPOSIT_PERCENTAGE', 'Auto-Deposit Percentage',
-		'If non-zero, will auto-deposit percentage of non-reserve gold when accessing the bank.',
-		0, 100, 1,
-		function () return GetOption('AutoDepositPercentage') end,
-		function (v) SetOption('AutoDepositPercentage', tonumber(tostring(v))) end)
-
-	LAM:AddSlider(cplId,
-		'X4D_BANK_SLIDER_AUTODEPOSIT_DOWNTIME', 'Auto-Deposit Down-Time',
-		'If non-zero, will wait specified time (in seconds) between bank interactions before auto-depositing again.',
-		0, 3600, 30,
-		function () return GetOption('AutoDepositDowntime') end,
-		function (v) SetOption('AutoDepositDowntime', tonumber(tostring(v))) end)
-
-	LAM:AddHeader(cplId, 
-		'X4D_BANK_HEADER_ITEMS', 'Item Deposits and Withdrawals')
-
-	LAM:AddCheckbox(cplId, 
-		'X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', 'Fill Partial Stacks?', 
-		'When enabled, partial stacks in the bank will be filled from your inventory, regardless of the item type.', 
-		function() return GetOption('AutoDepositItems') end,
-		function() SetOption('AutoDepositItems', not GetOption('AutoDepositItems')) end)
-
+    local panelOptions = {
+        [1] = {
+            type = 'dropdown',
+            name = 'Settings Are..',
+            tooltip = 'Settings Option', 
+            choices = {'Account-Wide', 'Per-Character'},
+            getFunc = function() return X4D_Bank.Options.Saved.SettingsAre or 'Account-Wide' end,
+            setFunc = function(option)
+                X4D_Bank.Options.Saved.SettingsAre = option
+                ReloadUI()
+            end,
+        },
+        [2] = {
+            type = 'header',
+            name = 'Gold Deposits and Withdrawals',
+        },
+        [3] = {
+            type = 'slider',
+            name = 'Reserve Amount',
+            tooltip = 'If non-zero, the specified amount of carried gold will never be auto-deposited.',
+            min = 0, max = 10000, step = 100,
+            getFunc = function () return GetOption('AutoDepositReserve') end,
+            setFunc = function (v) SetOption('AutoDepositReserve', tonumber(tostring(v))) end,
+        },
+        [4] = {
+            type = 'checkbox',
+            name = 'Auto-Withdraw Reserve', 
+            tooltip = 'When enabled, if you are carrying less than your specified reserve the difference will be withdrawn from the bank.', 
+            getFunc = function() return GetOption('AutoWithdrawReserve') end,
+            setFunc = function() SetOption('AutoWithdrawReserve', not GetOption('AutoWithdrawReserve')) end,
+        },
+        [5] = {
+            type = 'slider',
+            name = 'Auto-Deposit Fixed Amount',
+            tooltip = 'If non-zero, will auto-deposit up to the configured amount when accessing the bank.',
+            min = 0, max = 1000, step = 100,
+            getFunc = function () return GetOption('AutoDepositFixedAmount') end,
+            setFunc = function (v) SetOption('AutoDepositFixedAmount', tonumber(tostring(v))) end,
+        },
+        [6] = {
+            type = 'slider',
+            name = 'Auto-Deposit Percentage',
+            tooltip = 'If non-zero, will auto-deposit percentage of non-reserve gold when accessing the bank.',
+            min = 0, max = 100, step = 1,
+            getFunc = function () return GetOption('AutoDepositPercentage') end,
+            setFunc = function (v) SetOption('AutoDepositPercentage', tonumber(tostring(v))) end,
+        },
+        [7] = {
+            type = 'slider',
+            name = 'Auto-Deposit Down-Time',
+            tooltip = 'If non-zero, will wait specified time (in seconds) between bank interactions before auto-depositing again.',
+            min = 0, max = 3600, step = 30,
+            getFunc = function () return GetOption('AutoDepositDowntime') end,
+            setFunc = function (v) SetOption('AutoDepositDowntime', tonumber(tostring(v))) end,
+        },
+        [8] = {
+            type = 'header',
+            name = 'Item Deposits and Withdrawals',                
+        },
+        [9] = {
+            type = 'checkbox',
+            name = 'Fill Partial Stacks?',
+            tooltip = 'When enabled, partial stacks in the bank will be filled from your inventory, regardless of the item type.', 
+            getFunc = function() return GetOption('AutoDepositItems') end,
+            setFunc = function() SetOption('AutoDepositItems', not GetOption('AutoDepositItems')) end,
+        },
+    }
+    
 	--LAM:AddCheckbox(cplId, 
 	--	'X4D_BANK_CHECK_START_NEW_STACKS', 'Start New Stacks?', 
 	--	'When enabled, new stacks of items will be created in your bank after partial stacks are filled.', 
@@ -718,14 +732,23 @@ local function InitializeOptionsUI()
 		if (v == nil) then
 			break
 		end
-		local dropdownName = CreateDropdownName(v)
-		LAM:AddDropdown(cplId, dropdownName, v.Title,
-			v.Description, _itemOptions,
-			function() return GetOption(dropdownName) or 'Leave Alone' end,
-			function(option)
+        local dropdownName = CreateDropdownName(v)
+        table.insert(panelOptions, {
+            type = 'dropdown',
+            name = v.Title,
+			tooltip = v.Description, 
+            choices = _itemOptions,
+			getFunc = function() return GetOption(dropdownName) or 'Leave Alone' end,
+			setFunc = function(option)
 				SetOption(dropdownName, option)
-			end)
+			end,
+        })
 	end
+
+    LAM:RegisterOptionControls(
+        'X4D_BANK_CPL',
+        panelOptions
+    )
 
 	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
 			if (panel == cplId) then				
@@ -735,36 +758,36 @@ local function InitializeOptionsUI()
 						--SetComboboxValue('X4D_CHAT_OPTION_SETTINGSARE', X4D_Bank.Options.Saved.SettingsAre)
 						--X4D_Bank.Options.Saved.SettingsAre = X4D_Bank.Options.Default.SettingsAre
 
-						SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_DOWNTIME', X4D_Bank.Options.Default.AutoDepositDowntime, 0, 3600)
-						SetOption('AutoDepositDowntime', X4D_Bank.Options.Default.AutoDepositDowntime)
+						--SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_DOWNTIME', X4D_Bank.Options.Default.AutoDepositDowntime, 0, 3600)
+						--SetOption('AutoDepositDowntime', X4D_Bank.Options.Default.AutoDepositDowntime)
 
-						SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_RESERVE', X4D_Bank.Options.Default.AutoDepositReserve, 0, 10000)
-						SetOption('AutoDepositReserve', X4D_Bank.Options.Default.AutoDepositReserve)
+						--SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_RESERVE', X4D_Bank.Options.Default.AutoDepositReserve, 0, 10000)
+						--SetOption('AutoDepositReserve', X4D_Bank.Options.Default.AutoDepositReserve)
 
-						SetCheckboxValue('X4D_BANK_CHECK_AUTOWITHDRAW_RESERVE', X4D_Bank.Options.Default.AutoWithdrawReserve)
-						SetOption('AutoWithdrawReserve', X4D_Bank.Options.Default.AutoWithdrawReserve)
+						--SetCheckboxValue('X4D_BANK_CHECK_AUTOWITHDRAW_RESERVE', X4D_Bank.Options.Default.AutoWithdrawReserve)
+						--SetOption('AutoWithdrawReserve', X4D_Bank.Options.Default.AutoWithdrawReserve)
 
-						SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_FIXED_AMOUNT', X4D_Bank.Options.Default.AutoDepositFixedAmount, 0, 1000)
-						SetOption('AutoDepositFixedAmount', X4D_Bank.Options.Default.AutoDepositFixedAmount)
+						--SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_FIXED_AMOUNT', X4D_Bank.Options.Default.AutoDepositFixedAmount, 0, 1000)
+						--SetOption('AutoDepositFixedAmount', X4D_Bank.Options.Default.AutoDepositFixedAmount)
 
-						SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_PERCENTAGE', X4D_Bank.Options.Default.AutoDepositPercentage, 0, 100)
-						SetOption('AutoDepositPercentage', X4D_Bank.Options.Default.AutoDepositPercentage)
+						--SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_PERCENTAGE', X4D_Bank.Options.Default.AutoDepositPercentage, 0, 100)
+						--SetOption('AutoDepositPercentage', X4D_Bank.Options.Default.AutoDepositPercentage)
 
-						SetCheckboxValue('X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', X4D_Bank.Options.Default.AutoDepositItems)
-						SetOption('AutoDepositItems', X4D_Bank.Options.Default.AutoDepositItems)
+						--SetCheckboxValue('X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', X4D_Bank.Options.Default.AutoDepositItems)
+						--SetOption('AutoDepositItems', X4D_Bank.Options.Default.AutoDepositItems)
 
 						--SetCheckboxValue('X4D_BANK_CHECK_START_NEW_STACKS', X4D_Bank.Options.Default.StartNewStacks)
 						--SetOption('StartNewStacks', X4D_Bank.Options.Default.StartNewStacks)												
 
-						for i= 0, 10 do
-							local v = _itemGroups[i]
-							if (v == nil) then
-								break
-							end
-							local dropdownName = CreateDropdownName(v)
-							SetComboboxValue(dropdownName, 'Leave Alone')
-							SetOption(dropdownName, 'Leave Alone')
-						end
+						--for i= 0, 10 do
+						--	local v = _itemGroups[i]
+						--	if (v == nil) then
+						--		break
+						--	end
+						--	local dropdownName = CreateDropdownName(v)
+						--	SetComboboxValue(dropdownName, 'Leave Alone')
+						--	SetOption(dropdownName, 'Leave Alone')
+						--end
 
 					end
 				end)

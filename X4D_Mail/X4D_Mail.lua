@@ -1,10 +1,12 @@
-local X4D_Mail = LibStub:NewLibrary('X4D_Mail', 1000)
+local X4D_Mail = LibStub:NewLibrary('X4D_Mail', 1001)
 if (not X4D_Mail) then
 	return
 end
+local X4D = LibStub('X4D')
+X4D.Mail = X4D_Mail
 
 X4D_Mail.NAME = 'X4D_Mail'
-X4D_Mail.VERSION = '1.0'
+X4D_Mail.VERSION = '1.1'
 
 -- 1.0
 -- X4D_Mail:IsMailReadable(mailId)

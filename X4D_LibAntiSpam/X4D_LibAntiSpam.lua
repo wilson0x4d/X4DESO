@@ -1,10 +1,12 @@
-local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1058)
+local X4D_LibAntiSpam = LibStub:NewLibrary('LibAntiSpam', 1059)
 if (not X4D_LibAntiSpam) then
 	return
 end
+local X4D = LibStub('X4D')
+X4D.AntiSpam = X4D_LibAntiSpam
 
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam'
-X4D_LibAntiSpam.VERSION = '1.58'
+X4D_LibAntiSpam.VERSION = '1.59'
 
 X4D_LibAntiSpam.Options = {}
 X4D_LibAntiSpam.Options.Saved = {}
@@ -629,16 +631,6 @@ local function SetEditBoxValue(controlName, value, maxInputChars)
 	_G[controlName]['edit']:SetText(value)
 end
 
-local function SetPatternsEditBoxText()
-	local petternsOption = GetOption('Patterns')
-	if (petternsOption == nil or type(petternsOption) == 'string') then
-		petternsOption = { }
-	end
-	local patterns = table.concat(petternsOption, '\n')
-	SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', patterns, 8192)
-	return patterns
-end
-
 function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_LibAntiSpam.NAME) then
 		return
@@ -646,74 +638,92 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 
 	X4D_LibAntiSpam.Options.Saved = ZO_SavedVars:NewAccountWide(X4D_LibAntiSpam.NAME .. '_SV', 1.45, nil, {})
 
-	local LAM = LibStub('LibAddonMenu-1.0')
-	local cplId = LAM:CreateControlPanel('X4D_LibAntiSpam_CPL', 'X4D |cFFAE19AntiSpam')	
-	LAM:AddHeader(cplId, 
-		'X4D_LIBANTISPAM_HEADER_SETTINGS', 'Settings')
-
-	LAM:AddCheckbox(cplId, 
-		'X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', 'Notify when detected Spam?', 
-		'When enabled, Names are logged to the chat frame when spam is detected.', 
-		function() return GetOption('NotifyWhenDetected') end,
-		function() SetOption('NotifyWhenDetected', not GetOption('NotifyWhenDetected')) end)
-
-	LAM:AddSlider(cplId,
-		'X4D_LIBANTISPAM_SLIDER_FLOODTIME', 'Max Flood Time',
-		'This determines mininum amount of time, in seconds, before repeated text is not considered Flooding. Flooding is when a user types the same thing into chat over and over.',
-		0, 900, 5,
-		function () return GetOption('FloodTime') end,
-		function (v) SetOption('FloodTime', tonumber(tostring(v))) end)
-
-	LAM:AddEditBox(cplId, 
-		'X4D_LIBANTISPAM_EDIT_PATTERNS', 'User Patterns', 
-		'Line-delimited list of Spammer Patterns, each one should be on a new line.', 
-		true,
-		SetPatternsEditBoxText,
-		function()
-			local v = _G['X4D_LIBANTISPAM_EDIT_PATTERNS']['edit']:GetText()
-			local result = StringSplit(v, '\n')
-			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
-			for _,x in pairs(result) do
-				if (StringEndsWith(x, ']')) then
-					result[_] = x .. '+'
-				end
-			end
-			SetOption('Patterns', result)
-		end)
-	SetPatternsEditBoxText()
-
-	LAM:AddCheckbox(cplId, 
-		'X4D_LIBANTISPAM_CHECK_USEINTERNAL', 'Use Internal Patterns?', 
-		'When enabled, an internal set of patterns are used (in addition to any "User Patterns" you define.)', 
-		function() return GetOption('UseInternalPatterns') end,
-		function() SetOption('UseInternalPatterns', not GetOption('UseInternalPatterns')) end)
-
-	LAM:AddCheckbox(cplId, 
-		'X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', '[DEV] Show normalized text.', 
-		'When enabled, all normalized text is dumped to the chat frame to aid in creating new patterns.', 
-		function() return GetOption('ShowNormalizations') end,
-		function() SetOption('ShowNormalizations', not GetOption('ShowNormalizations')) end)
-		
+	local LAM = LibStub('LibAddonMenu-2.0')
+	local cplId = LAM:RegisterAddonPanel(
+        'X4D_LibAntiSpam_CPL', 
+        {
+            type = 'panel',
+            name = 'X4D |cFFAE19AntiSpam',        
+        })	
+    
+    LAM:RegisterOptionControls(
+        'X4D_LibAntiSpam_CPL',
+        {
+            [1] = {
+                type = 'checkbox',
+                name = 'Notify when detected Spam?', 
+                tooltip = 'When enabled, Names are logged to the chat frame when spam is detected.', 
+                getFunc = function() return GetOption('NotifyWhenDetected') end,
+                setFunc = function() SetOption('NotifyWhenDetected', not GetOption('NotifyWhenDetected')) end,
+            },
+            [2] = {
+                type = 'slider',
+                name = 'Max Flood Time',
+                tooltip = 'This determines mininum amount of time, in seconds, before repeated text is not considered Flooding. Flooding is when a user types the same thing into chat over and over.',
+                min = 0, max = 900, step = 5,
+                getFunc = function () return GetOption('FloodTime') end,
+                setFunc = function (v) SetOption('FloodTime', tonumber(tostring(v))) end,
+            },
+            [3] = {
+                type = 'editbox',
+                name = 'User Patterns', 
+                tooltip = 'Line-delimited list of User-Defined AntiSpam Patterns, each one should be on a new line.', 
+                isMultiline = true,
+                getFunc = function () 
+                    local patternsOption = GetOption('Patterns')
+                    if (patternsOption == nil or type(patternsOption) == 'string') then
+                        patternsOption = { }
+                    end
+                    local patterns = table.concat(patternsOption, '\n')
+                    return patterns
+                end,
+                setFunc = function(v)
+                    --local v = _G['X4D_LIBANTISPAM_EDIT_PATTERNS']['edit']:GetText()
+                    local result = StringSplit(v, '\n')
+                    -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+                    for _,x in pairs(result) do
+                        if (StringEndsWith(x, ']')) then
+                            result[_] = x .. '+'
+                        end
+                    end
+                    SetOption('Patterns', result)
+                end,
+            },
+            [4] = {
+                type = 'checkbox',
+                name = 'Use Internal Patterns?', 
+                tooltip = 'When enabled, an internal set of patterns are used (in addition to any "User Patterns" you define.)', 
+                getFunc = function() return GetOption('UseInternalPatterns') end,
+                setFunc = function() SetOption('UseInternalPatterns', not GetOption('UseInternalPatterns')) end,
+            },
+            [5] = {
+                type = 'checkbox',
+                name = '[DEV] Show normalized text.', 
+                tooltip = 'When enabled, all normalized text is dumped to the chat frame to aid in creating new patterns.', 
+                getFunc = function() return GetOption('ShowNormalizations') end,
+                setFunc = function() SetOption('ShowNormalizations', not GetOption('ShowNormalizations')) end,
+            },
+        });
+    		
 	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
 			if (panel == cplId) then				
 				ZO_OptionsWindowResetToDefaultButton:SetCallback(function ()
 					if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == cplId) then
 
-						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected)
-						SetOption('NotifyWhenDetected', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected)
+						--SetCheckboxValue('X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected)
+						--SetOption('NotifyWhenDetected', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected)
 						
-						SetSliderValue('X4D_LIBANTISPAM_SLIDER_FLOODTIME', X4D_LibAntiSpam.Options.Default.FloodTime, 0, 900)
-						SetOption('FloodTime', X4D_LibAntiSpam.Options.Default.FloodTime)
+						--SetSliderValue('X4D_LIBANTISPAM_SLIDER_FLOODTIME', X4D_LibAntiSpam.Options.Default.FloodTime, 0, 900)
+						--SetOption('FloodTime', X4D_LibAntiSpam.Options.Default.FloodTime)
 																		
-						SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', '', 8192)
-						SetOption('Patterns', '')
+						--SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', '', 8192)
+						--SetOption('Patterns', '')
 
-						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_USEINTERNAL', X4D_LibAntiSpam.Options.Default.UseInternalPatterns)
-						SetOption('UseInternalPatterns', X4D_LibAntiSpam.Options.Default.UseInternalPatterns)
+						--SetCheckboxValue('X4D_LIBANTISPAM_CHECK_USEINTERNAL', X4D_LibAntiSpam.Options.Default.UseInternalPatterns)
+						--SetOption('UseInternalPatterns', X4D_LibAntiSpam.Options.Default.UseInternalPatterns)
 
-						SetCheckboxValue('X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', X4D_LibAntiSpam.Options.Default.ShowNormalizations)						
-						SetOption('ShowNormalizations', X4D_LibAntiSpam.Options.Default.ShowNormalizations)
-
+						--SetCheckboxValue('X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', X4D_LibAntiSpam.Options.Default.ShowNormalizations)						
+						--SetOption('ShowNormalizations', X4D_LibAntiSpam.Options.Default.ShowNormalizations)
 					end
 				end)
 			end

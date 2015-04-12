@@ -1,4 +1,9 @@
-X4D_Chat = {}
+local X4D_Chat = LibStub:NewLibrary('X4D_Chat', 1024)
+if (not X4D_Chat) then
+	return
+end
+local X4D = LibStub('X4D')
+X4D.Chat = X4D_Chat
 
 local X4D_LibAntiSpam = nil
 local X4D_Loot = nil
@@ -7,7 +12,7 @@ local X4D_Bank = nil
 local X4D_Mail = nil
 
 X4D_Chat.NAME = 'X4D_Chat'
-X4D_Chat.VERSION = '1.23'
+X4D_Chat.VERSION = '1.24'
 
 X4D_Chat.Settings = {}
 X4D_Chat.Settings.SavedVars = {}
@@ -60,7 +65,7 @@ X4D_Chat.ChannelCategory = {
 	[CHAT_CHANNEL_USER_CHANNEL_8] = CHAT_CATEGORY_PARTY,
 	[CHAT_CHANNEL_USER_CHANNEL_9] = CHAT_CATEGORY_PARTY,
 	[CHAT_CHANNEL_WHISPER] = CHAT_CATEGORY_WHISPER_INCOMING,
-	[CHAT_CHANNEL_WHISPER_NOT_FOUND] = CHAT_CATEGORY_OUTGOING,
+	--[CHAT_CHANNEL_WHISPER_NOT_FOUND] = CHAT_CATEGORY_OUTGOING,
 	[CHAT_CHANNEL_WHISPER_SENT] = CHAT_CATEGORY_WHISPER_OUTGOING,
 	[CHAT_CHANNEL_YELL] = CHAT_CATEGORY_YELL,
 	[CHAT_CHANNEL_ZONE] = CHAT_CATEGORY_ZONE,
@@ -177,20 +182,7 @@ function X4D_Chat.ParseColorCode(color)
 end
 
 function X4D_Chat.DeriveHighlightColorCode(color)
-	local r, g, b, a = X4D_Chat.ParseColorCode(color)
-	r = r * 1.5
-	if (r > 1) then
-		r = 1
-	end
-	g = g * 1.5
-	if (g > 1) then
-		g = 1
-	end
-	b = b * 1.5
-	if (b > 1) then
-		b = 1
-	end
-	return X4D_Chat.CreateColorCode(r, g, b)
+    return X4D.Colors.DeriveHighlight(color)
 end
 
 function X4D_Chat.CreateChannelLink(channelInfo, category)
@@ -425,199 +417,229 @@ local function SetSliderValue(controlName, value, minValue, maxValue)
 	slidervalue:SetText(tostring(value))
 end
 
-local function SetEditBoxValue(controlName, value, maxInputChars)
-	if (maxInputChars and maxInputChars > 0) then
-		_G[controlName]['edit']:SetMaxInputChars(maxInputChars)
-	end
-	_G[controlName]['edit']:SetText(value)
-end
+--local function SetEditBoxValue(controlName, value, maxInputChars)
+--	if (maxInputChars and maxInputChars > 0) then
+--		_G[controlName]['edit']:SetMaxInputChars(maxInputChars)
+--	end
+--	_G[controlName]['edit']:SetText(value)
+--end
 
 local function OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Chat.NAME) then
 		return
 	end	
 	X4D_Chat.Settings.SavedVars = ZO_SavedVars:NewAccountWide(X4D_Chat.NAME .. '_SV', 1.12, nil, X4D_Chat.Settings.Defaults)
-	local LAM = LibStub('LibAddonMenu-1.0')
-	local cplId = LAM:CreateControlPanel('X4D_Chat_CPL', 'X4D |cFFAE19Chat')	
-	LAM:AddHeader(cplId, 
-		'X4D_CHAT_HEADER_SETTINGS', 'Settings')
+	local LAM = LibStub('LibAddonMenu-2.0')
+	local cplId = LAM:RegisterAddonPanel(
+        'X4D_Chat_CPL', 
+        {
+            type = 'panel',
+            name = 'X4D |cFFAE19Chat',
+        })
+    
+    LAM:RegisterOptionControls(
+        'X4D_Chat_CPL', 
+        {
+            [1] = {
+                type = 'dropdown',
+                name = 'Timestamps',
+                tooltip = 'Timestamp Option',
+                choices = {'Disabled', '24 Hour Format', '12 Hour Format'},
+                getFunc = function() 
+                    return X4D_Chat.Settings.SavedVars.TimestampOption or '24 Hour Format' 
+                end,
+                setFunc = function(option)
+                    X4D_Chat.Settings.SavedVars.TimestampOption = option
+                end,
+            },
+            [2] = {
+                type = 'checkbox',
+                name = 'Remove "Seconds" Component', 
+                tooltip = 'When enabled, the "Seconds" component is removed from timestamps.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.RemoveSeconds end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.RemoveSeconds = not X4D_Chat.Settings.SavedVars.RemoveSeconds end,
+            },
+            [3] = {
+                type = 'checkbox',
+                name = 'Show Character Names in Guild Chat', 
+                tooltip = 'When enabled, Player Names are replaced with Character Names in Guild Chat.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.GuildCharNames end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.GuildCharNames = not X4D_Chat.Settings.SavedVars.GuildCharNames end,
+            },
+            [4] = {
+                type = 'checkbox',
+                name = 'Show Player Names in Guild Chat', 
+                tooltip = 'When enabled, Player Names are replaced with Character Names in Guild Chat.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.GuildPlayerNames = not X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
+            },
+            [5] = {
+                type = 'checkbox',
+                name = 'Use Guild Abbrevations', 
+                tooltip = 'When enabled, Guild Names are replaced with an Abbreviation. Abbrevations are set in the Guild Description e.g. [FOO], or inferred as the capital letters of the guild.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.UseGuildAbbr end,
+                setFunc = function() 
+                    X4D_Chat.Settings.SavedVars.UseGuildAbbr = not X4D_Chat.Settings.SavedVars.UseGuildAbbr
+                    X4D_Chat.Guilds = {}
+                end,
+            },
+            [6] = {
+                type = 'checkbox',
+            	name = 'Use Guild Number', 
+                tooltip = 'When enabled, Guild Names are replaced with their corresponding Number.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.UseGuildNum end,
+                setFunc = function() 
+                    X4D_Chat.Settings.SavedVars.UseGuildNum = not X4D_Chat.Settings.SavedVars.UseGuildNum
+                    X4D_Chat.Guilds = {}
+                end,
+            },
+            [7] = {
+                type = 'checkbox',
+            	name = 'Strip Colors', 
+                tooltip = 'When enabled, color codes are stripped from chat messages.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.StripColors end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.StripColors = not X4D_Chat.Settings.SavedVars.StripColors end,
+            },
+            [8] = {
+                type = 'checkbox',
+                name = 'Strip Excess Text', 
+                tooltip = 'When enabled, excess text is stripped from chat messages.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.StripExcess end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.StripExcess = not X4D_Chat.Settings.SavedVars.StripExcess end,
+            },
+            [9] = {
+                type = 'checkbox',
+                name = 'Prevent Chat Fade', 
+                tooltip = 'When enabled, Chat Window will not Fade.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.PreventChatFade end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.PreventChatFade = not X4D_Chat.Settings.SavedVars.PreventChatFade end,
+            },
+            [10] = {
+                type = 'checkbox',
+                name = 'Disable Friend Status Messages', 
+                tooltip = 'When enabled, Friend Online/Offline Status Messages are not displayed.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.DisableFriendStatus end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.DisableFriendStatus = not X4D_Chat.Settings.SavedVars.DisableFriendStatus end,
+            },
+            [11] = {
+                type = 'editbox',
+                name = 'Guild #1', 
+                tooltip = 'An Abbreviation for Guild #1, do not include brackets.', 
+                isMultiline = false,
+                getFunc = function()
+                    return X4D_Chat.Settings.SavedVars.GuildAbbr[1]
+                end,
+                setFunc = function(v)
+                    X4D_Chat.Settings.SavedVars.GuildAbbr[1] = v --_G['X4D_CHAT_EDIT_GUILD1']['edit']:GetText()
+                end,
+                default = X4D_Chat.Settings.SavedVars.GuildAbbr[1],
+                width = 'half',      
+            },
+            [12] = {
+                type = 'editbox',
+                name = 'Guild #2', 
+                tooltip = 'An Abbreviation for Guild #2, do not include brackets.', 
+                isMultiline = false,
+                getFunc = function()
+                    return X4D_Chat.Settings.SavedVars.GuildAbbr[2]
+                end,
+                setFunc = function(v)
+                    X4D_Chat.Settings.SavedVars.GuildAbbr[2] = v --_G['X4D_CHAT_EDIT_GUILD2']['edit']:GetText()
+                end,
+                default = X4D_Chat.Settings.SavedVars.GuildAbbr[2],
+                width = 'half',                
+            },
+            [13] = {
+                type = 'editbox',
+                name = 'Guild #3', 
+                tooltip = 'An Abbreviation for Guild #3, do not include brackets.', 
+                isMultiline = false,
+                getFunc = function()
+                    return X4D_Chat.Settings.SavedVars.GuildAbbr[3]
+                end,
+                setFunc = function(v)
+                    X4D_Chat.Settings.SavedVars.GuildAbbr[3] = v --_G['X4D_CHAT_EDIT_GUILD3']['edit']:GetText()
+                end,
+                default = X4D_Chat.Settings.SavedVars.GuildAbbr[3],
+                width = 'half',                
+            },
+            [14] = {
+                type = 'editbox',
+                name = 'Guild #4', 
+                tooltip = 'An Abbreviation for Guild #4, do not include brackets.', 
+                isMultiline = false,
+                getFunc = function()
+                    return X4D_Chat.Settings.SavedVars.GuildAbbr[4]
+                end,
+                setFunc = function(v)
+                    X4D_Chat.Settings.SavedVars.GuildAbbr[4] = v --_G['X4D_CHAT_EDIT_GUILD4']['edit']:GetText()
+                end,
+                default = X4D_Chat.Settings.SavedVars.GuildAbbr[4],
+                width = 'half',                
+            },
+            [15] = {
+                type = 'editbox',
+                name = 'Guild #5', 
+                tooltip = 'An Abbreviation for Guild #5, do not include brackets.', 
+                isMultiline = false,
+                getFunc = function()
+                    return X4D_Chat.Settings.SavedVars.GuildAbbr[5]
+                end,
+                setFunc = function(v)
+                    X4D_Chat.Settings.SavedVars.GuildAbbr[5] = v --_G['X4D_CHAT_EDIT_GUILD5']['edit']:GetText()
+                end,
+                default = X4D_Chat.Settings.SavedVars.GuildAbbr[5],
+                width = 'half',                
+            },
+        })
 
-	LAM:AddDropdown(cplId, 'X4D_CHAT_OPTION_TIMESTAMPS', 'Timestamps',
-		'Timestamp Option', {'Disabled', '24 Hour Format', '12 Hour Format'},
-		function() return X4D_Chat.Settings.SavedVars.TimestampOption or '24 Hour Format' end,
-		function(option)
-			X4D_Chat.Settings.SavedVars.TimestampOption = option
-		end)
-
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_REMOVESECONDS', 'Remove "Seconds" Component', 
-		'When enabled, the "Seconds" component is removed from timestamps.', 
-		function() return X4D_Chat.Settings.SavedVars.RemoveSeconds end,
-		function() X4D_Chat.Settings.SavedVars.RemoveSeconds = not X4D_Chat.Settings.SavedVars.RemoveSeconds end)
-
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_GUILD_CHARNAMES', 'Show Character Names in Guild Chat', 
-		'When enabled, Player Names are replaced with Character Names in Guild Chat.', 
-		function() return X4D_Chat.Settings.SavedVars.GuildCharNames end,
-		function() X4D_Chat.Settings.SavedVars.GuildCharNames = not X4D_Chat.Settings.SavedVars.GuildCharNames end)
-	
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_GUILD_PLAYERNAMES', 'Show Player Names in Guild Chat', 
-		'When enabled, Player Names are replaced with Character Names in Guild Chat.', 
-		function() return X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
-		function() X4D_Chat.Settings.SavedVars.GuildPlayerNames = not X4D_Chat.Settings.SavedVars.GuildPlayerNames end)
-	
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_GUILD_ABBR', 'Use Guild Abbrevations', 
-		'When enabled, Guild Names are replaced with an Abbreviation. Abbrevations are set in the Guild Description e.g. [FOO], or inferred as the capital letters of the guild.', 
-		function() return X4D_Chat.Settings.SavedVars.UseGuildAbbr end,
-		function() 
-			X4D_Chat.Settings.SavedVars.UseGuildAbbr = not X4D_Chat.Settings.SavedVars.UseGuildAbbr
-			X4D_Chat.Guilds = {}
-		end)
-	
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_GUILD_NUM', 'Use Guild Number', 
-		'When enabled, Guild Names are replaced with their corresponding Number.', 
-		function() return X4D_Chat.Settings.SavedVars.UseGuildNum end,
-		function() 
-			X4D_Chat.Settings.SavedVars.UseGuildNum = not X4D_Chat.Settings.SavedVars.UseGuildNum
-			X4D_Chat.Guilds = {}
-		end)
-	
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_STRIP_COLORS', 'Strip Colors', 
-		'When enabled, color codes are stripped from chat messages.', 
-		function() return X4D_Chat.Settings.SavedVars.StripColors end,
-		function() X4D_Chat.Settings.SavedVars.StripColors = not X4D_Chat.Settings.SavedVars.StripColors end)
-	
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_STRIP_EXCESS', 'Strip Excess Text', 
-		'When enabled, excess text is stripped from chat messages.', 
-		function() return X4D_Chat.Settings.SavedVars.StripExcess end,
-		function() X4D_Chat.Settings.SavedVars.StripExcess = not X4D_Chat.Settings.SavedVars.StripExcess end)
-	
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_PREVENT_FADE', 'Prevent Chat Fade', 
-		'When enabled, Chat Window will not Fade.', 
-		function() return X4D_Chat.Settings.SavedVars.PreventChatFade end,
-		function() X4D_Chat.Settings.SavedVars.PreventChatFade = not X4D_Chat.Settings.SavedVars.PreventChatFade end)
-	
-	LAM:AddCheckbox(cplId, 
-		'X4D_CHAT_CHECK_DISABLE_FRIEND_STATUS', 'Disable Friend Status Messages', 
-		'When enabled, Friend Online/Offline Status Messages are not displayed.', 
-		function() return X4D_Chat.Settings.SavedVars.DisableFriendStatus end,
-		function() X4D_Chat.Settings.SavedVars.DisableFriendStatus = not X4D_Chat.Settings.SavedVars.DisableFriendStatus end)
-		
-	LAM:AddEditBox(cplId, 
-		'X4D_CHAT_EDIT_GUILD1', 'Guild #1', 
-		'An Abbreviation for Guild #1, do not include brackets.', 
-		false,
-		function()
-			return X4D_Chat.Settings.SavedVars.GuildAbbr[1]
-		end,
-		function()
-			X4D_Chat.Settings.SavedVars.GuildAbbr[1] = _G['X4D_CHAT_EDIT_GUILD1']['edit']:GetText()
-		end)
-	SetEditBoxValue('X4D_CHAT_EDIT_GUILD1', X4D_Chat.Settings.SavedVars.GuildAbbr[1], 10)
-
-	LAM:AddEditBox(cplId, 
-		'X4D_CHAT_EDIT_GUILD2', 'Guild #2', 
-		'An Abbreviation for Guild #2, do not include brackets.', 
-		false,
-		function()
-			return X4D_Chat.Settings.SavedVars.GuildAbbr[2]
-		end,
-		function()
-			X4D_Chat.Settings.SavedVars.GuildAbbr[2] = _G['X4D_CHAT_EDIT_GUILD2']['edit']:GetText()
-		end)
-	SetEditBoxValue('X4D_CHAT_EDIT_GUILD2', X4D_Chat.Settings.SavedVars.GuildAbbr[2], 10)
-
-	LAM:AddEditBox(cplId, 
-		'X4D_CHAT_EDIT_GUILD3', 'Guild #3', 
-		'An Abbreviation for Guild #3, do not include brackets.', 
-		false,
-		function()
-			return X4D_Chat.Settings.SavedVars.GuildAbbr[3]
-		end,
-		function()
-			X4D_Chat.Settings.SavedVars.GuildAbbr[3] = _G['X4D_CHAT_EDIT_GUILD3']['edit']:GetText()
-		end)
-	SetEditBoxValue('X4D_CHAT_EDIT_GUILD3', X4D_Chat.Settings.SavedVars.GuildAbbr[3], 10)
-
-	LAM:AddEditBox(cplId, 
-		'X4D_CHAT_EDIT_GUILD4', 'Guild #4', 
-		'An Abbreviation for Guild #4, do not include brackets.', 
-		false,
-		function()
-			return X4D_Chat.Settings.SavedVars.GuildAbbr[4]
-		end,
-		function()
-			X4D_Chat.Settings.SavedVars.GuildAbbr[4] = _G['X4D_CHAT_EDIT_GUILD4']['edit']:GetText()
-		end)
-	SetEditBoxValue('X4D_CHAT_EDIT_GUILD4', X4D_Chat.Settings.SavedVars.GuildAbbr[4], 10)
-
-	LAM:AddEditBox(cplId, 
-		'X4D_CHAT_EDIT_GUILD5', 'Guild #5', 
-		'An Abbreviation for Guild #5, do not include brackets.', 
-		false,
-		function()
-			return X4D_Chat.Settings.SavedVars.GuildAbbr[5]
-		end,
-		function()
-			X4D_Chat.Settings.SavedVars.GuildAbbr[5] = _G['X4D_CHAT_EDIT_GUILD5']['edit']:GetText()
-		end)
-	SetEditBoxValue('X4D_CHAT_EDIT_GUILD5', X4D_Chat.Settings.SavedVars.GuildAbbr[5], 10)
-		
-	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
+        ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
 			if (panel == cplId) then				
 				ZO_OptionsWindowResetToDefaultButton:SetCallback(function ()
 					if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == cplId) then
+						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_CHARNAMES', X4D_Chat.Settings.Defaults.GuildCharNames)
+						--X4D_Chat.Settings.SavedVars.GuildCharNames = X4D_Chat.Settings.Defaults.GuildCharNames
 
-						SetCheckboxValue('X4D_CHAT_CHECK_GUILD_CHARNAMES', X4D_Chat.Settings.Defaults.GuildCharNames)
-						X4D_Chat.Settings.SavedVars.GuildCharNames = X4D_Chat.Settings.Defaults.GuildCharNames
+						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_PLAYERNAMES', X4D_Chat.Settings.Defaults.GuildPlayerNames)
+						--X4D_Chat.Settings.SavedVars.GuildPlayerNames = X4D_Chat.Settings.Defaults.GuildPlayerNames
 
-						SetCheckboxValue('X4D_CHAT_CHECK_GUILD_PLAYERNAMES', X4D_Chat.Settings.Defaults.GuildPlayerNames)
-						X4D_Chat.Settings.SavedVars.GuildPlayerNames = X4D_Chat.Settings.Defaults.GuildPlayerNames
-
-						SetCheckboxValue('X4D_CHAT_CHECK_GUILD_ABBR', X4D_Chat.Settings.Defaults.UseGuildAbbr)
-						X4D_Chat.Settings.SavedVars.UseGuildAbbr = X4D_Chat.Settings.Defaults.UseGuildAbbr
+						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_ABBR', X4D_Chat.Settings.Defaults.UseGuildAbbr)
+						--X4D_Chat.Settings.SavedVars.UseGuildAbbr = X4D_Chat.Settings.Defaults.UseGuildAbbr
 	
-						SetCheckboxValue('X4D_CHAT_CHECK_GUILD_NUM', X4D_Chat.Settings.Defaults.UseGuildNum)
-						X4D_Chat.Settings.SavedVars.UseGuildNum = X4D_Chat.Settings.Defaults.UseGuildNum
+						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_NUM', X4D_Chat.Settings.Defaults.UseGuildNum)
+						--X4D_Chat.Settings.SavedVars.UseGuildNum = X4D_Chat.Settings.Defaults.UseGuildNum
 	
-						SetComboboxValue('X4D_CHAT_OPTION_TIMESTAMPS', X4D_Chat.Settings.Defaults.TimestampOption)
-						X4D_Chat.Settings.SavedVars.TimestampOption = X4D_Chat.Settings.Defaults.TimestampOption
+						--SetComboboxValue('X4D_CHAT_OPTION_TIMESTAMPS', X4D_Chat.Settings.Defaults.TimestampOption)
+						--X4D_Chat.Settings.SavedVars.TimestampOption = X4D_Chat.Settings.Defaults.TimestampOption
 	
-						SetCheckboxValue('X4D_CHAT_CHECK_STRIP_COLORS', X4D_Chat.Settings.Defaults.StripColors)
-						X4D_Chat.Settings.SavedVars.StripColors = X4D_Chat.Settings.Defaults.StripColors
+						--SetCheckboxValue('X4D_CHAT_CHECK_STRIP_COLORS', X4D_Chat.Settings.Defaults.StripColors)
+						--X4D_Chat.Settings.SavedVars.StripColors = X4D_Chat.Settings.Defaults.StripColors
 	
-						SetCheckboxValue('X4D_CHAT_CHECK_STRIP_EXCESS', X4D_Chat.Settings.Defaults.StripExcess)
-						X4D_Chat.Settings.SavedVars.StripExcess = X4D_Chat.Settings.Defaults.StripExcess
+						--SetCheckboxValue('X4D_CHAT_CHECK_STRIP_EXCESS', X4D_Chat.Settings.Defaults.StripExcess)
+						--X4D_Chat.Settings.SavedVars.StripExcess = X4D_Chat.Settings.Defaults.StripExcess
 
-						SetCheckboxValue('X4D_CHAT_CHECK_PREVENT_FADE', X4D_Chat.Settings.Defaults.PreventChatFade)
-						X4D_Chat.Settings.SavedVars.PreventChatFade = X4D_Chat.Settings.Defaults.PreventChatFade
+						--SetCheckboxValue('X4D_CHAT_CHECK_PREVENT_FADE', X4D_Chat.Settings.Defaults.PreventChatFade)
+						--X4D_Chat.Settings.SavedVars.PreventChatFade = X4D_Chat.Settings.Defaults.PreventChatFade
 
-						SetCheckboxValue('X4D_CHAT_CHECK_DISABLE_FRIEND_STATUS', X4D_Chat.Settings.Defaults.DisableFriendStatus)
-						X4D_Chat.Settings.SavedVars.DisableFriendStatus = X4D_Chat.Settings.Defaults.DisableFriendStatus
+						--SetCheckboxValue('X4D_CHAT_CHECK_DISABLE_FRIEND_STATUS', X4D_Chat.Settings.Defaults.DisableFriendStatus)
+						--X4D_Chat.Settings.SavedVars.DisableFriendStatus = X4D_Chat.Settings.Defaults.DisableFriendStatus
 						
-						SetEditBoxValue('X4D_CHAT_EDIT_GUILD1', '', 10)
-						X4D_Chat.Settings.SavedVars.GuildAbbr[1] = ''
-						SetEditBoxValue('X4D_CHAT_EDIT_GUILD2', '', 10)
-						X4D_Chat.Settings.SavedVars.GuildAbbr[2] = ''
-						SetEditBoxValue('X4D_CHAT_EDIT_GUILD3', '', 10)
-						X4D_Chat.Settings.SavedVars.GuildAbbr[3] = ''
-						SetEditBoxValue('X4D_CHAT_EDIT_GUILD4', '', 10)
-						X4D_Chat.Settings.SavedVars.GuildAbbr[4] = ''
-						SetEditBoxValue('X4D_CHAT_EDIT_GUILD5', '', 10)
-						X4D_Chat.Settings.SavedVars.GuildAbbr[5] = ''
-						
+						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD1', '', 10)
+						--X4D_Chat.Settings.SavedVars.GuildAbbr[1] = ''
+						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD2', '', 10)
+						--X4D_Chat.Settings.SavedVars.GuildAbbr[2] = ''
+						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD3', '', 10)
+						--X4D_Chat.Settings.SavedVars.GuildAbbr[3] = ''
+						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD4', '', 10)
+						--X4D_Chat.Settings.SavedVars.GuildAbbr[4] = ''
+						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD5', '', 10)
+						--X4D_Chat.Settings.SavedVars.GuildAbbr[5] = ''
 					end
 				end)
 			end
 		end)		
 
-	-- TODO: these really should intitialize to values relative to the current game window size/resolution - these values are approximations based on a 1920x1080 (Full HD) resolution
+	-- TODO: these really should initialize to values relative to the current game window size/resolution - these values are approximations based on a 1920x1080 (Full HD) resolution
 	CHAT_SYSTEM['maxContainerHeight'] = 1000
 	CHAT_SYSTEM['maxContainerWidth'] = 1800
 	
@@ -726,6 +748,9 @@ end
 
 function X4D_Chat.Register()
 	ZO_ChatSystem_AddEventHandler(EVENT_CHAT_MESSAGE_CHANNEL, X4D_Chat.OnChatMessageReceived)
+    if (not X4D) then 
+        X4D = LibStub('X4D', true)
+    end
 	if (not X4D_LibAntiSpam) then
 		X4D_LibAntiSpam = LibStub('LibAntiSpam', true)
 		if (X4D_LibAntiSpam and X4D_LibAntiSpam.RegisterEmitCallback) then

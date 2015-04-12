@@ -21,6 +21,12 @@ Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.24
+- ESO Update 6
+- Removed LibAddonMenu-1.0 from /lib/ folder
+- Fixed parsing bug when deriving colors from 'nil'
+- Depends On: X4D_Core, LibAddonMenu-2.0
+ 
 v1.23
 - ESO version update, no functional change
 

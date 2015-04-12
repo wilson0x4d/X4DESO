@@ -15,6 +15,11 @@ Open the Archive and copy the **X4D_XP** folder into **%USERPROFILE%\Documents\E
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.5
+- ESO Update 6
+- Removed LibAddonMenu from /lib/ folder
+- Depends On: X4D_Core, LibAddonMenu-2.0
+
 v1.4
 - ESO version update, no functional change
 

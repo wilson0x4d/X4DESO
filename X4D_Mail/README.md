@@ -14,6 +14,11 @@ Open the Archive and copy the **X4D_Mail** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.1
+- ESO Update 6
+- Removed LibAddonMenu from /lib/ folder
+- Depends On: X4D_Core, LibAddonMenu-2.0
+
 v1.0
 - Initial release.
 

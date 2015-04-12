@@ -37,9 +37,8 @@ end
 In your manifest, if you are NOT including the library with your Add-On:
 ```
 ## DependsOn: X4D_Core
-## OptionalDependsOn: LibAddonMenu-1.0
+## DependsOn: LibAddonMenu-2.0
 lib/LibStub/LibStub.lua
-lin/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
 ```
 
 Including X4D_Core along with your add-on is **NOT** recommended, but it is possible to do so. Contact me if you require assistance to avoid breaking other people's Add-Ons due to an incorrect set-up.
@@ -60,6 +59,12 @@ lib/X4D_Core/X4D_Core.lua
 ```
 
 ## Versions
+v1.1
+- ESO Update 6
+- Removed LibAddonMenu-1.0 from /lib/ folder
+- DependsOn: LibAddonMenu-2.0
+
+
 v1.0
 - Initial release.
 - multiple fixes

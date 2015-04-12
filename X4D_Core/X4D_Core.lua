@@ -1,4 +1,4 @@
-local X4D = LibStub:NewLibrary('X4D', 1000)
+local X4D = LibStub:NewLibrary('X4D', 1001)
 if (not X4D) then	
 	return
 end

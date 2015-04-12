@@ -1,14 +1,14 @@
+## APIVersion: 100011
 ## Title: X4D |cFFAE19Mail
 ## Author: @wilson0x4d
-## Notes: Provides minor Mail enhancements.
-## Version: 1.0
-## APIVersion: 100004
+## Description: Provides minor Mail enhancements.
+## Version: 1.1
 ## SavedVariables: X4D_Mail_SV
 ## DependsOn: X4D_Core
-## OptionalDependsOn: LibAddonMenu-1.0, X4D_Loot, X4D_LibAntiSpam
+## OptionalDependsOn: X4D_Loot
+## OptionalDependsOn: X4D_LibAntiSpam
 
 lib/LibStub/LibStub.lua
-lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
 
 X4D_Mail.lua
 X4D_Mail.xml
