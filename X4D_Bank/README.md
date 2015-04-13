@@ -13,6 +13,7 @@ X4D Bank is LibStub-compatible Add-On that performs regular Bank deposits.
 ## Planned Features
 
 * Display own output, currently relies on X4D Loot for displaying Balance Changes.
+* Do not attempt to bank stolen goods.
 
 ## Installation
 
