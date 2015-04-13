@@ -838,7 +838,7 @@ local function OnAddOnLoaded(eventCode, addonName)
 	X4D_Bank.Options.Saved = ZO_SavedVars:NewAccountWide(X4D_Bank.NAME .. '_SV', 1.0, nil, X4D_Bank.Options.Default)
 	InitializeOptionsUI()
 	EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_OPEN_BANK, OnOpenBank)
-	if (X4D_Loot == nil) then
+	if (LibStub('X4D_Loot') == nil) then
 		EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_MONEY_UPDATE,OnMoneyUpdate)
 	end
 end
