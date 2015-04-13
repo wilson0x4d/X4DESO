@@ -24,9 +24,9 @@ X4D_XP.Colors = {
 local _expReasons = { }
 _expReasons[PROGRESS_REASON_NONE] = 'None'
 _expReasons[PROGRESS_REASON_KILL] = 'Kill'
-_expReasons[PROGRESS_REASON_QUEST] = 'Quest' --originally commented out
-_expReasons[PROGRESS_REASON_DISCOVER_POI] = 'POI' --originally commented out
-_expReasons[PROGRESS_REASON_COMPLETE_POI] = 'Exploration' --originally commented out
+--_expReasons[PROGRESS_REASON_QUEST] = 'Quest' --see OnQuestCompleteExperience() instead
+--_expReasons[PROGRESS_REASON_DISCOVER_POI] = 'POI' --see OnDiscoveryExperienceGain() instead
+--_expReasons[PROGRESS_REASON_COMPLETE_POI] = 'Exploration' --see OnObjectiveCompleted() instead
 _expReasons[PROGRESS_REASON_COMMAND] = 'Command'
 _expReasons[PROGRESS_REASON_KEEP_REWARD] = 'Keep'
 _expReasons[PROGRESS_REASON_BATTLEGROUND] = 'Battleground'
@@ -54,7 +54,7 @@ _expReasons[PROGRESS_REASON_TRADESKILL_RECIPE] = 'Tradeskill (Recipe)'
 _expReasons[PROGRESS_REASON_TRADESKILL_TRAIT] = 'Tradeskill (Trait)'
 _expReasons[PROGRESS_REASON_OVERLAND_BOSS_KILL] = 'Boss'
 _expReasons[PROGRESS_REASON_BOSS_KILL] = 'Boss'
-_expReasons[PROGRESS_REASON_OTHER] = 'Other' --31
+_expReasons[PROGRESS_REASON_OTHER] = 'Other'
 _expReasons[PROGRESS_REASON_GRANT_REPUTATION] = 'Reputation Granted'
 _expReasons[PROGRESS_REASON_ALLIANCE_POINTS] = 'Alliance Points'
 _expReasons[PROGRESS_REASON_PVP_EMPEROR] = 'PVP Emperor'
@@ -100,22 +100,18 @@ end
 
 local _pointType = 'XP'
 
-local function OnQuestCompleteExperience(eventCode, questName, xpGained)	
+local function OnQuestCompleteExperience(eventCode, questName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)	
+    local xpGained = currentExperience - previousExperience
 	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D_XP.Colors.X4D .. questName)
 end
 
-local function OnExperienceGain(eventCode, xpGained, reasonIndex)
-	local reason = GetExpReason(reasonIndex)
-	if (reason ~= nil) then
-		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' XP for ' .. reason)
-	end
-end
-
-local function OnDiscoveryExperienceGain(eventCode, areaName, xpGained)
+local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
+    local xpGained = currentExperience - previousExperience;
 	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for Discovery ' .. X4D_XP.Colors.X4D .. areaName)
 end
 
-local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, xpGained)
+local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
+    local xpGained = currentExperience - previousExperience
 	local objectiveName, objectiveLevel, startDescription, finishedDescription = GetPOIInfo(zoneIndex, poiIndex)
 	if (objectiveName ~= nil and objectiveName:len() > 0) then
 		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D_XP.Colors.X4D .. objectiveName)
@@ -150,9 +146,8 @@ function X4D_XP.OnAddOnLoaded(event, addonName)
 end
 
 function X4D_XP.Register()
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_QUEST_COMPLETE_EXPERIENCE, OnQuestCompleteExperience)
-	--EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_GAIN, OnExperienceGain)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_GAIN_DISCOVERY, OnDiscoveryExperienceGain)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_QUEST_COMPLETE, OnQuestCompleteExperience)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_DISCOVERY_EXPERIENCE, OnDiscoveryExperienceGain)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_OBJECTIVE_COMPLETED, OnObjectiveCompleted)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_UPDATE, OnExperienceUpdate)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_VETERAN_POINTS_UPDATE, OnExperienceUpdate)
