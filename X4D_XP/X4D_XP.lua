@@ -52,26 +52,6 @@ local function GetExpReason(reasonIndex)
 	return _expReasons[reasonIndex]
 end
 
-local _vpReasons = { }
-_vpReasons[VP_REASON_ALLIANCE_POINTS] = 'AP'
-_vpReasons[VP_REASON_MONSTER_KILL] = 'Kill'
-_vpReasons[VP_REASON_COMMAND] = 'Command'
-_vpReasons[VP_REASON_DUNGEON_CHALLENGE_A] = 'Challenge'
-_vpReasons[VP_REASON_DUNGEON_CHALLENGE_B] = 'Challenge'
-_vpReasons[VP_REASON_DUNGEON_CHALLENGE_C] = 'Challenge'
-_vpReasons[VP_REASON_DUNGEON_CHALLENGE_D] = 'Challenge'
-_vpReasons[VP_REASON_DUNGEON_CHALLENGE_E] = 'Challenge'
-_vpReasons[VP_REASON_OVERLAND_BOSS_KILL] = 'Boss'
-_vpReasons[VP_REASON_PVE_COMPLETE_POI] = 'POI'
-_vpReasons[VP_REASON_PVP_EMPEROR] = 'Emperor'
-_vpReasons[VP_REASON_QUEST_HIGH] = 'Quest'
-_vpReasons[VP_REASON_QUEST_LOW] = 'Quest'
-_vpReasons[VP_REASON_QUEST_MED] = 'Quest'
-
-local function GetVPReason(reasonIndex)
-	return _vpReasons[reasonIndex]
-end
-
 local function DefaultCallback(color, text)
 	d(color .. text)
 end
@@ -133,37 +113,20 @@ local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, xpGained)
 end
 
 local _currentExp = 0
+local _currentVP = 0
 
-local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reasonIndex)
+local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reasonIndex)    
 	if (unitTag ~= 'player') then
 		return
 	end
 	local xpGained = currentExp - _currentExp
 	if (xpGained > 0) then
 		local reason = GetExpReason(reasonIndex)
-		if (reason ~= nil) then
-			InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' XP for ' .. reason)
+		if (reason ~= nil) then            
+			InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. reason)
 		end
 	end
 	_currentExp = currentExp
-end
-
-local _currentVP = 0
-
-local function OnVeteranPointsUpdate(eventCode, unitTag, currentVP, maxVP, reasonIndex)
-	if (unitTag ~= 'player') then
-		return
-	end
-	local vpGained = currentVP - _currentVP
-	if (vpGained > 0) then
-		local reason = GetVPReason(reasonIndex)
-		if (reason ~= nil) then
-			InvokeCallbackSafe(X4D_XP.Colors.VP, vpGained .. ' VP for ' .. reason)
-		else
-			InvokeCallbackSafe(X4D_XP.Colors.VP, vpGained .. ' VP')
-		end
-	end
-	_currentVP = currentVP
 end
 
 function X4D_XP.OnAddOnLoaded(event, addonName)
@@ -180,7 +143,7 @@ function X4D_XP.Register()
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_GAIN_DISCOVERY, OnDiscoveryExperienceGain)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_OBJECTIVE_COMPLETED, OnObjectiveCompleted)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_UPDATE, OnExperienceUpdate)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_VETERAN_POINTS_UPDATE, OnVeteranPointsUpdate)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_VETERAN_POINTS_UPDATE, OnExperienceUpdate)
 end
 
 function X4D_XP.Unregister()
