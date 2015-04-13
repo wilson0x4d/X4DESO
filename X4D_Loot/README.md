@@ -10,6 +10,10 @@
 - Can be integrated with via LibStub, and a callback can be set via **X4D_Loot:RegisterCallback(color, text)**
 - Integrated into **X4D Chat** Add-On which provides timestamp support for **X4D Loot** output.
 
+## Known Issues
+
+- Loot from deconstructing items is not shown.
+
 ## Installation
 
 Open the Archive and copy the **X4D_Loot** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
