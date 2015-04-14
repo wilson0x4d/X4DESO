@@ -41,6 +41,7 @@ local _itemGroups = {
 	--		ITEMTYPE_TABARD,
 	--		ITEMTYPE_TOOL,
 	--		ITEMTYPE_TRASH,
+    --      ITEMTYPE_MOUNT,
 	--	}
 	--},
 	[0] = {
@@ -99,7 +100,9 @@ local _itemGroups = {
 		Title = 'Enchanting Items',
 		Description = 'Enchanting Runes, Boosters and Glyphs',
 		Types = {
-			ITEMTYPE_ENCHANTING_RUNE,
+            ITEMTYPE_ENCHANTING_RUNE_ASPECT,
+            ITEMTYPE_ENCHANTING_RUNE_ESSENCE,
+            ITEMTYPE_ENCHANTING_RUNE_POTENCY,
 			ITEMTYPE_ENCHANTMENT_BOOSTER,
 			ITEMTYPE_GLYPH_ARMOR,
 			ITEMTYPE_GLYPH_JEWELRY,
