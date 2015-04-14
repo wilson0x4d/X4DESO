@@ -27,7 +27,6 @@ v1.8
 - Removed LibAddonMenu from /lib/ folder
 - Depends On: X4D_Core, LibAddonMenu-2.0
 
-
 v1.7
 
 - ESO version update, no functional change

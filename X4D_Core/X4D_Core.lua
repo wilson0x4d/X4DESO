@@ -63,3 +63,33 @@ X4D.Test = function()
 	-- LibAddonMenu Extensions
 
 end
+
+EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED, 
+    function()
+        X4D.Async.CreateTimer(
+            function(timer, state)
+		        timer:Stop()
+                local versions = 'Core/' .. X4D.VERSION .. ' '
+                if (X4D.Bank ~= nil) then
+                    versions = versions .. 'Bank/' .. X4D.Bank.VERSION .. ' '
+                end
+                if (X4D.Chat ~= nil) then
+                    versions = versions .. 'Chat/' .. X4D.Chat.VERSION .. ' '
+                end
+                if (X4D.AntiSpam ~= nil) then
+                    versions = versions .. 'AntiSpam/' .. X4D.AntiSpam.VERSION .. ' '
+                end
+                if (X4D.Loot ~= nil) then
+                    versions = versions .. 'Loot/' .. X4D.Loot.VERSION .. ' '
+                end
+                if (X4D.Mail ~= nil) then
+                    versions = versions .. 'Mail/' .. X4D.Mail.VERSION .. ' '
+                end
+                if (X4D.XP ~= nil) then
+                    versions = versions .. 'XP/' .. X4D.XP.VERSION .. ' '
+                end
+                X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.INFORMATION)
+	            X4D.Debug:Information(versions, 'X4D')
+            end, 1000, {}):Start()
+    end)
+
