@@ -8,6 +8,10 @@ X4D XP is LibStub-compatible Add-On that reports XP gains.
 - Can be integrated with via LibStub, and a callback can be set via **X4D_XP:RegisterCallback(color, text)**
 - Integrated into **X4D Chat** Add-On which provides timestamp support for **X4D XP** output.
 
+## Planned
+
+- Banking Option for 'Stolen' goods, regardless of item type.
+
 ## Installation
 
 Open the Archive and copy the **X4D_XP** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
