@@ -14,15 +14,8 @@ X4D_XP.Settings.Defaults = {
 	None = 'true',
 }
 
-X4D_XP.Colors = {
-	XP = '|cAA33FF',
-	VP = '|cAA33FF',
-	Gray = '|cC5C5C5',
-	X4D = '|cFFAE19',
-}
-
 local _expReasons = { }
-_expReasons[PROGRESS_REASON_NONE] = 'None'
+_expReasons[PROGRESS_REASON_NONE] = '???' -- TODO: what is this, exactly?
 _expReasons[PROGRESS_REASON_KILL] = 'Kill'
 --_expReasons[PROGRESS_REASON_QUEST] = 'Quest' --see OnQuestCompleteExperience() instead
 --_expReasons[PROGRESS_REASON_DISCOVER_POI] = 'POI' --see OnDiscoveryExperienceGain() instead
@@ -102,21 +95,21 @@ local _pointType = 'XP'
 
 local function OnQuestCompleteExperience(eventCode, questName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)	
     local xpGained = currentExperience - previousExperience
-	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D_XP.Colors.X4D .. questName)
+	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D.Colors.X4D .. questName)
 end
 
 local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience;
-	InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for Discovery ' .. X4D_XP.Colors.X4D .. areaName)
+	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for Discovery ' .. X4D.Colors.X4D .. areaName)
 end
 
 local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience
 	local objectiveName, objectiveLevel, startDescription, finishedDescription = GetPOIInfo(zoneIndex, poiIndex)
 	if (objectiveName ~= nil and objectiveName:len() > 0) then
-		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D_XP.Colors.X4D .. objectiveName)
+		InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D.Colors.X4D .. objectiveName)
 	else
-		InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for POI ')
+		InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for POI ')
 	end
 end
 
@@ -131,7 +124,7 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
 	if (xpGained > 0) then
 		local reason = GetExpReason(reasonIndex)
 		if (reason ~= nil) then            
-			InvokeCallbackSafe(X4D_XP.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. reason)
+			InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. reason)
 		end
 	end
 	_currentExp = currentExp
