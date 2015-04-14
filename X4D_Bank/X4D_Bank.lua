@@ -284,6 +284,7 @@ local function TryGetBagState(bagId)
 			local itemLink, itemColor, itemQuality = GetItemLinkInternal(bagId, slotIndex)
 			local itemType = GetItemType(bagId, slotIndex)
 			local itemLevel = GetItemLevel(bagId, slotIndex)
+            local isStolen = IsItemStolen(bagId, slotIndex)
 			local slot = {
 				Id = slotIndex,
 				IsEmpty = false,
@@ -295,10 +296,11 @@ local function TryGetBagState(bagId)
 				ItemLevel = itemLevel,
 				ItemType = itemType,
 				StackCount = stackCount,
-				StackMax = stackMax,				
+				StackMax = stackMax,
+                IsStolen = isStolen,		
 			}
 			bagState.Slots[slotIndex] = slot
-			if (stackMax > 0 and stackCount < stackMax) then
+			if ((stackMax > 0) and (stackCount < stackMax) and (not isStolen)) then
 				bagState.PartialSlotCount = bagState.PartialSlotCount + 1
 				table.insert(bagState.PartialSlots, slot)
 			end
@@ -329,7 +331,7 @@ local function TryFillPartialStacks()
 		if (not bankSlotInfo.IsEmpty) then		
 			for _,inventorySlotInfo in pairs(inventoryState.Slots) do
 				if (not inventorySlotInfo.IsEmpty) then
-					if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName and bankSlotInfo.ItemLevel == inventorySlotInfo.ItemLevel and bankSlotInfo.ItemQuality == inventorySlotInfo.ItemQuality) then
+					if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName and bankSlotInfo.ItemLevel == inventorySlotInfo.ItemLevel and bankSlotInfo.ItemQuality == inventorySlotInfo.ItemQuality and bankSlotInfo.IsStolen == inventorySlotInfo.IsStolen) then
 						local stackRemaining = bankSlotInfo.StackMax - bankSlotInfo.StackCount
 						if (inventorySlotInfo.StackCount < stackRemaining) then
 							stackRemaining = inventorySlotInfo.StackCount
@@ -339,10 +341,12 @@ local function TryFillPartialStacks()
 							CallSecureProtected("PlaceInInventory", bankState.Id, bankSlotInfo.Id)
 							InvokeCallbackSafe(bankSlotInfo.ItemColor, 'Deposited ' .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. stackRemaining)							
 							inventorySlotInfo.StackCount = inventorySlotInfo.StackCount - stackRemaining
-							if (inventorySlotInfo.StackCount == 0) then
-								table.insert(inventoryState.FreeSlots, inventorySlotInfo)
-								inventoryState.FreeSlotCount = inventoryState.FreeSlotCount + 1
-								inventorySlotInfo.IsEmpty = true
+							if (inventorySlotInfo.StackCount <= 0) then
+                                if (not inventorySlotInfo.IsEmpty) then
+								    table.insert(inventoryState.FreeSlots, inventorySlotInfo)
+								    inventoryState.FreeSlotCount = inventoryState.FreeSlotCount + 1
+								    inventorySlotInfo.IsEmpty = true
+                                end
 							end
 						end
 					end
@@ -457,7 +461,7 @@ local function TryCombinePartialStacks(bagState, depth)
 				if (rval ~= nil) then
 					local lslot = bagState.Slots[lval.Id]
 					local rslot = bagState.Slots[rval.Id]					
-					if ((lval.Id ~= rval.Id) and (lval.ItemLevel == rval.ItemLevel) and (lval.ItemQuality == rval.ItemQuality) and (lval.ItemName == rval.ItemName) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and (not lslot.IsEmpty) and (not rslot.IsEmpty)) then
+					if ((lval.Id ~= rval.Id) and (lval.ItemLevel == rval.ItemLevel) and (lval.ItemQuality == rval.ItemQuality) and (lval.ItemName == rval.ItemName) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and (not lslot.IsEmpty) and (not rslot.IsEmpty) and (lslot.IsStolen == rslot.IsStolen)) then
 						table.insert(combines, { [1] = lval, [2] = rval })
 						combineCount = combineCount + 1
 						break
