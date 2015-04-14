@@ -1,7 +1,7 @@
 ## APIVersion: 100011
 ## Title: X4D |cFFAE19Mail
 ## Author: @wilson0x4d
-## Description: Provides minor Mail enhancements.
+## Description: Provides minor Mail enhancements, namely integrating 'LibAntiSpam'
 ## Version: 1.1
 ## SavedVariables: X4D_Mail_SV
 ## DependsOn: X4D_Core

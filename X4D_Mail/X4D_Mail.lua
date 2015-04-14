@@ -13,9 +13,10 @@ X4D_Mail.VERSION = '1.1'
 -- X4D_Mail:HandleMailAttachments(mailId)
 -- X4D_Mail:HandleSpam(mailId)
 
-local X4D = LibStub('X4D')
 local X4D_Loot = LibStub('X4D_Loot')
-local X4D_LibAntiSpam = LibStub('LibAntiSpam', true)
+if (X4D.AntiSpam == nil) then
+	X4D.Debug:Warning('No usable AntiSpam Library was detected.', 'X4D Mail')
+end
 
 local function DefaultEmitCallback(color, text)
 	X4D.Debug:Info(color .. text, 'X4D Mail')
@@ -94,7 +95,7 @@ function X4D_Mail:HandleMailAttachments(mailId)
 					end
 				end
 				if (mail.AttachedMoney > 0) then
-					if (X4D_Loot == nil) then
+					if (X4D.Loot == nil) then
 						local newMoney = GetCurrentMoney() + mail.AttachedMoney
 						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format('%s %s%s %s  (%s total)', 'Accepted', formatnum(mail.AttachedMoney), CreateIcon('EsoUI/Art/currency/currency_gold.dds'), X4D.Colors.Subtext, formatnum(newMoney)))
 					end				
@@ -103,10 +104,10 @@ function X4D_Mail:HandleMailAttachments(mailId)
 			end
 		end
 	end
-end
-if (shouldDelete and X4D_Mail.Options:GetOption('AutoDeleteMail')) then
-	X4D.Debug:Verbose('Deleting mail from: ' .. mail.SenderDisplayName, 'X4D Mail')
-	DeleteMail(mailId, false)
+    if (shouldDelete and X4D_Mail.Options:GetOption('AutoDeleteMail')) then
+	    X4D.Debug:Verbose('Deleting mail from: ' .. mail.SenderDisplayName, 'X4D Mail')
+	    DeleteMail(mailId, false)
+    end
 end
 
 function X4D_Mail:HandleSpam(mailId)
@@ -116,9 +117,9 @@ function X4D_Mail:HandleSpam(mailId)
 	end
 	local mail = _readableMail[mailId];
 	if (X4D_Mail.Options:GetOption('EnableAntiSpam')) then
-		if (not mail.IsCustomerService) then
-			if (X4D_LibAntiSpam ~= nil) then
-				local isSpam = X4D_LibAntiSpam:Check({
+		if (not (mail.IsCustomerService or mail.IsFromSystem)) then
+			if (X4D.AntiSpam ~= nil) then
+				local isSpam = X4D.AntiSpam:Check({
 						Text = mail.SubjectText .. ' ' .. mail.BodyText,
 						Name = mail.SenderDisplayName,
 						Reason = 'Mail',
@@ -170,10 +171,6 @@ local function OnOpenMailbox(eventCode)
 end
 
 local function Register()
-	
-	-- TODO: comment this out when not testing changes
-	X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.VERBOSE)
-
 	EVENT_MANAGER:RegisterForEvent(X4D_Mail.NAME, EVENT_MAIL_OPEN_MAILBOX, OnOpenMailbox)
     EVENT_MANAGER:RegisterForEvent(X4D_Mail.NAME, EVENT_MAIL_READABLE, OnMailReadable)
 end
