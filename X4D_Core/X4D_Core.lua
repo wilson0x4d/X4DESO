@@ -37,15 +37,22 @@ X4D.Test = function()
 	X4D.Debug:Verbose(CHAT_CHANNEL_OFFICER_1 == channelRoundTrip, "CONVERT")
 
 	-- Async API
-	local callback = function(timer, state)
+	local callback1 = function(timer, state)
 		state.counter = state.counter + 1
-		X4D.Debug:Verbose('count=' .. state.counter .. ' time=' .. GetGameTimeMilliseconds(), 'ASYNC')
-		if (state.counter >= 10) then
+		X4D.Debug:Verbose('count=' .. state.counter .. ' time=' .. GetGameTimeMilliseconds(), 'TIMER#1@107ms')
+		if (state.counter >= 4) then
 			timer:Stop()
-			d('End Test of X4D Framework.')
 		end
 	end	
-	local asyncTimer = X4D.Async.CreateTimer(callback, 100, { counter = 0 }):Start()
+	local callback2 = function(timer, state)
+		state.counter = state.counter + 1
+		X4D.Debug:Verbose('count=' .. state.counter .. ' time=' .. GetGameTimeMilliseconds(), 'TIMER#2@47ms')
+		if (state.counter >= 4) then
+			timer:Stop()
+		end
+	end	
+	local asyncTimer1 = X4D.Async.CreateTimer(callback1, 107, { counter = 0 }):Start()
+	local asyncTimer2 = X4D.Async.CreateTimer(callback2, 47, { counter = 0 }):Start()
 
 	-- SavedVars API
 
