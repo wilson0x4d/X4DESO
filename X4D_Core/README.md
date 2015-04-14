@@ -5,7 +5,7 @@
 
 A LibStub-compatible Framework for Developing Add-Ons for ESO.
 
-All X4D Add-Ons rely on this Framework.
+All X4D Add-Ons depend on this Framework.
 
 ## Features
 
