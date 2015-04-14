@@ -64,8 +64,14 @@ X4D.Test = function()
 
 end
 
+local _oneTimeVersionReport = false
+
 EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED, 
     function()
+        if (_oneTimeVersionReport) then
+            return
+        end
+        _oneTimeVersionReport = true
         X4D.Async.CreateTimer(
             function(timer, state)
 		        timer:Stop()
