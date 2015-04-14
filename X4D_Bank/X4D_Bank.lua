@@ -131,14 +131,20 @@ local _itemGroups = {
 		},
 	},	
 	[10] = {
-		Title = 'Styles and Raw Materials',
-		Description = 'Styles and Raw Materials',
+		Title = 'Styles',
+		Description = 'Styles',
 		Types = {
 			ITEMTYPE_STYLE_MATERIAL,
-			ITEMTYPE_RAW_MATERIAL,
 		},
 	},
 	[11] = {
+		Title = 'Raw Materials',
+		Description = 'Raw Materials',
+		Types = {
+			ITEMTYPE_RAW_MATERIAL,
+		},
+	},
+	[12] = {
 		Title = 'Costumes, Collectibles and Trophies',
 		Description = '',
 		Types = {
@@ -148,14 +154,14 @@ local _itemGroups = {
 			ITEMTYPE_DISGUISE,
 		},
 	},
-	[12] = {
+	[13] = {
 		Title = 'Weapon Equipment',
 		Description = 'Standard Weapon Equipment',
 		Types = {
 			ITEMTYPE_WEAPON,
 		},
 	},
-	[13] = {
+	[14] = {
 		Title = 'Weapon Traits',
 		Description = 'Weapon Traits and Boosters',
 		Types = {
@@ -163,7 +169,7 @@ local _itemGroups = {
 			ITEMTYPE_WEAPON_TRAIT,
 		},
 	},
-	[14] = {
+	[15] = {
 		Title = 'Woodworking Items',
 		Description = 'Woodworking Materials and Boosters',
 		Types = {
