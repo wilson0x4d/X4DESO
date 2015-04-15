@@ -34,6 +34,7 @@ X4D_Chat.Settings.Defaults = {
 	StripExcess = true,
 	PreventChatFade = true,
 	DisableFriendStatus = false,
+    UseLighterMessageColor = true,
 }
 
 X4D_Chat.ChannelCategory = {
@@ -149,19 +150,23 @@ function X4D_Chat.OnChatMessageReceived(messageType, fromName, text)
 	text = X4D_Chat.StripColors(text)
     if (channelInfo and channelInfo.format) then
 		local category = X4D_Chat.GetChatCategory(channelInfo)
+		local r, g, b = GetChatCategoryColor(category)
+		local categoryColor = X4D_Chat.CreateColorCode(r, g, b)
         local channelLink = X4D_Chat.CreateChannelLink(channelInfo, category)
         local fromLink = X4D_Chat.CreateCharacterLink(fromName, channelInfo)
+        local textColor = categoryColor
+        if (X4D_Chat.Settings.SavedVars.UseLighterMessageColor) then
+            textColor = X4D.Colors:Lerp(textColor, '|cFFFFFF', 25)
+        end
         if (channelLink) then
-            result = zo_strformat(channelInfo.format, channelLink, fromLink, text)
+            result = zo_strformat(channelInfo.format, channelLink, fromLink, textColor .. text)
         else
-			result = zo_strformat(channelInfo.format, fromLink, text)
+			result = zo_strformat(channelInfo.format, fromLink, textColor .. text)
 			if (X4D_Chat.Settings.SavedVars.StripExcess) then
 				result = result:gsub('%]%|h%s?.-%:', ']|h:', 1)
 			end
 		end
-		local r, g, b = GetChatCategoryColor(category)
-		local chatColor = X4D_Chat.CreateColorCode(r, g, b)
-		return GetTimestampPrefix(chatColor) .. result, channelInfo.saveTarget
+		return GetTimestampPrefix(categoryColor) .. result, channelInfo.saveTarget
     end
 end
 
@@ -498,26 +503,33 @@ local function OnAddOnLoaded(event, addonName)
             },
             [8] = {
                 type = 'checkbox',
+                name = 'Use Lighter Color for Message Text',
+                tooltip = 'When enabled, message text appears with a slightly lighter color to improve readability.', 
+                getFunc = function() return X4D_Chat.Settings.SavedVars.UseLighterMessageColor end,
+                setFunc = function() X4D_Chat.Settings.SavedVars.UseLighterMessageColor = not X4D_Chat.Settings.SavedVars.UseLighterMessageColor end,
+            },
+            [9] = {
+                type = 'checkbox',
                 name = 'Strip Excess Text', 
                 tooltip = 'When enabled, excess text is stripped from chat messages.', 
                 getFunc = function() return X4D_Chat.Settings.SavedVars.StripExcess end,
                 setFunc = function() X4D_Chat.Settings.SavedVars.StripExcess = not X4D_Chat.Settings.SavedVars.StripExcess end,
             },
-            [9] = {
+            [10] = {
                 type = 'checkbox',
                 name = 'Prevent Chat Fade', 
                 tooltip = 'When enabled, Chat Window will not Fade.', 
                 getFunc = function() return X4D_Chat.Settings.SavedVars.PreventChatFade end,
                 setFunc = function() X4D_Chat.Settings.SavedVars.PreventChatFade = not X4D_Chat.Settings.SavedVars.PreventChatFade end,
             },
-            [10] = {
+            [11] = {
                 type = 'checkbox',
                 name = 'Disable Friend Status Messages', 
                 tooltip = 'When enabled, Friend Online/Offline Status Messages are not displayed.', 
                 getFunc = function() return X4D_Chat.Settings.SavedVars.DisableFriendStatus end,
                 setFunc = function() X4D_Chat.Settings.SavedVars.DisableFriendStatus = not X4D_Chat.Settings.SavedVars.DisableFriendStatus end,
             },
-            [11] = {
+            [12] = {
                 type = 'editbox',
                 name = 'Guild #1', 
                 tooltip = 'An Abbreviation for Guild #1, do not include brackets.', 
@@ -531,7 +543,7 @@ local function OnAddOnLoaded(event, addonName)
                 default = X4D_Chat.Settings.SavedVars.GuildAbbr[1],
                 width = 'half',      
             },
-            [12] = {
+            [13] = {
                 type = 'editbox',
                 name = 'Guild #2', 
                 tooltip = 'An Abbreviation for Guild #2, do not include brackets.', 
@@ -545,7 +557,7 @@ local function OnAddOnLoaded(event, addonName)
                 default = X4D_Chat.Settings.SavedVars.GuildAbbr[2],
                 width = 'half',                
             },
-            [13] = {
+            [14] = {
                 type = 'editbox',
                 name = 'Guild #3', 
                 tooltip = 'An Abbreviation for Guild #3, do not include brackets.', 
@@ -559,7 +571,7 @@ local function OnAddOnLoaded(event, addonName)
                 default = X4D_Chat.Settings.SavedVars.GuildAbbr[3],
                 width = 'half',                
             },
-            [14] = {
+            [15] = {
                 type = 'editbox',
                 name = 'Guild #4', 
                 tooltip = 'An Abbreviation for Guild #4, do not include brackets.', 
@@ -573,7 +585,7 @@ local function OnAddOnLoaded(event, addonName)
                 default = X4D_Chat.Settings.SavedVars.GuildAbbr[4],
                 width = 'half',                
             },
-            [15] = {
+            [16] = {
                 type = 'editbox',
                 name = 'Guild #5', 
                 tooltip = 'An Abbreviation for Guild #5, do not include brackets.', 
