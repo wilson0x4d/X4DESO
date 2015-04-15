@@ -33,7 +33,9 @@ local _itemOptions = {
 }
 
 local _itemGroups = {
+}
 	--[?] = {
+    -- these items are not supported for auto-deposit/withdraw for various reasons (invalid for itemtype, api errors, etc)
 	--	Title = 'Other Items',
 	--	Types = {
 	--		ITEMTYPE_AVA_REPAIR,
@@ -49,144 +51,148 @@ local _itemGroups = {
     --      ITEMTYPE_MOUNT,
 	--	}
 	--},
-	[0] = {
-		Title = 'Alchemy Items',
-		Description = 'Alchemy Items and Reagents',
-		Types = {
-			ITEMTYPE_ALCHEMY_BASE,
-			ITEMTYPE_REAGENT,
-		},
+
+table.insert(_itemGroups, {
+	Title = 'Alchemy Items',
+	Description = 'Alchemy Items and Reagents',
+	Types = {
+		ITEMTYPE_ALCHEMY_BASE,
+		ITEMTYPE_REAGENT,
 	},
-	[1] = {
-		Title = 'Armor Equipment',
-		Description = 'Standard Armor Equipment',
-		Types = {
-			ITEMTYPE_ARMOR,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Armor Equipment',
+	Description = 'Standard Armor Equipment',
+	Types = {
+		ITEMTYPE_ARMOR,
 	},
-	[2] = {
-		Title = 'Armor Traits',
-		Description = 'Armor Traits and Boosters',
-		Types = {
-			ITEMTYPE_ARMOR_BOOSTER,
-			ITEMTYPE_ARMOR_TRAIT,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Armor Traits',
+	Description = 'Armor Traits and Boosters',
+	Types = {
+		ITEMTYPE_ARMOR_BOOSTER,
+		ITEMTYPE_ARMOR_TRAIT,
 	},
-	[3] = {
-		Title = 'Blacksmithing Items',
-		Description = 'Blacksmithing Materials and Boosters',
-		Types = {
-			ITEMTYPE_BLACKSMITHING_BOOSTER,
-			ITEMTYPE_BLACKSMITHING_MATERIAL,
-			ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Blacksmithing Items',
+	Description = 'Blacksmithing Materials and Boosters',
+	Types = {
+		ITEMTYPE_BLACKSMITHING_BOOSTER,
+		ITEMTYPE_BLACKSMITHING_MATERIAL,
+		ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
 	},
-	[4] = {
-		Title = 'Clothier Items',
-		Description = 'Clothier Materials and Boosters',
-		Types = {
-			ITEMTYPE_CLOTHIER_BOOSTER,
-			ITEMTYPE_CLOTHIER_MATERIAL,
-			ITEMTYPE_CLOTHIER_RAW_MATERIAL,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Clothier Items',
+	Description = 'Clothier Materials and Boosters',
+	Types = {
+		ITEMTYPE_CLOTHIER_BOOSTER,
+		ITEMTYPE_CLOTHIER_MATERIAL,
+		ITEMTYPE_CLOTHIER_RAW_MATERIAL,
 	},
-	[5] = {
-		Title = 'Cooking Items',
-		Description = 'Cooking Recipes, Ingredients, etc',
-		Types = {
-			ITEMTYPE_RECIPE,
-			ITEMTYPE_INGREDIENT,
-			ITEMTYPE_FLAVORING,
-			ITEMTYPE_SPICE,
-			ITEMTYPE_ADDITIVE,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Cooking Items',
+	Description = 'Cooking Recipes, Ingredients, etc',
+	Types = {
+		ITEMTYPE_RECIPE,
+		ITEMTYPE_INGREDIENT,
+		ITEMTYPE_FLAVORING,
+		ITEMTYPE_SPICE,
+		ITEMTYPE_ADDITIVE,
 	},
-	[6] = {
-		Title = 'Enchanting Items',
-		Description = 'Enchanting Runes, Boosters and Glyphs',
-		Types = {
-            ITEMTYPE_ENCHANTING_RUNE_ASPECT,
-            ITEMTYPE_ENCHANTING_RUNE_ESSENCE,
-            ITEMTYPE_ENCHANTING_RUNE_POTENCY,
-			ITEMTYPE_ENCHANTMENT_BOOSTER,
-			ITEMTYPE_GLYPH_ARMOR,
-			ITEMTYPE_GLYPH_JEWELRY,
-			ITEMTYPE_GLYPH_WEAPON,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Enchanting Items',
+	Description = 'Enchanting Runes, Boosters and Glyphs',
+	Types = {
+        ITEMTYPE_ENCHANTING_RUNE_ASPECT,
+        ITEMTYPE_ENCHANTING_RUNE_ESSENCE,
+        ITEMTYPE_ENCHANTING_RUNE_POTENCY,
+		ITEMTYPE_ENCHANTMENT_BOOSTER,
+		ITEMTYPE_GLYPH_ARMOR,
+		ITEMTYPE_GLYPH_JEWELRY,
+		ITEMTYPE_GLYPH_WEAPON,
 	},
-	[7] = {
-		Title = 'Fishing Items',
-		Description = 'Lures',
-		Types = {
-			ITEMTYPE_LURE,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Fishing Items',
+	Description = 'Lures',
+	Types = {
+		ITEMTYPE_LURE,
 	},
-	[8] = {
-		Title = 'Food and Drink',
-		Description = 'Food, Drink, Potions and Poisons',
-		Types = {
-			ITEMTYPE_DRINK,
-			ITEMTYPE_FOOD,
-			ITEMTYPE_POTIONS,
-			ITEMTYPE_POISON,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Food and Drink',
+	Description = 'Food, Drink, Potions and Poisons',
+	Types = {
+		ITEMTYPE_DRINK,
+		ITEMTYPE_FOOD,
+		ITEMTYPE_POTIONS,
+		ITEMTYPE_POISON,
 	},
-	[9] = {
-		Title = 'Mystic Items',
-		Description = 'Soul Gems',
-		Types = {
-			ITEMTYPE_SOUL_GEM,
-		},
-	},	
-	[10] = {
-		Title = 'Styles',
-		Description = 'Styles',
-		Types = {
-			ITEMTYPE_STYLE_MATERIAL,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Mystic Items',
+	Description = 'Soul Gems',
+	Types = {
+		ITEMTYPE_SOUL_GEM,
 	},
-	[11] = {
-		Title = 'Raw Materials',
-		Description = 'Raw Materials',
-		Types = {
-			ITEMTYPE_RAW_MATERIAL,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Styles',
+	Description = 'Styles',
+	Types = {
+		ITEMTYPE_STYLE_MATERIAL,
 	},
-	[12] = {
-		Title = 'Costumes, Collectibles and Trophies',
-		Description = '',
-		Types = {
-			ITEMTYPE_TROPHY,
-			ITEMTYPE_COLLECTIBLE,
-			ITEMTYPE_COSTUME,
-			ITEMTYPE_DISGUISE,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Raw Materials',
+	Description = 'Raw Materials',
+	Types = {
+		ITEMTYPE_RAW_MATERIAL,
+        ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
+        ITEMTYPE_CLOTHIER_RAW_MATERIAL,
+        ITEMTYPE_WOODWORKING_RAW_MATERIAL,
 	},
-	[13] = {
-		Title = 'Weapon Equipment',
-		Description = 'Standard Weapon Equipment',
-		Types = {
-			ITEMTYPE_WEAPON,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Costumes, Collectibles and Trophies',
+	Description = '',
+	Types = {
+		ITEMTYPE_TROPHY,
+		ITEMTYPE_COLLECTIBLE,
+		ITEMTYPE_COSTUME,
+		ITEMTYPE_DISGUISE,
 	},
-	[14] = {
-		Title = 'Weapon Traits',
-		Description = 'Weapon Traits and Boosters',
-		Types = {
-			ITEMTYPE_WEAPON_BOOSTER,
-			ITEMTYPE_WEAPON_TRAIT,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Weapon Equipment',
+	Description = 'Standard Weapon Equipment',
+	Types = {
+		ITEMTYPE_WEAPON,
 	},
-	[15] = {
-		Title = 'Woodworking Items',
-		Description = 'Woodworking Materials and Boosters',
-		Types = {
-			ITEMTYPE_WOODWORKING_BOOSTER,
-			ITEMTYPE_WOODWORKING_MATERIAL,
-			ITEMTYPE_WOODWORKING_RAW_MATERIAL,
-		},
+})
+table.insert(_itemGroups, {
+	Title = 'Weapon Traits',
+	Description = 'Weapon Traits and Boosters',
+	Types = {
+		ITEMTYPE_WEAPON_BOOSTER,
+		ITEMTYPE_WEAPON_TRAIT,
 	},
-}
+})
+table.insert(_itemGroups, {
+	Title = 'Woodworking Items',
+	Description = 'Woodworking Materials and Boosters',
+	Types = {
+		ITEMTYPE_WOODWORKING_BOOSTER,
+		ITEMTYPE_WOODWORKING_MATERIAL,
+		ITEMTYPE_WOODWORKING_RAW_MATERIAL,
+	},
+})
+
 
 local function GetOption(name)
 	local scope = 'Account-Wide'
@@ -497,11 +503,7 @@ end
 
 local function GetItemTypeDirectionalities()
 	local itemTypeDirections = {}
-	for i = 0, 100 do
-		local v = _itemGroups[i]
-		if (v == nil) then
-			break
-		end
+	for _,v in pairs(_itemGroups) do
 		local dropdownName = CreateDropdownName(v)
 		local direction = GetOption(dropdownName) or 'Leave Alone'
 		for _,t in pairs(v.Types) do
@@ -829,8 +831,7 @@ local function InitializeOptionsUI()
         end,
     })
 
-	for i = 0, 100 do
-		local v = _itemGroups[i]
+	for _,v in pairs(_itemGroups) do
 		if (v == nil) then
 			break
 		end
@@ -881,8 +882,7 @@ local function InitializeOptionsUI()
 						--SetCheckboxValue('X4D_BANK_CHECK_START_NEW_STACKS', X4D_Bank.Options.Default.StartNewStacks)
 						--SetOption('StartNewStacks', X4D_Bank.Options.Default.StartNewStacks)												
 
-						--for i= 0, 10 do
-						--	local v = _itemGroups[i]
+	                    --for _,v in pairs(_itemGroups) do
 						--	if (v == nil) then
 						--		break
 						--	end
@@ -917,7 +917,7 @@ local _moneyUpdateReason = {
 }	
 
 local function GetMoneyReason(reasonId)
-	return _moneyUpdateReason[reasonId] or { 'gained', 'lost' }
+	return _moneyUpdateReason[reasonId] or { 'Gained', 'Lost' }
 end
 
 

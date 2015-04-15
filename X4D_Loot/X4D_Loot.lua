@@ -36,7 +36,7 @@ X4D_Loot.MoneyUpdateReason = {
 }	
 
 local function GetMoneyReason(reasonId)
-	return X4D_Loot.MoneyUpdateReason[reasonId] or { 'gained', 'lost' }
+	return X4D_Loot.MoneyUpdateReason[reasonId] or { 'Gained', 'Lost' }
 end
 
 local function DefaultCallback(color, text)
