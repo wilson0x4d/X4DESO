@@ -186,6 +186,7 @@ local function OnAddOnLoaded(event, addonName)
 	X4D_Mail.Options = X4D.Options:Create(
 		X4D_Mail.NAME .. '_SV',
 		{
+            SettingsAre = 'Account-Wide',
 			AutoAcceptAttachments = true,
 			AutoDeleteMail = true,
 			EnableAntiSpam = true,
