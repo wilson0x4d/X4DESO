@@ -149,16 +149,6 @@ table.insert(_itemGroups, {
 	},
 })
 table.insert(_itemGroups, {
-	Title = 'Raw Materials',
-	Description = 'Raw Materials',
-	Types = {
-		ITEMTYPE_RAW_MATERIAL,
-        ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
-        ITEMTYPE_CLOTHIER_RAW_MATERIAL,
-        ITEMTYPE_WOODWORKING_RAW_MATERIAL,
-	},
-})
-table.insert(_itemGroups, {
 	Title = 'Costumes, Collectibles and Trophies',
 	Description = '',
 	Types = {
@@ -192,6 +182,18 @@ table.insert(_itemGroups, {
 		ITEMTYPE_WOODWORKING_RAW_MATERIAL,
 	},
 })
+-- NOTE: must come last so that this selection overrides prior selections when building lists/directionalities
+table.insert(_itemGroups, {
+	Title = 'Raw Materials',
+	Description = 'Raw Materials, including Generic, Blacksmith, Clothier and Woodworker raw materials',
+	Types = {
+		ITEMTYPE_RAW_MATERIAL,
+        ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
+        ITEMTYPE_CLOTHIER_RAW_MATERIAL,
+        ITEMTYPE_WOODWORKING_RAW_MATERIAL,
+	},
+})
+
 
 
 local function GetOption(name)
@@ -507,7 +509,10 @@ local function GetItemTypeDirectionalities()
 		local dropdownName = CreateDropdownName(v)
 		local direction = GetOption(dropdownName) or 'Leave Alone'
 		for _,t in pairs(v.Types) do
-			itemTypeDirections[t] = direction
+            local pre = itemTypeDirections[t]
+            if (pre == nil or direction ~= 'Leave Alone') then
+			    itemTypeDirections[t] = direction
+            end
 		end			
 	end
 	return itemTypeDirections
