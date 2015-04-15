@@ -61,6 +61,12 @@ X4D.Test = function()
 	-- Players API
 
 	-- LibAddonMenu Extensions
+    
+--    X4D.Async.CreateTimer(function(timer) 
+--        timer:Stop()
+--        X4D.Debug:Verbose('Display Money Updates: Loot=' .. tostring(X4D.Loot.Options:GetOption('DisplayMoneyUpdates')) .. ' Bank=' .. tostring(X4D.Bank.Options:GetOption('DisplayMoneyUpdates')))
+--    end, 1200, {}):Start()
+
 
 end
 

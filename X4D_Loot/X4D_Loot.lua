@@ -572,6 +572,18 @@ local function InitializeOptionsUI()
             end,
         })
 
+    table.insert(panelOptions, {
+            type = 'checkbox',
+            name = '[BETA] Display Party Loot', 
+            tooltip = 'When enabled, loot received by others is displayed in the Chat Window.', 
+            getFunc = function() 
+                return X4D.Loot.Options:GetOption('DisplayPartyLoot')
+            end,
+            setFunc = function()
+                X4D.Loot.Options:SetOption('DisplayPartyLoot', not X4D.Loot.Options:GetOption('DisplayPartyLoot'))
+            end,
+        })
+
     LAM:RegisterOptionControls(
         'X4D_LOOT_CPL',
         panelOptions
