@@ -19,6 +19,11 @@ X4D_Bank.Options.Default = {
 	AutoDepositItems = true,
 	StartNewStacks = true,
 	AutoWithdrawReserve = true,
+	DisplayMoneyUpdates = true,
+    IgnoredItemPatterns = {
+        '~STOLEN',
+        '~JUNK',
+    }
 }
 
 local _itemOptions = {
@@ -263,6 +268,50 @@ local function InvokeCallbackSafe(color, text)
 	end
 end
 
+function string.StartsWith(String,Start)
+   return string.sub(String,1,string.len(Start))==Start
+end
+
+local function IsSlotIgnoredItem(slot)
+    if (not slot.IsEmpty) then
+        local patterns = GetOption('IgnoredItemPatterns')
+	    for i = 1, #patterns do
+            local pattern = patterns[i]
+--            if (string.StartsWith(pattern, '~')) then
+--                local special = pattern:upper()
+--                if ((slot.IsStolen) and (special == '~STOLEN')) then
+--                    return true
+--                elseif ((slot.ItemQuality == 0) and (special == '~JUNK')) then
+--                    return true
+--                elseif ((slot.ItemQuality == 1) and (special == '~NORMAL')) then
+--                    return true
+--                elseif ((slot.ItemQuality == 2) and (special == '~FINE')) then
+--                    return true
+--                elseif ((slot.ItemQuality == 3) and (special == '~SUPERIOR')) then
+--                    return true
+--                elseif ((slot.ItemQuality == 4) and (special == '~EPIC')) then
+--                    return true
+--                elseif ((slot.ItemQuality == 5) and (special == '~LEGENDARY')) then
+--                    return true
+--                end
+--            else
+                local isIgnored = false
+		        if (not pcall(function()
+                if (slot.Normalized:find(pattern)) then 
+                    isIgnored = true
+                end
+		        end)) then
+			        InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, '(BANK) Bad Item Pattern: |cFF7777' .. pattern)
+		        end
+		        if (isIgnored) then
+			        return true
+		        end
+--            end
+	    end
+    end
+    return false
+end
+
 local function CreateIcon(filename, width, height)	
 	-- example: /zgoo EsoStrings[SI_BANK_GOLD_AMOUNT_BANKED]:gsub('%|', '!')
 	-- gladly accepting gold donations in-game, thanks.
@@ -291,9 +340,14 @@ local function TryGetBagState(bagId)
 		if (itemName ~= nil and itemName:len() > 0) then
 			local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex)
 			local itemLink, itemColor, itemQuality = GetItemLinkInternal(bagId, slotIndex)
+            local itemQualityString = X4D.Items.ToQualityString(itemQuality)
 			local itemType = GetItemType(bagId, slotIndex)
 			local itemLevel = GetItemLevel(bagId, slotIndex)
             local isStolen = IsItemStolen(bagId, slotIndex)
+            local normalizedItemData = '~' .. itemQualityString:upper() .. ' L' .. itemLevel .. ' ' .. itemType .. ' ' .. itemName:lower() .. ' ' .. itemLink
+            if (isStolen) then
+                normalizedItemData = ' ~STOLEN' .. normalizedItemData -- TODO: handler for when 'stolen' state of an item changes
+            end
 			local slot = {
 				Id = slotIndex,
 				IsEmpty = false,
@@ -306,7 +360,8 @@ local function TryGetBagState(bagId)
 				ItemType = itemType,
 				StackCount = stackCount,
 				StackMax = stackMax,
-                IsStolen = isStolen,		
+                IsStolen = isStolen,
+                Normalized = normalizedItemData
 			}
 			bagState.Slots[slotIndex] = slot
 			if ((stackMax > 0) and (stackCount < stackMax) and (not isStolen)) then
@@ -318,6 +373,7 @@ local function TryGetBagState(bagId)
 			local slot = {
 				Id = slotIndex,
 				IsEmpty = true,
+                Normalized = '~ISEMPTY'
 			}
 			bagState.Slots[slotIndex] = slot
 			table.insert(bagState.FreeSlots, slot)
@@ -337,9 +393,9 @@ local function TryFillPartialStacks()
 	local bankState = TryGetBagState(2)
 
 	for _,bankSlotInfo in pairs(bankState.Slots) do
-		if (not bankSlotInfo.IsEmpty) then		
+		if (not (bankSlotInfo.IsEmpty or IsSlotIgnoredItem(bankSlotInfo))) then		
 			for _,inventorySlotInfo in pairs(inventoryState.Slots) do
-				if (not inventorySlotInfo.IsEmpty) then
+				if (not (inventorySlotInfo.IsEmpty or IsSlotIgnoredItem(inventorySlotInfo))) then
 					if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName and bankSlotInfo.ItemLevel == inventorySlotInfo.ItemLevel and bankSlotInfo.ItemQuality == inventorySlotInfo.ItemQuality and bankSlotInfo.IsStolen == inventorySlotInfo.IsStolen) then
 						local stackRemaining = bankSlotInfo.StackMax - bankSlotInfo.StackCount
 						if (inventorySlotInfo.StackCount < stackRemaining) then
@@ -369,7 +425,7 @@ local function TryFillPartialStacks()
 	end
 
 	for _,bankSlotInfo in pairs(bankState.Slots) do
-		if (not bankSlotInfo.IsEmpty) then		
+		if (not (bankSlotInfo.IsEmpty or IsSlotIgnoredItem(bankSlotInfo))) then		
 			for _,inventorySlotInfo in pairs(inventoryState.Slots) do
 				if (bankState.FreeSlotCount > 0) then
 					if (not inventorySlotInfo.IsEmpty) then
@@ -428,11 +484,11 @@ local function TryWithdrawReserveAmount()
 end
 
 local function ShouldDepositItem(slot, itemTypeDirections)
-	return 'Deposit' == (itemTypeDirections[slot.ItemType] or 'Leave Alone')
+	return (not IsSlotIgnoredItem(slot)) and ('Deposit' == (itemTypeDirections[slot.ItemType] or 'Leave Alone'))
 end
 
 local function ShouldWithdrawItem(slot, itemTypeDirections)
-	return 'Withdraw' == (itemTypeDirections[slot.ItemType] or 'Leave Alone')
+	return (not IsSlotIgnoredItem(slot)) and ('Withdraw' == (itemTypeDirections[slot.ItemType] or 'Leave Alone'))
 end
 
 local function CreateDropdownName(v)
@@ -723,13 +779,20 @@ local function InitializeOptionsUI()
             setFunc = function (v) SetOption('AutoDepositDowntime', tonumber(tostring(v))) end,
         },
         [8] = {
+            type = 'checkbox',
+            name = 'Display Money Updates', 
+            tooltip = 'When enabled, money updates are displayed in the Chat Window.', 
+            getFunc = function() return GetOption('DisplayMoneyUpdates') end,
+            setFunc = function() SetOption('DisplayMoneyUpdates', not GetOption('DisplayMoneyUpdates')) end,
+        },
+        [9] = {
             type = 'header',
             name = 'Item Deposits and Withdrawals',                
         },
-        [9] = {
+        [10] = {
             type = 'checkbox',
             name = 'Fill Partial Stacks?',
-            tooltip = 'When enabled, partial stacks in the bank will be filled from your inventory, regardless of the item type.', 
+            tooltip = 'When enabled, partial stacks in the bank will be filled from your inventory, overriding any "item type" settings you may have.',
             getFunc = function() return GetOption('AutoDepositItems') end,
             setFunc = function() SetOption('AutoDepositItems', not GetOption('AutoDepositItems')) end,
         },
@@ -741,7 +804,32 @@ local function InitializeOptionsUI()
 	--	function() return GetOption('StartNewStacks') end,
 	--	function() SetOption('StartNewStacks', not GetOption('StartNewStacks')) end)
 
-	for i= 0, 100 do
+    table.insert(panelOptions, {
+        type = 'editbox',
+        name = 'Item Ignore List',
+        tooltip = 'Line-delimited list of items to ignore using "lua patterns". |cFFFFFFSpecial patterns are prefixed with a tilde (~) and include STOLEN, JUNK, NORMAL, FINE, SUPERIOR, EPIC, and LEGENDARY.',
+        isMultiline = true,
+        getFunc = function () 
+            local patternsOption = GetOption('IgnoredItemPatterns')
+            if (patternsOption == nil or type(patternsOption) == 'string') then
+                patternsOption = { }
+            end
+            local patterns = table.concat(patternsOption, '\n')
+            return patterns
+        end,
+        setFunc = function(v)
+            local result = v:Split('\n')
+            -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+            for _,x in pairs(result) do
+                if (x:EndsWith(']')) then
+                    result[_] = x .. '+'
+                end
+            end
+            SetOption('IgnoredItemPatterns', result)
+        end,
+    })
+
+	for i = 0, 100 do
 		local v = _itemGroups[i]
 		if (v == nil) then
 			break
@@ -834,6 +922,9 @@ end
 
 
 local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
+	if (not GetOption('DisplayMoneyUpdates')) then
+		return
+	end
 	local icon = CreateIcon('EsoUI/Art/currency/currency_gold.dds')
 	local reason = GetMoneyReason(reasonId)
 	local amount = newMoney - oldMoney
