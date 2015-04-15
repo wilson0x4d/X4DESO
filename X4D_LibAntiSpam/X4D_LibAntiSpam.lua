@@ -696,30 +696,6 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
                 setFunc = function() SetOption('ShowNormalizations', not GetOption('ShowNormalizations')) end,
             },
         });
-    		
-	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
-			if (panel == cplId) then				
-				ZO_OptionsWindowResetToDefaultButton:SetCallback(function ()
-					if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == cplId) then
-
-						--SetCheckboxValue('X4D_LIBANTISPAM_CHECK_NOTIFY_DETECTED', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected)
-						--SetOption('NotifyWhenDetected', X4D_LibAntiSpam.Options.Default.NotifyWhenDetected)
-						
-						--SetSliderValue('X4D_LIBANTISPAM_SLIDER_FLOODTIME', X4D_LibAntiSpam.Options.Default.FloodTime, 0, 900)
-						--SetOption('FloodTime', X4D_LibAntiSpam.Options.Default.FloodTime)
-																		
-						--SetEditBoxValue('X4D_LIBANTISPAM_EDIT_PATTERNS', '', 8192)
-						--SetOption('Patterns', '')
-
-						--SetCheckboxValue('X4D_LIBANTISPAM_CHECK_USEINTERNAL', X4D_LibAntiSpam.Options.Default.UseInternalPatterns)
-						--SetOption('UseInternalPatterns', X4D_LibAntiSpam.Options.Default.UseInternalPatterns)
-
-						--SetCheckboxValue('X4D_LIBANTISPAM_CHECK_SHOW_NORMALIZATIONS', X4D_LibAntiSpam.Options.Default.ShowNormalizations)						
-						--SetOption('ShowNormalizations', X4D_LibAntiSpam.Options.Default.ShowNormalizations)
-					end
-				end)
-			end
-		end)		
 
 	X4D_LibAntiSpam.Register()
 end

@@ -601,52 +601,6 @@ local function OnAddOnLoaded(event, addonName)
             },
         })
 
-        ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
-			if (panel == cplId) then				
-				ZO_OptionsWindowResetToDefaultButton:SetCallback(function ()
-					if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == cplId) then
-						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_CHARNAMES', X4D_Chat.Settings.Defaults.GuildCharNames)
-						--X4D_Chat.Settings.SavedVars.GuildCharNames = X4D_Chat.Settings.Defaults.GuildCharNames
-
-						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_PLAYERNAMES', X4D_Chat.Settings.Defaults.GuildPlayerNames)
-						--X4D_Chat.Settings.SavedVars.GuildPlayerNames = X4D_Chat.Settings.Defaults.GuildPlayerNames
-
-						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_ABBR', X4D_Chat.Settings.Defaults.UseGuildAbbr)
-						--X4D_Chat.Settings.SavedVars.UseGuildAbbr = X4D_Chat.Settings.Defaults.UseGuildAbbr
-	
-						--SetCheckboxValue('X4D_CHAT_CHECK_GUILD_NUM', X4D_Chat.Settings.Defaults.UseGuildNum)
-						--X4D_Chat.Settings.SavedVars.UseGuildNum = X4D_Chat.Settings.Defaults.UseGuildNum
-	
-						--SetComboboxValue('X4D_CHAT_OPTION_TIMESTAMPS', X4D_Chat.Settings.Defaults.TimestampOption)
-						--X4D_Chat.Settings.SavedVars.TimestampOption = X4D_Chat.Settings.Defaults.TimestampOption
-	
-						--SetCheckboxValue('X4D_CHAT_CHECK_STRIP_COLORS', X4D_Chat.Settings.Defaults.StripColors)
-						--X4D_Chat.Settings.SavedVars.StripColors = X4D_Chat.Settings.Defaults.StripColors
-	
-						--SetCheckboxValue('X4D_CHAT_CHECK_STRIP_EXCESS', X4D_Chat.Settings.Defaults.StripExcess)
-						--X4D_Chat.Settings.SavedVars.StripExcess = X4D_Chat.Settings.Defaults.StripExcess
-
-						--SetCheckboxValue('X4D_CHAT_CHECK_PREVENT_FADE', X4D_Chat.Settings.Defaults.PreventChatFade)
-						--X4D_Chat.Settings.SavedVars.PreventChatFade = X4D_Chat.Settings.Defaults.PreventChatFade
-
-						--SetCheckboxValue('X4D_CHAT_CHECK_DISABLE_FRIEND_STATUS', X4D_Chat.Settings.Defaults.DisableFriendStatus)
-						--X4D_Chat.Settings.SavedVars.DisableFriendStatus = X4D_Chat.Settings.Defaults.DisableFriendStatus
-						
-						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD1', '', 10)
-						--X4D_Chat.Settings.SavedVars.GuildAbbr[1] = ''
-						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD2', '', 10)
-						--X4D_Chat.Settings.SavedVars.GuildAbbr[2] = ''
-						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD3', '', 10)
-						--X4D_Chat.Settings.SavedVars.GuildAbbr[3] = ''
-						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD4', '', 10)
-						--X4D_Chat.Settings.SavedVars.GuildAbbr[4] = ''
-						--SetEditBoxValue('X4D_CHAT_EDIT_GUILD5', '', 10)
-						--X4D_Chat.Settings.SavedVars.GuildAbbr[5] = ''
-					end
-				end)
-			end
-		end)		
-
 	-- TODO: these really should initialize to values relative to the current game window size/resolution - these values are approximations based on a 1920x1080 (Full HD) resolution
 	CHAT_SYSTEM['maxContainerHeight'] = 1000
 	CHAT_SYSTEM['maxContainerWidth'] = 1800

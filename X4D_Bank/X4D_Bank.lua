@@ -864,49 +864,6 @@ local function InitializeOptionsUI()
         panelOptions
     )
 
-    ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
-        if (panel == cplId) then
-            ZO_OptionsWindowResetToDefaultButton:SetCallback( function()
-                if (ZO_OptionsWindowResetToDefaultButton:GetParent()['currentPanel'] == cplId) then
-
-                    -- SetComboboxValue('X4D_CHAT_OPTION_SETTINGSARE', X4D_Bank.Options.Saved.SettingsAre)
-                    -- X4D_Bank.Options.Saved.SettingsAre = X4D_Bank.Options.Default.SettingsAre
-
-                    -- SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_DOWNTIME', X4D_Bank.Options.Default.AutoDepositDowntime, 0, 3600)
-                    -- SetOption('AutoDepositDowntime', X4D_Bank.Options.Default.AutoDepositDowntime)
-
-                    -- SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_RESERVE', X4D_Bank.Options.Default.AutoDepositReserve, 0, 10000)
-                    -- SetOption('AutoDepositReserve', X4D_Bank.Options.Default.AutoDepositReserve)
-
-                    -- SetCheckboxValue('X4D_BANK_CHECK_AUTOWITHDRAW_RESERVE', X4D_Bank.Options.Default.AutoWithdrawReserve)
-                    -- SetOption('AutoWithdrawReserve', X4D_Bank.Options.Default.AutoWithdrawReserve)
-
-                    -- SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_FIXED_AMOUNT', X4D_Bank.Options.Default.AutoDepositFixedAmount, 0, 1000)
-                    -- SetOption('AutoDepositFixedAmount', X4D_Bank.Options.Default.AutoDepositFixedAmount)
-
-                    -- SetSliderValue('X4D_BANK_SLIDER_AUTODEPOSIT_PERCENTAGE', X4D_Bank.Options.Default.AutoDepositPercentage, 0, 100)
-                    -- SetOption('AutoDepositPercentage', X4D_Bank.Options.Default.AutoDepositPercentage)
-
-                    -- SetCheckboxValue('X4D_BANK_CHECK_AUTODEPOSIT_ITEMS', X4D_Bank.Options.Default.AutoDepositItems)
-                    -- SetOption('AutoDepositItems', X4D_Bank.Options.Default.AutoDepositItems)
-
-                    -- SetCheckboxValue('X4D_BANK_CHECK_START_NEW_STACKS', X4D_Bank.Options.Default.StartNewStacks)
-                    -- SetOption('StartNewStacks', X4D_Bank.Options.Default.StartNewStacks)												
-
-                    -- for _,v in pairs(_itemGroups) do
-                    -- if (v == nil) then
-                    -- 	break
-                    -- end
-                    -- local dropdownName = CreateDropdownName(v)
-                    -- SetComboboxValue(dropdownName, 'Leave Alone')
-                    -- SetOption(dropdownName, 'Leave Alone')
-                    -- end
-
-                end
-            end )
-        end
-    end )
-
 end
 
 local function formatnum(n)
