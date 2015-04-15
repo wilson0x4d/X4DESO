@@ -5,6 +5,9 @@ end
 
 X4D_Colors.X4D = '|cFFAE19'
 
+X4D_Colors.Deposit = '|cFFAE19'
+X4D_Colors.Withdraw = '|cAA33FF'
+
 X4D_Colors.SYSTEM = '|cFFFF00'
 X4D_Colors.TRACE_VERBOSE = '|cC0C0C0'
 X4D_Colors.TRACE_INFORMATION = '|c6666FF'

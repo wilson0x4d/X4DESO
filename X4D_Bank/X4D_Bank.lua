@@ -26,10 +26,14 @@ X4D_Bank.Options.Default = {
     }
 }
 
+local constLeaveAlone = 'Leave Alone'
+local constDeposit = X4D.Colors.Deposit .. 'Deposit'
+local constWithdraw = X4D.Colors.Withdraw .. 'Withdraw'
+
 local _itemOptions = {
-	'Leave Alone',
-	'Deposit',
-	'Withdraw',
+	constLeaveAlone,
+	constDeposit,
+	constWithdraw,
 }
 
 local _itemGroups = {
@@ -492,11 +496,11 @@ local function TryWithdrawReserveAmount()
 end
 
 local function ShouldDepositItem(slot, itemTypeDirections)
-	return (not IsSlotIgnoredItem(slot)) and ('Deposit' == (itemTypeDirections[slot.ItemType] or 'Leave Alone'))
+	return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.ItemType] or constLeaveAlone):EndsWith('Deposit')
 end
 
 local function ShouldWithdrawItem(slot, itemTypeDirections)
-	return (not IsSlotIgnoredItem(slot)) and ('Withdraw' == (itemTypeDirections[slot.ItemType] or 'Leave Alone'))
+	return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.ItemType] or constLeaveAlone):EndsWith('Withdraw')
 end
 
 local function CreateDropdownName(v)
@@ -507,10 +511,10 @@ local function GetItemTypeDirectionalities()
 	local itemTypeDirections = {}
 	for _,v in pairs(_itemGroups) do
 		local dropdownName = CreateDropdownName(v)
-		local direction = GetOption(dropdownName) or 'Leave Alone'
+		local direction = GetOption(dropdownName) or constLeaveAlone
 		for _,t in pairs(v.Types) do
             local pre = itemTypeDirections[t]
-            if (pre == nil or direction ~= 'Leave Alone') then
+            if (pre == nil or direction ~= constLeaveAlone) then
 			    itemTypeDirections[t] = direction
             end
 		end			
