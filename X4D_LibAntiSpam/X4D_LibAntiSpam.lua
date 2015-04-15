@@ -158,20 +158,12 @@ local function InvokeEmitCallbackSafe(color, text)
 	end
 end
 
-
 local function StringSplit(s, delimiter)
-    local result = {}
-    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
-		local s = tostring(match)
-		if (s:len() > 0) then
-			table.insert(result, match)
-		end
-    end
-    return result
+    return s:Split(delimiter)
 end
 
 local function StringEndsWith(s,v)
-   return v=='' or string.sub(s,-string.len(v))==v
+    return s:EndsWith(v)
 end
 
 local function StringPivot(s, delimiter, sk)
