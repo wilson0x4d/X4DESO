@@ -469,8 +469,8 @@ local function OnAddOnLoaded(event, addonName)
             },
             [4] = {
                 type = 'checkbox',
-                name = 'Show Player Names in Guild Chat', 
-                tooltip = 'When enabled, Player Names are replaced with Character Names in Guild Chat.', 
+                name = 'Show Player Names in Guild Chat',
+                tooltip = 'When enabled, Player Names are appended to Character Names in Guild Chat.', 
                 getFunc = function() return X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
                 setFunc = function() X4D_Chat.Settings.SavedVars.GuildPlayerNames = not X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
             },
@@ -518,7 +518,7 @@ local function OnAddOnLoaded(event, addonName)
             [10] = {
                 type = 'checkbox',
                 name = 'Prevent Chat Fade', 
-                tooltip = 'When enabled, Chat Window will not Fade.', 
+                tooltip = 'When enabled, Chat Text will not Fade.', 
                 getFunc = function() return X4D_Chat.Settings.SavedVars.PreventChatFade end,
                 setFunc = function() X4D_Chat.Settings.SavedVars.PreventChatFade = not X4D_Chat.Settings.SavedVars.PreventChatFade end,
             },
