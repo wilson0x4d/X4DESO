@@ -8,6 +8,8 @@
 
 lib/LibStub/LibStub.lua
 
+X4D_Strings.lua
+
 X4D_Colors.lua
 X4D_Debug.lua
 

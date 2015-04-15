@@ -62,6 +62,7 @@
     <Compile Include="X4D_Core\X4D_Items.lua" />
     <Compile Include="X4D_Core\X4D_Options.lua" />
     <Compile Include="X4D_Core\X4D_Players.lua" />
+    <Compile Include="X4D_Core\X4D_Strings.lua" />
     <Compile Include="X4D_LibAntiSpam\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_LibAntiSpam\lib\utf8\utf8.lua" />
     <Compile Include="X4D_LibAntiSpam\lib\utf8\utf8data.lua" />
