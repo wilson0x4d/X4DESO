@@ -252,7 +252,7 @@ local function OnAddOnLoaded(event, addonName)
             SettingsAre = 'Account-Wide',
 			AutoAcceptAttachments = true,
 			AutoDeleteMail = true,
-			EnableAntiSpam = true,
+			EnableAntiSpam = false,
 			LeaveReturnedMailAlone = true,
 		})
 
