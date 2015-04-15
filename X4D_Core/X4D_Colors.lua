@@ -3,6 +3,8 @@ if (not X4D_Colors) then
 	return
 end
 
+local X4D_Convert = LibStub('X4D_Convert')
+
 X4D_Colors.X4D = '|cFFAE19'
 
 X4D_Colors.Deposit = '|cFFAE19'
@@ -25,25 +27,12 @@ X4D_Colors.Subtext = '|c5C5C5C'
 X4D_Colors.VP = '|cAA33FF'
 X4D_Colors.XP = '|cAA33FF'
 
-local function HEX2DEC(input, offset)
-	if (offset == nil) then
-		offset = 0
-	end
-	return (tonumber(input:sub(offset, offset), 16) * 16) + tonumber(input:sub(offset + 1, offset + 1), 16)
-end
-
-local function DEC2HEX(input)
-	local h = (input / 16)
-	local l = (input - (h * 16))
-	return string.format('%x%x', h, l)
-end
-
 function X4D_Colors:Create(r, g, b, a)
-	return '|c' .. DEC2HEX(r * 255) .. DEC2HEX(g * 255) .. DEC2HEX(b * 255)
+	return '|c' .. X4D_Convert.DEC2HEX(r * 255) .. X4D_Convert.DEC2HEX(g * 255) .. X4D_Convert.DEC2HEX(b * 255)
 end
 
 function X4D_Colors:Parse(color)
-	return (HEX2DEC(color, 3) / 255), (HEX2DEC(color, 5) / 255), (HEX2DEC(color, 7) / 255), 1
+	return (X4D_Convert.HEX2DEC(color, 3) / 255), (X4D_Convert.HEX2DEC(color, 5) / 255), (X4D_Convert.HEX2DEC(color, 7) / 255), 1
 end
 
 function X4D_Colors:Lerp(colorFrom, colorTo, percent)

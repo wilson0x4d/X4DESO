@@ -54,3 +54,16 @@ end
 function X4D_Convert.CategoryToChannel(self, category)
 	return _chatCategoryChannels[category] or CHAT_CHANNEL_SYSTEM
 end
+
+function X4D_Convert.HEX2DEC(input, offset)
+	if (offset == nil) then
+		offset = 0
+	end
+	return (tonumber(input:sub(offset, offset), 16) * 16) + tonumber(input:sub(offset + 1, offset + 1), 16)
+end
+
+function X4D_Convert.DEC2HEX(input)
+	local h = (input / 16)
+	local l = (input - (h * 16))
+	return string.format('%x%x', h, l)
+end

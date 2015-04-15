@@ -179,11 +179,11 @@ function X4D_Chat.GetChatCategory(channelInfo)
 end
 
 function X4D_Chat.CreateColorCode(r, g, b)
-	return '|c' .. DEC2HEX(r * 255) .. DEC2HEX(g * 255) .. DEC2HEX(b * 255)
+	return '|c' .. X4D.Convert.DEC2HEX(r * 255) .. X4D.Convert.DEC2HEX(g * 255) .. X4D.Convert.DEC2HEX(b * 255)
 end
 
 function X4D_Chat.ParseColorCode(color)
-	return HEX2DEC(color, 3)/256, HEX2DEC(color, 5)/256, HEX2DEC(color, 7)/256, 1
+	return X4D.Convert.HEX2DEC(color, 3)/256, X4D.Convert.HEX2DEC(color, 5)/256, X4D.Convert.HEX2DEC(color, 7)/256, 1
 end
 
 function X4D_Chat.CreateChannelLink(channelInfo, category)
@@ -360,16 +360,6 @@ local function StringSplit(s, delimiter)
 		end
     end
     return result
-end
-
-function HEX2DEC(input, offset)
-	return (tonumber(input:sub(offset, offset), 16) * 16) + tonumber(input:sub(offset + 1, offset + 1), 16)
-end
-
-function DEC2HEX(input)
-	local h = (input / 16)
-	local l = (input - (h * 16))
-	return string.format('%x%x', h, l)
 end
 
 function string.StartsWith(String,Start)
