@@ -8,12 +8,6 @@ X4D.Loot = X4D_Loot
 X4D_Loot.NAME = 'X4D_Loot'
 X4D_Loot.VERSION = '1.8'
 
-X4D_Loot.Settings = {}
-X4D_Loot.Settings.SavedVars = {}
-X4D_Loot.Settings.Defaults = {
-	None = 'true',
-}
-
 X4D_Loot.Colors = {
 	Gold = '|cFFD700',
 	StackCount = '|cFFFFFF',
@@ -491,17 +485,21 @@ end
 
 function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, soundCategory, lootType, lootedBySelf)
     if (not lootedBySelf) then
-    	return
+        -- TODO: find a way to lookup item details without interrogating Bag API
+        if (X4D.Loot.Options:GetOption('DisplayPartyLoot')) then
+		    InvokeCallbackSafe(slot.ItemColor, receivedBy .. ' received ' .. objectName .. X4D_Loot.Colors.StackCount .. ' x' .. stackCount)
+        end
+    else
+	    if (lootType == LOOT_TYPE_ITEM) then
+		    if (UpdateBagsInternal()) then
+			    CheckInventorySpaceInternal()
+		    end
+	    elseif (lootType == LOOT_TYPE_QUEST_ITEM) then
+		    if (UpdateQuestsInternal()) then
+			    -- NOP
+		    end
+	    end
     end
-	if (lootType == LOOT_TYPE_ITEM) then
-		if (UpdateBagsInternal()) then
-			CheckInventorySpaceInternal()
-		end
-	elseif (lootType == LOOT_TYPE_QUEST_ITEM) then
-		if (UpdateQuestsInternal()) then
-			-- NOP
-		end
-	end
 end
 
 function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotId, isNewItem, itemSoundCategory, updateReason)
@@ -525,6 +523,9 @@ local function formatnum(n)
 end
 
 function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
+    if (not X4D.Loot.Options:GetOption('DisplayMoneyUpdates')) then
+        return
+    end
 	local icon = CreateIcon('EsoUI/Art/currency/currency_gold.dds')
 	local reason = GetMoneyReason(reasonId)
 	local amount = newMoney - oldMoney
@@ -543,11 +544,56 @@ function X4D_Loot.OnQuestToolUpdated(journalIndex, questName)
 	UpdateQuestsInternal()
 end
 
+local function InitializeOptionsUI()
+	local LAM = LibStub('LibAddonMenu-2.0')
+	local cplId = LAM:RegisterAddonPanel('X4D_LOOT_CPL', {
+        type = 'panel',
+        name = 'X4D |cFFAE19Loot',
+    })
+
+    local panelOptions = { }
+
+    table.insert(panelOptions, {
+            type = 'checkbox',
+            name = 'Display Money Updates', 
+            tooltip = 'When enabled, money updates are displayed in the Chat Window.', 
+            getFunc = function() 
+                if (X4D.Bank ~= nil) then
+                    return X4D.Bank.Options:GetOption('DisplayMoneyUpdates')
+                else
+                    return X4D.Loot.Options:GetOption('DisplayMoneyUpdates')
+                end
+            end,
+            setFunc = function()
+                X4D.Loot.Options:SetOption('DisplayMoneyUpdates', not X4D.Loot.Options:GetOption('DisplayMoneyUpdates')) 
+                if (X4D.Bank ~= nil) then
+                    X4D.Bank.Options:SetOption('DisplayMoneyUpdates', X4D.Loot.Options:GetOption('DisplayMoneyUpdates')) 
+                end
+            end,
+        })
+
+    LAM:RegisterOptionControls(
+        'X4D_LOOT_CPL',
+        panelOptions
+    )
+end
+
+
 function X4D_Loot.OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Loot.NAME) then
 		return
 	end	
-	X4D_Loot.Settings.SavedVars = ZO_SavedVars:NewAccountWide(X4D_Loot.NAME .. '_SV', 1.0, nil, X4D_Loot.Settings.Defaults)
+
+	X4D_Loot.Options = X4D.Options:Create(
+		X4D_Loot.NAME .. '_SV',
+		{
+            SettingsAre = 'Account-Wide',
+            DisplayMoneyUpdates = true,
+			DisplayPartyLoot = false,
+		})
+
+    InitializeOptionsUI()
+
 	X4D_Loot.Register()
 end
 
