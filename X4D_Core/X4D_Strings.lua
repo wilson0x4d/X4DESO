@@ -10,6 +10,10 @@ function string:Split(delimiter)
     return result
 end
 
+function string:StartsWith(v)
+    return string.sub(self, 1, string.len(v)) == v
+end
+
 function string:EndsWith(v)
     local input = '' .. self;
     return v=='' or string.sub(input,-string.len(v))==v
