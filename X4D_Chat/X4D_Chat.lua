@@ -156,7 +156,7 @@ function X4D_Chat.OnChatMessageReceived(messageType, fromName, text)
         local fromLink = X4D_Chat.CreateCharacterLink(fromName, channelInfo)
         local textColor = categoryColor
         if (X4D_Chat.Settings.SavedVars.UseLighterMessageColor) then
-            textColor = X4D.Colors:Lerp(textColor, '|cFFFFFF', 25)
+            textColor = X4D.Colors:Lerp(textColor, '|cFFFFFF', 33)
         end
         if (channelLink) then
             result = zo_strformat(channelInfo.format, channelLink, fromLink, textColor .. text)
