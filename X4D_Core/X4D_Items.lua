@@ -3,46 +3,46 @@ if (not X4D_Items) then
 	return
 end
 
-local _itemQualities = {
-    [0] = {
-        Level = 0,
-        Name = 'Junk',
-        Canonical = 'JUNK',
+X4D_Items.ItemQualities = {
+    [ITEM_QUALITY_TRASH] = {
+        Level = ITEM_QUALITY_TRASH,
+        Name = 'Trash',
+        Canonical = 'ITEM_QUALITY_TRASH',
     },
-    [1] = {
-        Level = 1,
+    [ITEM_QUALITY_NORMAL] = {
+        Level = ITEM_QUALITY_NORMAL,
         Name = 'Normal',
-        Canonical = 'NORMAL',
+        Canonical = 'ITEM_QUALITY_NORMAL',
     },
-    [2] = {
-        Level = 2,
-        Name = 'Fine',
-        Canonical = 'FINE',
+    [ITEM_QUALITY_MAGIC] = {
+        Level = ITEM_QUALITY_MAGIC,
+        Name = 'Magic',
+        Canonical = 'ITEM_QUALITY_MAGIC',
     },
-    [3] = {
-        Level = 3,
-        Name = 'Superior',
-        Canonical = 'SUPERIOR',
+    [ITEM_QUALITY_ARCANE] = {
+        Level = ITEM_QUALITY_ARCANE,
+        Name = 'Arcane',
+        Canonical = 'ITEM_QUALITY_ARCANE',
     },
-    [4] = {
-        Level = 4,
-        Name = 'Epic',
-        Canonical = 'EPIC',
+    [ITEM_QUALITY_ARTIFACT] = {
+        Level = ITEM_QUALITY_ARTIFACT,
+        Name = 'Artifact',
+        Canonical = 'ITEM_QUALITY_ARTIFACT',
     },
-    [5] = {
-        Level = 5,
+    [ITEM_QUALITY_LEGENDARY] = {
+        Level = ITEM_QUALITY_LEGENDARY,
         Name = 'Legendary',
-        Canonical = 'LEGENDARY',
+        Canonical = 'ITEM_QUALITY_LEGENDARY',
     }
 }
 
 function X4D_Items.ToQualityString(v)    
-    return _itemQualities[v].Name
+    return X4D_Items.ItemQualities[v].Name
 end
 
 function X4D_Items.FromQualityString(v)
     local normalized = tostring(v):upper()
-	for level,quality in pairs(_itemQualities) do
+	for level,quality in pairs(X4D_Items.ItemQualities) do
         if (quality.Canonical == normalized) then
             return quality.Level
         end
@@ -51,9 +51,8 @@ end
 
 X4D_Items.ItemGroups = {
     'Alchemy',
-    'Armor',
     'Blacksmithing',
-    'Clothier',
+    'Clothing',
     'Consumables',
     'Enchanting',
     'Provisioning',
@@ -83,21 +82,21 @@ X4D_Items.ItemTypes = {
         Canonical = 'ITEMTYPE_ARMOR',
         Name = 'Armor',
         Tooltip = nil,
-        Group = 'Armor'
+        Group = 'Blacksmithing'
     },
     [ITEMTYPE_ARMOR_BOOSTER] = {
         Id = ITEMTYPE_ARMOR_BOOSTER,
         Canonical = 'ITEMTYPE_ARMOR_BOOSTER',
-        Name = 'Boosters',
+        Name = 'Armor Boosters',
         Tooltip = nil,
-        Group = 'Armor'
+        Group = 'Blacksmithing'
     },
     [ITEMTYPE_ARMOR_TRAIT] = {
         Id = ITEMTYPE_ARMOR_TRAIT,
         Canonical = 'ITEMTYPE_ARMOR_TRAIT',
-        Name = 'Trait',
+        Name = 'Armor Traits',
         Tooltip = nil,
-        Group = 'Armor'
+        Group = 'Blacksmithing'
     },
     [ITEMTYPE_AVA_REPAIR] = {
         Id = ITEMTYPE_AVA_REPAIR,
@@ -132,21 +131,21 @@ X4D_Items.ItemTypes = {
         Canonical = 'ITEMTYPE_CLOTHIER_BOOSTER',
         Name = 'Boosters',
         Tooltip = nil,
-        Group = 'Clothier'
+        Group = 'Clothing'
     },
     [ITEMTYPE_CLOTHIER_MATERIAL] = {
         Id = ITEMTYPE_CLOTHIER_MATERIAL,
         Canonical = 'ITEMTYPE_CLOTHIER_MATERIAL',
         Name = 'Materials',
         Tooltip = nil,
-        Group = 'Clothier'
+        Group = 'Clothing'
     },
     [ITEMTYPE_CLOTHIER_RAW_MATERIAL] = {
         Id = ITEMTYPE_CLOTHIER_RAW_MATERIAL,
         Canonical = 'ITEMTYPE_CLOTHIER_RAW_MATERIAL',
         Name = 'Raw Materials',
         Tooltip = nil,
-        Group = 'Clothier'
+        Group = 'Clothing'
     },
     [ITEMTYPE_COLLECTIBLE] = {
         Id = ITEMTYPE_COLLECTIBLE,
@@ -160,7 +159,7 @@ X4D_Items.ItemTypes = {
         Canonical = 'ITEMTYPE_CONTAINER',
         Name = 'Containers',
         Tooltip = nil,
-        Group = 'Misc'
+        Group = nil -- will not appear in 'Bank' list (as it results in errors)
     },
     [ITEMTYPE_COSTUME] = {
         Id = ITEMTYPE_COSTUME,
@@ -265,7 +264,7 @@ X4D_Items.ItemTypes = {
         Canonical = 'ITEMTYPE_LOCKPICK',
         Name = 'Lockpicks',
         Tooltip = nil,
-        Group = 'Misc'
+        Group = nil -- will not appear in 'Bank' list (as it doesn't do anything)
     },
     [ITEMTYPE_LURE] = {
         Id = ITEMTYPE_LURE,
@@ -421,13 +420,6 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = 'Blacksmithing'
     },
-    [ITEMTYPE_WOODWORKING_BOOSTER] = {
-        Id = ITEMTYPE_WOODWORKING_BOOSTER,
-        Canonical = 'ITEMTYPE_WOODWORKING_BOOSTER',
-        Name = 'Boosters',
-        Tooltip = nil,
-        Group = 'Woodworking'
-    },
     [ITEMTYPE_WOODWORKING_MATERIAL] = {
         Id = ITEMTYPE_WOODWORKING_MATERIAL,
         Canonical = 'ITEMTYPE_WOODWORKING_MATERIAL',
@@ -439,6 +431,13 @@ X4D_Items.ItemTypes = {
         Id = ITEMTYPE_WOODWORKING_RAW_MATERIAL,
         Canonical = 'ITEMTYPE_WOODWORKING_RAW_MATERIAL',
         Name = 'Raw Materials',
+        Tooltip = nil,
+        Group = 'Woodworking'
+    },
+    [ITEMTYPE_WOODWORKING_BOOSTER] = {
+        Id = ITEMTYPE_WOODWORKING_BOOSTER,
+        Canonical = 'ITEMTYPE_WOODWORKING_BOOSTER',
+        Name = 'Boosters',
         Tooltip = nil,
         Group = 'Woodworking'
     },
