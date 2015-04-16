@@ -51,10 +51,6 @@ local function InvokeEmitCallbackSafe(color, text)
 	end
 end
 
-local function CreateIcon(filename, width, height)	
-	return string.format('|t%u:%u:%s|t', width or 16, height or 16, filename)
-end
-
 local function formatnum(n)
 	local left, num, right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
 	return left .. (num:reverse():gsub('(%d%d%d)','%1,'):reverse()) .. right
@@ -86,7 +82,7 @@ function X4D_Mail:HandleMailAttachments(mailId)
 							local itemIcon, stackCount, creatorName = GetAttachedItemInfo(mailId, attachmentIndex)
 							local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
 							local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
-							InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. CreateIcon(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName);
+							InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. X4D.Icons.Create(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName);
 						end
 						TakeMailAttachedItems(mailId)
 					else
@@ -97,7 +93,7 @@ function X4D_Mail:HandleMailAttachments(mailId)
 				if (mail.AttachedMoney > 0) then
 					if (X4D.Loot == nil) then
 						local newMoney = GetCurrentMoney() + mail.AttachedMoney
-						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format('%s %s%s %s  (%s total)', 'Accepted', formatnum(mail.AttachedMoney), CreateIcon('EsoUI/Art/currency/currency_gold.dds'), X4D.Colors.Subtext, formatnum(newMoney)))
+						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format('%s %s%s %s  (%s total)', 'Accepted', formatnum(mail.AttachedMoney), X4D.Icons.Create('EsoUI/Art/currency/currency_gold.dds'), X4D.Colors.Subtext, formatnum(newMoney)))
 					end				
 					TakeMailAttachedMoney(mailId)
 				end

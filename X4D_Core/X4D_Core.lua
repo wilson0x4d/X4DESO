@@ -4,9 +4,10 @@ if (not X4D) then
 end
 X4D.NAME = 'X4D'
 X4D.VERSION = '1.1'
-X4D.Colors = LibStub('X4D_Colors')
-X4D.Debug = LibStub('X4D_Debug')
 X4D.Convert = LibStub('X4D_Convert')
+X4D.Colors = LibStub('X4D_Colors')
+X4D.Icons = LibStub('X4D_Icons')
+X4D.Debug = LibStub('X4D_Debug')
 X4D.Async = LibStub('X4D_Async')
 X4D.Items = LibStub('X4D_Items')
 X4D.Guilds = LibStub('X4D_Guilds')

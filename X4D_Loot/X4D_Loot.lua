@@ -66,12 +66,6 @@ local function InvokeCallbackSafe(color, text)
 	end
 end
 
-local function CreateIcon(filename, width, height)	
-	-- example: /zgoo EsoStrings[SI_BANK_GOLD_AMOUNT_BANKED]:gsub('%|', '!')
-	-- gladly accepting gold donations in-game, thanks.
-	return string.format('|t%u:%u:%s|t', width or 16, height or 16, filename)
-end
-
 local function GetItemLinkInternal(bagId, slotId)
 	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS):gsub('(%[%l)', function (i) return i:upper() end):gsub('(%s%l)', function (i) return i:upper() end):gsub('%^[^%]]*', '')
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
@@ -148,7 +142,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 		if (bag.Id == 1) then
 			wasChangeDetected = true
 			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then
-				InvokeCallbackSafe(slot.ItemColor, CreateIcon(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. slot.Stack)
+				InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. slot.Stack)
 			end
 		end
 	else	
@@ -175,7 +169,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 				slot.ItemIcon = iconFilename
 				if (bag.Id == 1) then
 					wasChangeDetected = true
-					InvokeCallbackSafe(slot.ItemColor, CreateIcon(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. slot.Stack)
+					InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. slot.Stack)
 				end
 			end
 		elseif (itemId > 0) then
@@ -190,7 +184,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 				if (stackChange > 0) then
 					if (bag.Id == 1) then
 						wasChangeDetected = true
-						InvokeCallbackSafe(slot.ItemColor, CreateIcon(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange)
+						InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange)
 					end
 				end
 				slot.Stack = stack
@@ -337,7 +331,7 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 		condition = AddQuestStepConditionInternal(quest, step, conditionIndex)
 		wasChangeDetected = true
 		if (condition ~= nil and condition.Stack > 0) then
-			InvokeCallbackSafe(condition.ItemColor, CreateIcon(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. condition.Stack .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+			InvokeCallbackSafe(condition.ItemColor, X4D.Icons.Create(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. condition.Stack .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
 		end
 	else
 		local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
@@ -349,7 +343,7 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 			local stackChange = stackCount - condition.Stack
 			if (stackChange > 0) then
 				wasChangeDetected = true
-				InvokeCallbackSafe(condition.ItemColor, CreateIcon(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+				InvokeCallbackSafe(condition.ItemColor, X4D.Icons.Create(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
 			end
 			condition.Stack = stackCount
 		end
@@ -366,7 +360,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 		wasChangeDetected = true
 		if (tool ~= nil and tool.Stack > 0) then
 			wasChangeDetected = true
-			InvokeCallbackSafe(tool.ItemColor, CreateIcon(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. tool.Stack .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+			InvokeCallbackSafe(tool.ItemColor, X4D.Icons.Create(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. tool.Stack .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
 		end
 	else
 		local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
@@ -378,7 +372,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 			local stackChange = stackCount - tool.Stack
 			if (stackChange > 0) then
 				wasChangeDetected = true
-				InvokeCallbackSafe(tool.ItemColor, CreateIcon(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+				InvokeCallbackSafe(tool.ItemColor, X4D.Icons.Create(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
 			end
 			tool.Stack = stackCount
 		end
@@ -526,7 +520,7 @@ function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     if (not X4D.Loot.Options:GetOption('DisplayMoneyUpdates')) then
         return
     end
-	local icon = CreateIcon('EsoUI/Art/currency/currency_gold.dds')
+	local icon = X4D.Icons.Create('EsoUI/Art/currency/currency_gold.dds')
 	local reason = GetMoneyReason(reasonId)
 	local amount = newMoney - oldMoney
 	if (amount >= 0) then
