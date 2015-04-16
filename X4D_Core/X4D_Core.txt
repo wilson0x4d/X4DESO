@@ -20,5 +20,4 @@ X4D_Options.lua
 X4D_Items.lua
 X4D_Guilds.lua
 X4D_Players.lua
-X4D_Conversions.lua
 X4D_Core.lua
