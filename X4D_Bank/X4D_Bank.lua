@@ -126,9 +126,9 @@ local function TryGetBagState(bagId)
             local itemLevel = GetItemLevel(bagId, slotIndex)
             local isStolen = IsItemStolen(bagId, slotIndex)
 
-            local normalizedItemData = '~' .. itemQualityString:upper() .. (' L' .. itemLevel .. ' T' .. itemType.Id .. ' ' .. itemType.Canonical .. ' ' .. itemName .. ' ' .. itemLink):lower()
+            local normalizedItemData = (' L' .. itemLevel .. ' ' .. itemQualityString .. ' T' .. itemType.Id .. ' ' .. itemType.Canonical .. ' ' .. itemName:lower() .. ' ' .. itemLink)
             if (isStolen) then
-                normalizedItemData = ' ~STOLEN' .. normalizedItemData
+                normalizedItemData = ' STOLEN' .. normalizedItemData
                 -- TODO: handler for when 'stolen' state of an item changes
             end
             local slot = {

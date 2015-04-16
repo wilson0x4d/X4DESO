@@ -43,7 +43,7 @@ end
 function X4D_Items.FromQualityString(v)
     local normalized = tostring(v):upper()
 	for level,quality in pairs(X4D_Items.ItemQualities) do
-        if (quality.Canonical == normalized) then
+        if (quality.Canonical:EndsWith(normalized)) then
             return quality.Level
         end
     end
