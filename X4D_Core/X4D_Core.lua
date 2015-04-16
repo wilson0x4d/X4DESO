@@ -102,7 +102,7 @@ EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
                     versions = versions .. 'XP/' .. X4D.XP.VERSION .. ' '
                 end
                 X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.INFORMATION)
-	            X4D.Debug:Information(versions, 'X4D')
+	            X4D.Debug:Verbose(versions, 'X4D')
             end, 1000, {}):Start()
     end)
 
