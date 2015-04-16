@@ -12,189 +12,11 @@ local constLeaveAlone = 'Leave Alone'
 local constDeposit = X4D.Colors.Deposit .. 'Deposit'
 local constWithdraw = X4D.Colors.Withdraw .. 'Withdraw'
 
-local _itemOptions = {
+local _itemTypeOptions = {
     constLeaveAlone,
     constDeposit,
     constWithdraw,
 }
-
-local _itemGroups = {
-}
--- [?] = {
--- these items are not supported for auto-deposit/withdraw for various reasons (invalid for itemtype, api errors, etc)
--- Title = 'Other Items',
--- Types = {
--- 	ITEMTYPE_AVA_REPAIR,
--- 	ITEMTYPE_CONTAINER,
--- 	ITEMTYPE_LOCKPICK,
--- 	ITEMTYPE_NONE,
--- 	ITEMTYPE_PLUG,
--- 	ITEMTYPE_SCROLL,
--- 	ITEMTYPE_SIEGE,
--- 	ITEMTYPE_TABARD,
--- 	ITEMTYPE_TOOL,
--- 	ITEMTYPE_TRASH,
---      ITEMTYPE_MOUNT,
--- }
--- },
-
-table.insert(_itemGroups, {
-    Title = 'Alchemy Items',
-    Description = 'Alchemy Items and Reagents',
-    Types =
-    {
-        ITEMTYPE_ALCHEMY_BASE,
-        ITEMTYPE_REAGENT,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Armor Equipment',
-    Description = 'Standard Armor Equipment',
-    Types =
-    {
-        ITEMTYPE_ARMOR,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Armor Traits',
-    Description = 'Armor Traits and Boosters',
-    Types =
-    {
-        ITEMTYPE_ARMOR_BOOSTER,
-        ITEMTYPE_ARMOR_TRAIT,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Blacksmithing Items',
-    Description = 'Blacksmithing Materials and Boosters',
-    Types =
-    {
-        ITEMTYPE_BLACKSMITHING_BOOSTER,
-        ITEMTYPE_BLACKSMITHING_MATERIAL,
-        ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Clothier Items',
-    Description = 'Clothier Materials and Boosters',
-    Types =
-    {
-        ITEMTYPE_CLOTHIER_BOOSTER,
-        ITEMTYPE_CLOTHIER_MATERIAL,
-        ITEMTYPE_CLOTHIER_RAW_MATERIAL,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Cooking Items',
-    Description = 'Cooking Recipes, Ingredients, etc',
-    Types =
-    {
-        ITEMTYPE_RECIPE,
-        ITEMTYPE_INGREDIENT,
-        ITEMTYPE_FLAVORING,
-        ITEMTYPE_SPICE,
-        ITEMTYPE_ADDITIVE,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Enchanting Items',
-    Description = 'Enchanting Runes, Boosters and Glyphs',
-    Types =
-    {
-        ITEMTYPE_ENCHANTING_RUNE_ASPECT,
-        ITEMTYPE_ENCHANTING_RUNE_ESSENCE,
-        ITEMTYPE_ENCHANTING_RUNE_POTENCY,
-        ITEMTYPE_ENCHANTMENT_BOOSTER,
-        ITEMTYPE_GLYPH_ARMOR,
-        ITEMTYPE_GLYPH_JEWELRY,
-        ITEMTYPE_GLYPH_WEAPON,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Fishing Items',
-    Description = 'Lures',
-    Types =
-    {
-        ITEMTYPE_LURE,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Food and Drink',
-    Description = 'Food, Drink, Potions and Poisons',
-    Types =
-    {
-        ITEMTYPE_DRINK,
-        ITEMTYPE_FOOD,
-        ITEMTYPE_POTIONS,
-        ITEMTYPE_POISON,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Mystic Items',
-    Description = 'Soul Gems',
-    Types =
-    {
-        ITEMTYPE_SOUL_GEM,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Styles',
-    Description = 'Styles',
-    Types =
-    {
-        ITEMTYPE_STYLE_MATERIAL,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Costumes, Collectibles and Trophies',
-    Description = '',
-    Types =
-    {
-        ITEMTYPE_TROPHY,
-        ITEMTYPE_COLLECTIBLE,
-        ITEMTYPE_COSTUME,
-        ITEMTYPE_DISGUISE,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Weapon Equipment',
-    Description = 'Standard Weapon Equipment',
-    Types =
-    {
-        ITEMTYPE_WEAPON,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Weapon Traits',
-    Description = 'Weapon Traits and Boosters',
-    Types =
-    {
-        ITEMTYPE_WEAPON_BOOSTER,
-        ITEMTYPE_WEAPON_TRAIT,
-    },
-} )
-table.insert(_itemGroups, {
-    Title = 'Woodworking Items',
-    Description = 'Woodworking Materials and Boosters',
-    Types =
-    {
-        ITEMTYPE_WOODWORKING_BOOSTER,
-        ITEMTYPE_WOODWORKING_MATERIAL,
-        ITEMTYPE_WOODWORKING_RAW_MATERIAL,
-    },
-} )
--- NOTE: must come last so that this selection overrides prior selections when building lists/directionalities
-table.insert(_itemGroups, {
-    Title = 'Raw Materials',
-    Description = 'Raw Materials, including Generic, Blacksmith, Clothier and Woodworker raw materials',
-    Types =
-    {
-        ITEMTYPE_RAW_MATERIAL,
-        ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
-        ITEMTYPE_CLOTHIER_RAW_MATERIAL,
-        ITEMTYPE_WOODWORKING_RAW_MATERIAL,
-    },
-} )
 
 local function GetOption(name)
     return X4D_Bank.Options:GetOption(name)
@@ -255,33 +77,11 @@ local function InvokeCallbackSafe(color, text)
     end
 end
 
-function string.StartsWith(String, Start)
-    return string.sub(String, 1, string.len(Start)) == Start
-end
-
 local function IsSlotIgnoredItem(slot)
     if (not slot.IsEmpty) then
         local patterns = GetOption('IgnoredItemPatterns')
         for i = 1, #patterns do
             local pattern = patterns[i]
-            --            if (string.StartsWith(pattern, '~')) then
-            --                local special = pattern:upper()
-            --                if ((slot.IsStolen) and (special == '~STOLEN')) then
-            --                    return true
-            --                elseif ((slot.ItemQuality == 0) and (special == '~JUNK')) then
-            --                    return true
-            --                elseif ((slot.ItemQuality == 1) and (special == '~NORMAL')) then
-            --                    return true
-            --                elseif ((slot.ItemQuality == 2) and (special == '~FINE')) then
-            --                    return true
-            --                elseif ((slot.ItemQuality == 3) and (special == '~SUPERIOR')) then
-            --                    return true
-            --                elseif ((slot.ItemQuality == 4) and (special == '~EPIC')) then
-            --                    return true
-            --                elseif ((slot.ItemQuality == 5) and (special == '~LEGENDARY')) then
-            --                    return true
-            --                end
-            --            else
             local isIgnored = false
             if (not pcall( function()
                     if (slot.Normalized:find(pattern)) then
@@ -293,16 +93,9 @@ local function IsSlotIgnoredItem(slot)
             if (isIgnored) then
                 return true
             end
-            --            end
         end
     end
     return false
-end
-
-local function CreateIcon(filename, width, height)
-    -- example: /zgoo EsoStrings[SI_BANK_GOLD_AMOUNT_BANKED]:gsub('%|', '!')
-    -- gladly accepting gold donations in-game, thanks.
-    return string.format('|t%u:%u:%s|t', width or 16, height or 16, filename)
 end
 
 local function TryGetBagState(bagId)
@@ -314,7 +107,7 @@ local function TryGetBagState(bagId)
     end
     local bagState = {
         Id = bagId,
-        BagIcon = CreateIcon(bagIcon),
+        BagIcon = X4D.Icons.Create(bagIcon),
         SlotCount = numSlots,
         Slots = { },
         FreeSlotCount = 0,
@@ -329,10 +122,11 @@ local function TryGetBagState(bagId)
             local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex)
             local itemLink, itemColor, itemQuality = GetItemLinkInternal(bagId, slotIndex)
             local itemQualityString = X4D.Items.ToQualityString(itemQuality)
-            local itemType = GetItemType(bagId, slotIndex)
+            local itemType = X4D.Items.ItemTypes[GetItemType(bagId, slotIndex)] or X4D.Items.ItemTypes[ITEMTYPE_NONE]
             local itemLevel = GetItemLevel(bagId, slotIndex)
             local isStolen = IsItemStolen(bagId, slotIndex)
-            local normalizedItemData = '~' .. itemQualityString:upper() .. ' L' .. itemLevel .. ' ' .. itemType .. ' ' .. itemName:lower() .. ' ' .. itemLink
+
+            local normalizedItemData = '~' .. itemQualityString:upper() .. (' L' .. itemLevel .. ' T' .. itemType.Id .. ' ' .. itemType.Canonical .. ' ' .. itemName .. ' ' .. itemLink):lower()
             if (isStolen) then
                 normalizedItemData = ' ~STOLEN' .. normalizedItemData
                 -- TODO: handler for when 'stolen' state of an item changes
@@ -340,7 +134,7 @@ local function TryGetBagState(bagId)
             local slot = {
                 Id = slotIndex,
                 IsEmpty = false,
-                ItemIcon = CreateIcon(iconFilename),
+                ItemIcon = X4D.Icons.Create(iconFilename),
                 ItemName = itemName,
                 ItemLink = itemLink,
                 ItemColor = itemColor,
@@ -473,26 +267,25 @@ local function TryWithdrawReserveAmount()
 end
 
 local function ShouldDepositItem(slot, itemTypeDirections)
-    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType] or constLeaveAlone):EndsWith('Deposit')
+    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith('Deposit')
 end
 
 local function ShouldWithdrawItem(slot, itemTypeDirections)
-    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType] or constLeaveAlone):EndsWith('Withdraw')
+    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith('Withdraw')
 end
 
-local function CreateDropdownName(v)
-    return 'X4D_CHAT_OPTION_DW_' .. v.Title:upper():gsub(' ', '_')
+local function CreateDropdownName(itemType)
+    return ('X4D_BANK_' .. itemType.Canonical):upper()
 end
 
 local function GetItemTypeDirectionalities()
     local itemTypeDirections = { }
-    for _, v in pairs(_itemGroups) do
-        local dropdownName = CreateDropdownName(v)
-        local direction = GetOption(dropdownName) or constLeaveAlone
-        for _, t in pairs(v.Types) do
-            local pre = itemTypeDirections[t]
-            if (pre == nil or direction ~= constLeaveAlone) then
-                itemTypeDirections[t] = direction
+    for _,groupName in pairs(X4D.Items.ItemGroups) do
+        for _,itemType in pairs(X4D.Items.ItemTypes) do
+            if (itemType.Group == groupName) then
+                local dropdownName = CreateDropdownName(itemType)
+                local direction = GetOption(dropdownName) or constLeaveAlone
+                itemTypeDirections[itemType.Id] = direction
             end
         end
     end
@@ -820,7 +613,7 @@ local function InitializeOptionsUI()
     table.insert(panelOptions, {
         type = 'editbox',
         name = 'Item Ignore List',
-        tooltip = 'Line-delimited list of items to ignore using "lua patterns". |cFFFFFFSpecial patterns are prefixed with a tilde (~) and include STOLEN, JUNK, NORMAL, FINE, SUPERIOR, EPIC, and LEGENDARY.',
+        tooltip = 'Line-delimited list of items to ignore using "lua patterns". Ignored items will not be withdrawn, deposited nor restacked.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc',
         isMultiline = true,
         getFunc = function()
             local patternsOption = GetOption('IgnoredItemPatterns')
@@ -840,23 +633,31 @@ local function InitializeOptionsUI()
             end
             SetOption('IgnoredItemPatterns', result)
         end,
-    } )
+    })
 
-    for _, v in pairs(_itemGroups) do
-        if (v == nil) then
-            break
-        end
-        local dropdownName = CreateDropdownName(v)
+    for _,groupName in pairs(X4D.Items.ItemGroups) do
         table.insert(panelOptions, {
-            type = 'dropdown',
-            name = v.Title,
-            tooltip = v.Description,
-            choices = _itemOptions,
-            getFunc = function() return GetOption(dropdownName) or 'Leave Alone' end,
-            setFunc = function(option)
-                SetOption(dropdownName, option)
-            end,
-        } )
+            type = 'header',
+            name = groupName,
+        })
+        for _,itemType in pairs(X4D.Items.ItemTypes) do
+            if (itemType.Group == groupName) then
+                local dropdownName = CreateDropdownName(itemType)
+                table.insert(panelOptions, {
+                    type = 'dropdown',
+                    name = itemType.Name,
+                    tooltip = itemType.Tooltip or itemType.Canonical,
+                    choices = _itemTypeOptions,
+                    getFunc = function() return 
+                        GetOption(dropdownName) or 'Leave Alone' 
+                    end,
+                    setFunc = function(option)
+                        SetOption(dropdownName, option)
+                    end,
+                    width = 'half',
+                })
+            end
+        end
     end
 
     LAM:RegisterOptionControls(
@@ -893,7 +694,7 @@ local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     if (not X4D.Bank.Options:GetOption('DisplayMoneyUpdates')) then
         return
     end
-    local icon = CreateIcon('EsoUI/Art/currency/currency_gold.dds')
+    local icon = X4D.Icons.Create('EsoUI/Art/currency/currency_gold.dds')
     local reason = GetMoneyReason(reasonId)
     local amount = newMoney - oldMoney
     if (amount >= 0) then
@@ -916,14 +717,13 @@ local function OnAddOnLoaded(eventCode, addonName)
             AutoDepositReserve = 500,
             AutoDepositFixedAmount = 100,
             AutoDepositPercentage = 1,
-            AutoDepositItems = true,
+            AutoDepositItems = false,
             StartNewStacks = true,
             AutoWithdrawReserve = true,
             DisplayMoneyUpdates = true,
             IgnoredItemPatterns =
             {
-                '~STOLEN',
-                '~JUNK',
+                'STOLEN',
             }
         })
 
