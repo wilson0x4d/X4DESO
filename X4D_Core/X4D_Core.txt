@@ -12,6 +12,7 @@ X4D_Strings.lua
 
 X4D_Convert.lua
 X4D_Colors.lua
+X4D_Icons.lua
 X4D_Debug.lua
 
 X4D_Async.lua
