@@ -7,32 +7,32 @@ local _itemQualities = {
     [0] = {
         Level = 0,
         Name = 'Junk',
-        NormalizedName = 'JUNK',
+        Canonical = 'JUNK',
     },
     [1] = {
         Level = 1,
         Name = 'Normal',
-        NormalizedName = 'NORMAL',
+        Canonical = 'NORMAL',
     },
     [2] = {
         Level = 2,
         Name = 'Fine',
-        NormalizedName = 'FINE',
+        Canonical = 'FINE',
     },
     [3] = {
         Level = 3,
         Name = 'Superior',
-        NormalizedName = 'SUPERIOR',
+        Canonical = 'SUPERIOR',
     },
     [4] = {
         Level = 4,
         Name = 'Epic',
-        NormalizedName = 'EPIC',
+        Canonical = 'EPIC',
     },
     [5] = {
         Level = 5,
         Name = 'Legendary',
-        NormalizedName = 'LEGENDARY',
+        Canonical = 'LEGENDARY',
     }
 }
 
@@ -43,7 +43,7 @@ end
 function X4D_Items.FromQualityString(v)
     local normalized = tostring(v):upper()
 	for level,quality in pairs(_itemQualities) do
-        if (quality.NormalizedName == normalized) then
+        if (quality.Canonical == normalized) then
             return quality.Level
         end
     end
@@ -65,327 +65,381 @@ X4D_Items.ItemGroups = {
 
 X4D_Items.ItemTypes = {
     [ITEMTYPE_ADDITIVE] = {
-        ItemType = ITEMTYPE_ADDITIVE,
-        NormalizedName = 'ITEMTYPE_ADDITIVE',
+        Id = ITEMTYPE_ADDITIVE,
+        Canonical = 'ITEMTYPE_ADDITIVE',
         Name = 'Additives',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_ALCHEMY_BASE] = {
-        ItemType = ITEMTYPE_ALCHEMY_BASE,
-        NormalizedName = 'ITEMTYPE_ALCHEMY_BASE',
+        Id = ITEMTYPE_ALCHEMY_BASE,
+        Canonical = 'ITEMTYPE_ALCHEMY_BASE',
         Name = 'Bases',
+        Tooltip = nil,
         Group = 'Alchemy'
     },
     [ITEMTYPE_ARMOR] = {
-        ItemType = ITEMTYPE_ARMOR,
-        NormalizedName = 'ITEMTYPE_ARMOR',
+        Id = ITEMTYPE_ARMOR,
+        Canonical = 'ITEMTYPE_ARMOR',
         Name = 'Armor',
+        Tooltip = nil,
         Group = 'Armor'
     },
     [ITEMTYPE_ARMOR_BOOSTER] = {
-        ItemType = ITEMTYPE_ARMOR_BOOSTER,
-        NormalizedName = 'ITEMTYPE_ARMOR_BOOSTER',
+        Id = ITEMTYPE_ARMOR_BOOSTER,
+        Canonical = 'ITEMTYPE_ARMOR_BOOSTER',
         Name = 'Boosters',
+        Tooltip = nil,
         Group = 'Armor'
     },
     [ITEMTYPE_ARMOR_TRAIT] = {
-        ItemType = ITEMTYPE_ARMOR_TRAIT,
-        NormalizedName = 'ITEMTYPE_ARMOR_TRAIT',
+        Id = ITEMTYPE_ARMOR_TRAIT,
+        Canonical = 'ITEMTYPE_ARMOR_TRAIT',
         Name = 'Trait',
+        Tooltip = nil,
         Group = 'Armor'
     },
     [ITEMTYPE_AVA_REPAIR] = {
-        ItemType = ITEMTYPE_AVA_REPAIR,
-        NormalizedName = 'ITEMTYPE_AVA_REPAIR',
+        Id = ITEMTYPE_AVA_REPAIR,
+        Canonical = 'ITEMTYPE_AVA_REPAIR',
         Name = 'Repairs',
+        Tooltip = nil,
         Group = 'AvA'
     },
     [ITEMTYPE_BLACKSMITHING_BOOSTER] = {
-        ItemType = ITEMTYPE_BLACKSMITHING_BOOSTER,
-        NormalizedName = 'ITEMTYPE_BLACKSMITHING_BOOSTER',
+        Id = ITEMTYPE_BLACKSMITHING_BOOSTER,
+        Canonical = 'ITEMTYPE_BLACKSMITHING_BOOSTER',
         Name = 'Boosters',
+        Tooltip = nil,
         Group = 'Blacksmithing'
     },
     [ITEMTYPE_BLACKSMITHING_MATERIAL] = {
-        ItemType = ITEMTYPE_BLACKSMITHING_MATERIAL,
-        NormalizedName = 'ITEMTYPE_BLACKSMITHING_MATERIAL',
+        Id = ITEMTYPE_BLACKSMITHING_MATERIAL,
+        Canonical = 'ITEMTYPE_BLACKSMITHING_MATERIAL',
         Name = 'Materials',
+        Tooltip = nil,
         Group = 'Blacksmithing'
     },
     [ITEMTYPE_BLACKSMITHING_RAW_MATERIAL] = {
-        ItemType = ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
-        NormalizedName = 'ITEMTYPE_BLACKSMITHING_RAW_MATERIAL',
+        Id = ITEMTYPE_BLACKSMITHING_RAW_MATERIAL,
+        Canonical = 'ITEMTYPE_BLACKSMITHING_RAW_MATERIAL',
         Name = 'Raw Materials',
+        Tooltip = nil,
         Group = 'Blacksmithing'
     },
     [ITEMTYPE_CLOTHIER_BOOSTER] = {
-        ItemType = ITEMTYPE_CLOTHIER_BOOSTER,
-        NormalizedName = 'ITEMTYPE_CLOTHIER_BOOSTER',
+        Id = ITEMTYPE_CLOTHIER_BOOSTER,
+        Canonical = 'ITEMTYPE_CLOTHIER_BOOSTER',
         Name = 'Boosters',
+        Tooltip = nil,
         Group = 'Clothier'
     },
     [ITEMTYPE_CLOTHIER_MATERIAL] = {
-        ItemType = ITEMTYPE_CLOTHIER_MATERIAL,
-        NormalizedName = 'ITEMTYPE_CLOTHIER_MATERIAL',
+        Id = ITEMTYPE_CLOTHIER_MATERIAL,
+        Canonical = 'ITEMTYPE_CLOTHIER_MATERIAL',
         Name = 'Materials',
+        Tooltip = nil,
         Group = 'Clothier'
     },
     [ITEMTYPE_CLOTHIER_RAW_MATERIAL] = {
-        ItemType = ITEMTYPE_CLOTHIER_RAW_MATERIAL,
-        NormalizedName = 'ITEMTYPE_CLOTHIER_RAW_MATERIAL',
+        Id = ITEMTYPE_CLOTHIER_RAW_MATERIAL,
+        Canonical = 'ITEMTYPE_CLOTHIER_RAW_MATERIAL',
         Name = 'Raw Materials',
+        Tooltip = nil,
         Group = 'Clothier'
     },
     [ITEMTYPE_COLLECTIBLE] = {
-        ItemType = ITEMTYPE_COLLECTIBLE,
-        NormalizedName = 'ITEMTYPE_COLLECTIBLE',
+        Id = ITEMTYPE_COLLECTIBLE,
+        Canonical = 'ITEMTYPE_COLLECTIBLE',
         Name = 'Collectibles',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_CONTAINER] = {
-        ItemType = ITEMTYPE_CONTAINER,
-        NormalizedName = 'ITEMTYPE_CONTAINER',
+        Id = ITEMTYPE_CONTAINER,
+        Canonical = 'ITEMTYPE_CONTAINER',
         Name = 'Containers',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_COSTUME] = {
-        ItemType = ITEMTYPE_COSTUME,
-        NormalizedName = 'ITEMTYPE_COSTUME',
+        Id = ITEMTYPE_COSTUME,
+        Canonical = 'ITEMTYPE_COSTUME',
         Name = 'Costumes',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_DEPRECATED] = {
-        ItemType = ITEMTYPE_DEPRECATED,
-        NormalizedName = 'ITEMTYPE_DEPRECATED',
+        Id = ITEMTYPE_DEPRECATED,
+        Canonical = 'ITEMTYPE_DEPRECATED',
         Name = 'Deprecated',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_DISGUISE] = {
-        ItemType = ITEMTYPE_DISGUISE,
-        NormalizedName = 'ITEMTYPE_DISGUISE',
+        Id = ITEMTYPE_DISGUISE,
+        Canonical = 'ITEMTYPE_DISGUISE',
         Name = 'Disguises',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_DRINK] = {
-        ItemType = ITEMTYPE_DRINK,
-        NormalizedName = 'ITEMTYPE_DRINK',
+        Id = ITEMTYPE_DRINK,
+        Canonical = 'ITEMTYPE_DRINK',
         Name = 'Drinks',
+        Tooltip = nil,
         Group = 'Consumables'
     },
     [ITEMTYPE_ENCHANTING_RUNE_ASPECT] = {
-        ItemType = ITEMTYPE_ENCHANTING_RUNE_ASPECT,
-        NormalizedName = 'ITEMTYPE_ENCHANTING_RUNE_ASPECT',
+        Id = ITEMTYPE_ENCHANTING_RUNE_ASPECT,
+        Canonical = 'ITEMTYPE_ENCHANTING_RUNE_ASPECT',
         Name = 'Aspect Runes',
+        Tooltip = nil,
         Group = 'Enchanting'
     },
     [ITEMTYPE_ENCHANTING_RUNE_ESSENCE] = {
-        ItemType = ITEMTYPE_ENCHANTING_RUNE_ESSENCE,
-        NormalizedName = 'ITEMTYPE_ENCHANTING_RUNE_ESSENCE',
+        Id = ITEMTYPE_ENCHANTING_RUNE_ESSENCE,
+        Canonical = 'ITEMTYPE_ENCHANTING_RUNE_ESSENCE',
         Name = 'Essence Runes',
+        Tooltip = nil,
         Group = 'Enchanting'
     },
     [ITEMTYPE_ENCHANTING_RUNE_POTENCY] = {
-        ItemType = ITEMTYPE_ENCHANTING_RUNE_POTENCY,
-        NormalizedName = 'ITEMTYPE_ENCHANTING_RUNE_POTENCY',
+        Id = ITEMTYPE_ENCHANTING_RUNE_POTENCY,
+        Canonical = 'ITEMTYPE_ENCHANTING_RUNE_POTENCY',
         Name = 'Potency Runes',
+        Tooltip = nil,
         Group = 'Enchanting'
     },
     [ITEMTYPE_ENCHANTMENT_BOOSTER] = {
-        ItemType = ITEMTYPE_ENCHANTMENT_BOOSTER,
-        NormalizedName = 'ITEMTYPE_ENCHANTMENT_BOOSTER',
+        Id = ITEMTYPE_ENCHANTMENT_BOOSTER,
+        Canonical = 'ITEMTYPE_ENCHANTMENT_BOOSTER',
         Name = 'Boosters',
+        Tooltip = nil,
         Group = 'Enchanting'
     },
     [ITEMTYPE_FLAVORING] = {
-        ItemType = ITEMTYPE_FLAVORING,
-        NormalizedName = 'ITEMTYPE_FLAVORING',
+        Id = ITEMTYPE_FLAVORING,
+        Canonical = 'ITEMTYPE_FLAVORING',
         Name = 'Flavors',
+        Tooltip = nil,
         Group = 'Provisioning'
     },
     [ITEMTYPE_FOOD] = {
-        ItemType = ITEMTYPE_FOOD,
-        NormalizedName = 'ITEMTYPE_FOOD',
+        Id = ITEMTYPE_FOOD,
+        Canonical = 'ITEMTYPE_FOOD',
         Name = 'Food',
+        Tooltip = nil,
         Group = 'Consumables'
     },
     [ITEMTYPE_GLYPH_ARMOR] = {
-        ItemType = ITEMTYPE_GLYPH_ARMOR,
-        NormalizedName = 'ITEMTYPE_GLYPH_ARMOR',
+        Id = ITEMTYPE_GLYPH_ARMOR,
+        Canonical = 'ITEMTYPE_GLYPH_ARMOR',
         Name = 'Armor Glyphs',
+        Tooltip = nil,
         Group = 'Enchanting'
     },
     [ITEMTYPE_GLYPH_JEWELRY] = {
-        ItemType = ITEMTYPE_GLYPH_JEWELRY,
-        NormalizedName = 'ITEMTYPE_GLYPH_JEWELRY',
+        Id = ITEMTYPE_GLYPH_JEWELRY,
+        Canonical = 'ITEMTYPE_GLYPH_JEWELRY',
         Name = 'Jewelry Glyphs',
+        Tooltip = nil,
         Group = 'Enchanting'
     },
     [ITEMTYPE_GLYPH_WEAPON] = {
-        ItemType = ITEMTYPE_GLYPH_WEAPON,
-        NormalizedName = 'ITEMTYPE_GLYPH_WEAPON',
+        Id = ITEMTYPE_GLYPH_WEAPON,
+        Canonical = 'ITEMTYPE_GLYPH_WEAPON',
         Name = 'Weapon Glyphs',
+        Tooltip = nil,
         Group = 'Enchanting'
     },
     [ITEMTYPE_INGREDIENT] = {
-        ItemType = ITEMTYPE_INGREDIENT,
-        NormalizedName = 'ITEMTYPE_INGREDIENT',
+        Id = ITEMTYPE_INGREDIENT,
+        Canonical = 'ITEMTYPE_INGREDIENT',
         Name = 'Ingredients',
+        Tooltip = nil,
         Group = 'Provisioning'
     },
     [ITEMTYPE_LOCKPICK] = {
-        ItemType = ITEMTYPE_LOCKPICK,
-        NormalizedName = 'ITEMTYPE_LOCKPICK',
+        Id = ITEMTYPE_LOCKPICK,
+        Canonical = 'ITEMTYPE_LOCKPICK',
         Name = 'Lockpicks',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_LURE] = {
-        ItemType = ITEMTYPE_LURE,
-        NormalizedName = 'ITEMTYPE_LURE',
+        Id = ITEMTYPE_LURE,
+        Canonical = 'ITEMTYPE_LURE',
         Name = 'Lures',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_MOUNT] = {
-        ItemType = ITEMTYPE_MOUNT,
-        NormalizedName = 'ITEMTYPE_MOUNT',
+        Id = ITEMTYPE_MOUNT,
+        Canonical = 'ITEMTYPE_MOUNT',
         Name = 'Mounts',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_NONE] = {
-        ItemType = ITEMTYPE_NONE,
-        NormalizedName = 'ITEMTYPE_NONE',
+        Id = ITEMTYPE_NONE,
+        Canonical = 'ITEMTYPE_NONE',
         Name = 'Unspecified',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_PLUG] = {
-        ItemType = ITEMTYPE_PLUG,
-        NormalizedName = 'ITEMTYPE_PLUG',
+        Id = ITEMTYPE_PLUG,
+        Canonical = 'ITEMTYPE_PLUG',
         Name = 'Plugs',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_POISON] = {
-        ItemType = ITEMTYPE_POISON,
-        NormalizedName = 'ITEMTYPE_POISON',
+        Id = ITEMTYPE_POISON,
+        Canonical = 'ITEMTYPE_POISON',
         Name = 'Poisons',
+        Tooltip = nil,
         Group = 'Consumables'
     },
     [ITEMTYPE_POTION] = {
-        ItemType = ITEMTYPE_POTION,
-        NormalizedName = 'ITEMTYPE_POTION',
+        Id = ITEMTYPE_POTION,
+        Canonical = 'ITEMTYPE_POTION',
         Name = 'Potions',
+        Tooltip = nil,
         Group = 'Consumables'
     },
     [ITEMTYPE_RACIAL_STYLE_MOTIF] = {
-        ItemType = ITEMTYPE_RACIAL_STYLE_MOTIF,
-        NormalizedName = 'ITEMTYPE_RACIAL_STYLE_MOTIF',
+        Id = ITEMTYPE_RACIAL_STYLE_MOTIF,
+        Canonical = 'ITEMTYPE_RACIAL_STYLE_MOTIF',
         Name = 'Motifs',
+        Tooltip = nil,
         Group = 'Styles'
     },
     [ITEMTYPE_RAW_MATERIAL] = {
-        ItemType = ITEMTYPE_RAW_MATERIAL,
-        NormalizedName = 'ITEMTYPE_RAW_MATERIAL',
+        Id = ITEMTYPE_RAW_MATERIAL,
+        Canonical = 'ITEMTYPE_RAW_MATERIAL',
         Name = 'Raw Materials',
+        Tooltip = nil,
         Group = 'Provisioning'
     },
     [ITEMTYPE_REAGENT] = {
-        ItemType = ITEMTYPE_REAGENT,
-        NormalizedName = 'ITEMTYPE_REAGENT',
+        Id = ITEMTYPE_REAGENT,
+        Canonical = 'ITEMTYPE_REAGENT',
         Name = 'Reagents',
+        Tooltip = nil,
         Group = 'Alchemy'
     },
     [ITEMTYPE_RECIPE] = {
-        ItemType = ITEMTYPE_RECIPE,
-        NormalizedName = 'ITEMTYPE_RECIPE',
+        Id = ITEMTYPE_RECIPE,
+        Canonical = 'ITEMTYPE_RECIPE',
         Name = 'Recipes',
+        Tooltip = nil,
         Group = 'Provisioning'
     },
     [ITEMTYPE_SIEGE] = {
-        ItemType = ITEMTYPE_SIEGE,
-        NormalizedName = 'ITEMTYPE_SIEGE',
+        Id = ITEMTYPE_SIEGE,
+        Canonical = 'ITEMTYPE_SIEGE',
         Name = 'Sieges',
+        Tooltip = nil,
         Group = 'AvA'
     },
     [ITEMTYPE_SOUL_GEM] = {
-        ItemType = ITEMTYPE_SOUL_GEM,
-        NormalizedName = 'ITEMTYPE_SOUL_GEM',
+        Id = ITEMTYPE_SOUL_GEM,
+        Canonical = 'ITEMTYPE_SOUL_GEM',
         Name = 'Soul Gems',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_SPELLCRAFTING_TABLET] = {
-        ItemType = ITEMTYPE_SPELLCRAFTING_TABLET,
-        NormalizedName = 'ITEMTYPE_SPELLCRAFTING_TABLET',
+        Id = ITEMTYPE_SPELLCRAFTING_TABLET,
+        Canonical = 'ITEMTYPE_SPELLCRAFTING_TABLET',
         Name = 'Spellcrafting Tablets',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_SPICE] = {
-        ItemType = ITEMTYPE_SPICE,
-        NormalizedName = 'ITEMTYPE_SPICE',
+        Id = ITEMTYPE_SPICE,
+        Canonical = 'ITEMTYPE_SPICE',
         Name = 'Spices',
+        Tooltip = nil,
         Group = 'Provisioning'
     },
     [ITEMTYPE_STYLE_MATERIAL] = {
-        ItemType = ITEMTYPE_STYLE_MATERIAL,
-        NormalizedName = 'ITEMTYPE_STYLE_MATERIAL',
+        Id = ITEMTYPE_STYLE_MATERIAL,
+        Canonical = 'ITEMTYPE_STYLE_MATERIAL',
         Name = 'Style Materials',
+        Tooltip = nil,
         Group = 'Styles'
     },
     [ITEMTYPE_TABARD] = {
-        ItemType = ITEMTYPE_TABARD,
-        NormalizedName = 'ITEMTYPE_TABARD',
+        Id = ITEMTYPE_TABARD,
+        Canonical = 'ITEMTYPE_TABARD',
         Name = 'Tabards',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_TOOL] = {
-        ItemType = ITEMTYPE_TOOL,
-        NormalizedName = 'ITEMTYPE_TOOL',
+        Id = ITEMTYPE_TOOL,
+        Canonical = 'ITEMTYPE_TOOL',
         Name = 'Tools',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_TRASH] = {
-        ItemType = ITEMTYPE_TRASH,
-        NormalizedName = 'ITEMTYPE_TRASH',
+        Id = ITEMTYPE_TRASH,
+        Canonical = 'ITEMTYPE_TRASH',
         Name = 'Trash',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_TROPHY] = {
-        ItemType = ITEMTYPE_TROPHY,
-        NormalizedName = 'ITEMTYPE_TROPHY',
+        Id = ITEMTYPE_TROPHY,
+        Canonical = 'ITEMTYPE_TROPHY',
         Name = 'Trophies',
+        Tooltip = nil,
         Group = 'Misc'
     },
     [ITEMTYPE_WEAPON] = {
-        ItemType = ITEMTYPE_WEAPON,
-        NormalizedName = 'ITEMTYPE_WEAPON',
+        Id = ITEMTYPE_WEAPON,
+        Canonical = 'ITEMTYPE_WEAPON',
         Name = 'Weapons',
+        Tooltip = nil,
         Group = 'Blacksmithing'
     },
     [ITEMTYPE_WEAPON_BOOSTER] = {
-        ItemType = ITEMTYPE_WEAPON_BOOSTER,
-        NormalizedName = 'ITEMTYPE_WEAPON_BOOSTER',
+        Id = ITEMTYPE_WEAPON_BOOSTER,
+        Canonical = 'ITEMTYPE_WEAPON_BOOSTER',
         Name = 'Weapon Boosters',
+        Tooltip = nil,
         Group = 'Blacksmithing'
     },
     [ITEMTYPE_WEAPON_TRAIT] = {
-        ItemType = ITEMTYPE_WEAPON_TRAIT,
-        NormalizedName = 'ITEMTYPE_WEAPON_TRAIT',
+        Id = ITEMTYPE_WEAPON_TRAIT,
+        Canonical = 'ITEMTYPE_WEAPON_TRAIT',
         Name = 'Weapon Traits',
+        Tooltip = nil,
         Group = 'Blacksmithing'
     },
     [ITEMTYPE_WOODWORKING_BOOSTER] = {
-        ItemType = ITEMTYPE_WOODWORKING_BOOSTER,
-        NormalizedName = 'ITEMTYPE_WOODWORKING_BOOSTER',
+        Id = ITEMTYPE_WOODWORKING_BOOSTER,
+        Canonical = 'ITEMTYPE_WOODWORKING_BOOSTER',
         Name = 'Boosters',
+        Tooltip = nil,
         Group = 'Woodworking'
     },
     [ITEMTYPE_WOODWORKING_MATERIAL] = {
-        ItemType = ITEMTYPE_WOODWORKING_MATERIAL,
-        NormalizedName = 'ITEMTYPE_WOODWORKING_MATERIAL',
+        Id = ITEMTYPE_WOODWORKING_MATERIAL,
+        Canonical = 'ITEMTYPE_WOODWORKING_MATERIAL',
         Name = 'Materials',
+        Tooltip = nil,
         Group = 'Woodworking'
     },
     [ITEMTYPE_WOODWORKING_RAW_MATERIAL] = {
-        ItemType = ITEMTYPE_WOODWORKING_RAW_MATERIAL,
-        NormalizedName = 'ITEMTYPE_WOODWORKING_RAW_MATERIAL',
+        Id = ITEMTYPE_WOODWORKING_RAW_MATERIAL,
+        Canonical = 'ITEMTYPE_WOODWORKING_RAW_MATERIAL',
         Name = 'Raw Materials',
+        Tooltip = nil,
         Group = 'Woodworking'
     },
 }
