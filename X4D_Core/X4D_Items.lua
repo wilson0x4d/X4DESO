@@ -1,7 +1,15 @@
 local X4D_Items = LibStub:NewLibrary('X4D_Items', 1001)
 if (not X4D_Items) then
-	return
+    return
 end
+local X4D = LibStub('X4D')
+X4D.Items = X4D_Items
+
+--EVENT_MANAGER:RegisterForEvent('X4D_Items.DB', EVENT_ADD_ON_LOADED, function(event, name)
+--    if (name == 'X4D_Core') then
+--        X4D_Items.DB = X4D.DB:Open('X4D_Items.DB')
+--    end
+--end )
 
 X4D_Items.ItemQualities = {
     [ITEM_QUALITY_TRASH] = {

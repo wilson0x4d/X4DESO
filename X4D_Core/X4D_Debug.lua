@@ -2,8 +2,8 @@ local X4D_Debug = LibStub:NewLibrary('X4D_Debug', 1001)
 if (not X4D_Debug) then
 	return
 end
-
-local X4D_Colors = LibStub('X4D_Colors')
+local X4D = LibStub('X4D')
+X4D.Debug = X4D_Debug
 
 X4D_Debug.TRACE_LEVELS = {
 	VERBOSE = 0,
@@ -14,16 +14,16 @@ X4D_Debug.TRACE_LEVELS = {
 }
 
 local TRACE_COLORS = {
-	[X4D_Debug.TRACE_LEVELS.VERBOSE] = X4D_Colors.TRACE_VERBOSE,	
-	[X4D_Debug.TRACE_LEVELS.INFORMATION] = X4D_Colors.TRACE_INFORMATION,	
-	[X4D_Debug.TRACE_LEVELS.WARNING] = X4D_Colors.TRACE_WARNING,	
-	[X4D_Debug.TRACE_LEVELS.ERROR] = X4D_Colors.TRACE_ERROR,	
-	[X4D_Debug.TRACE_LEVELS.CRITICAL] = X4D_Colors.TRACE_CRITICAL,	
-	[X4D_Debug.TRACE_LEVELS.VERBOSE+100] = X4D_Colors:DeriveHighlight(X4D_Colors.TRACE_VERBOSE),	
-	[X4D_Debug.TRACE_LEVELS.INFORMATION+100] = X4D_Colors:DeriveHighlight(X4D_Colors.TRACE_INFORMATION),	
-	[X4D_Debug.TRACE_LEVELS.WARNING+100] = X4D_Colors:DeriveHighlight(X4D_Colors.TRACE_WARNING),	
-	[X4D_Debug.TRACE_LEVELS.ERROR+100] = X4D_Colors:DeriveHighlight(X4D_Colors.TRACE_ERROR),	
-	[X4D_Debug.TRACE_LEVELS.CRITICAL+100] = X4D_Colors:DeriveHighlight(X4D_Colors.TRACE_CRITICAL),	
+	[X4D_Debug.TRACE_LEVELS.VERBOSE] = X4D.Colors.TRACE_VERBOSE,	
+	[X4D_Debug.TRACE_LEVELS.INFORMATION] = X4D.Colors.TRACE_INFORMATION,	
+	[X4D_Debug.TRACE_LEVELS.WARNING] = X4D.Colors.TRACE_WARNING,	
+	[X4D_Debug.TRACE_LEVELS.ERROR] = X4D.Colors.TRACE_ERROR,	
+	[X4D_Debug.TRACE_LEVELS.CRITICAL] = X4D.Colors.TRACE_CRITICAL,	
+	[X4D_Debug.TRACE_LEVELS.VERBOSE+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_VERBOSE),	
+	[X4D_Debug.TRACE_LEVELS.INFORMATION+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_INFORMATION),	
+	[X4D_Debug.TRACE_LEVELS.WARNING+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_WARNING),	
+	[X4D_Debug.TRACE_LEVELS.ERROR+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_ERROR),	
+	[X4D_Debug.TRACE_LEVELS.CRITICAL+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_CRITICAL),	
 }
 
 local TRACE_FORMATS = {
@@ -48,7 +48,7 @@ function X4D_Debug:SetTraceLevel(level)
 	_minTraceLevel = level
 end
 
-local _systemHighlightColor = X4D_Colors:DeriveHighlight(X4D_Colors.SYSTEM)
+local _systemHighlightColor = X4D.Colors:DeriveHighlight(X4D.Colors.SYSTEM)
 
 local function LogInternal(source, level, message)
     if (CHAT_SYSTEM == nil) then

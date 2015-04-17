@@ -2,6 +2,8 @@ local X4D_Convert = LibStub:NewLibrary('X4D_Convert', 1001)
 if (not X4D_Convert) then
 	return
 end
+local X4D = LibStub('X4D')
+X4D.Convert = X4D_Convert
 
 local _chatChannelCategories = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,

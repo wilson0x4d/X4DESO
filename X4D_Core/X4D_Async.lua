@@ -2,6 +2,8 @@ local X4D_Async = LibStub:NewLibrary('X4D_Async', 1001)
 if (not X4D_Async) then
 	return
 end
+local X4D = LibStub('X4D')
+X4D.Async = X4D_Async
 
 local X4D_Timer = {}
 
@@ -37,7 +39,7 @@ function X4D_Timer:Elapsed()
 	end
 	local success, err = pcall(self._callback, self, self._state)
 	if (not success) then
-		d(err)
+		X4D_Debug:Error(err)
 		return
 	end
 	if (self._enabled) then

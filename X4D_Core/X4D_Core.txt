@@ -8,16 +8,19 @@
 
 lib/LibStub/LibStub.lua
 
-X4D_Strings.lua
+X4D_Core.lua
 
+X4D_Strings.lua
 X4D_Convert.lua
 X4D_Colors.lua
 X4D_Icons.lua
 X4D_Debug.lua
 
 X4D_Async.lua
+
 X4D_Options.lua
+
 X4D_Items.lua
 X4D_Guilds.lua
 X4D_Players.lua
-X4D_Core.lua
+

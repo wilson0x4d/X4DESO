@@ -2,8 +2,8 @@ local X4D_Colors = LibStub:NewLibrary('X4D_Colors', 1001)
 if (not X4D_Colors) then
 	return
 end
-
-local X4D_Convert = LibStub('X4D_Convert')
+local X4D = LibStub('X4D')
+X4D.Colors = X4D_Colors
 
 X4D_Colors.X4D = '|cFFAE19'
 
@@ -28,11 +28,11 @@ X4D_Colors.VP = '|cAA33FF'
 X4D_Colors.XP = '|cAA33FF'
 
 function X4D_Colors:Create(r, g, b, a)
-	return '|c' .. X4D_Convert.DEC2HEX(r * 255) .. X4D_Convert.DEC2HEX(g * 255) .. X4D_Convert.DEC2HEX(b * 255)
+	return '|c' .. X4D.Convert.DEC2HEX(r * 255) .. X4D.Convert.DEC2HEX(g * 255) .. X4D.Convert.DEC2HEX(b * 255)
 end
 
 function X4D_Colors:Parse(color)
-	return (X4D_Convert.HEX2DEC(color, 3) / 255), (X4D_Convert.HEX2DEC(color, 5) / 255), (X4D_Convert.HEX2DEC(color, 7) / 255), 1
+	return (X4D.Convert.HEX2DEC(color, 3) / 255), (X4D.Convert.HEX2DEC(color, 5) / 255), (X4D.Convert.HEX2DEC(color, 7) / 255), 1
 end
 
 function X4D_Colors:Lerp(colorFrom, colorTo, percent)
