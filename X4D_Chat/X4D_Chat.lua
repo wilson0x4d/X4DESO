@@ -439,8 +439,8 @@ local function OnAddOnLoaded(event, addonName)
                 getFunc = function() 
                     return X4D_Chat.Settings.SavedVars.TimestampOption or '24 Hour Format' 
                 end,
-                setFunc = function(option)
-                    X4D_Chat.Settings.SavedVars.TimestampOption = option
+                setFunc = function(v)
+                    X4D_Chat.Settings.SavedVars.TimestampOption = v
                 end,
             },
             [2] = {

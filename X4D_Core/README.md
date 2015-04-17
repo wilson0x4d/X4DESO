@@ -20,7 +20,7 @@ All X4D Add-Ons depend on this Framework.
     * Clean, for example: X4D.Debug:Verbose('Hello, World!')
 * Async API
     * Async helpers, currently exposes a Timer via X4D.Async.CreateTimer() call
-* Options API
+* Settings API
     * Tidy wrapper for 'Saved Variables', providing more consistent and predictable behavior.
 * Database API
     * Provides a LINQ-like wrapper around Lua tables *(Fx: myDb:Where(predicate) myDb:Select(builder) myDb:ForEach(visitor) myDb:FirstOrDefault() etc)
@@ -64,19 +64,22 @@ lib/LibStub/LibStub.lua
 
 Including X4D_Core along with your add-on is **NOT** recommended, but it is possible to do so. Contact me if you require assistance to avoid breaking other people's Add-Ons due to an incorrect set-up.
 <pre>
-## OptionalDependsOn: LibAddonMenu-1.0, X4D_Core
+## OptionalDependsOn: LibAddonMenu-2.0
+## OptionalDependsOn: X4D_Core
 lib/LibStub/LibStub.lua
-lib/LibAddonMenu-1.0/LibAddonMenu-1.0.lua
-lib/X4D_Core/X4D_Colors.lua
-lib/X4D_Core/X4D_Debug.lua
-lib/X4D_Core/X4D_Convert.lua
-lib/X4D_Core/X4D_Async.lua
-lib/X4D_Core/X4D_Options.lua
-lib/X4D_Core/X4D_Items.lua
-lib/X4D_Core/X4D_Guilds.lua
-lib/X4D_Core/X4D_Players.lua
-lib/X4D_Core/X4D_Conversions.lua
-lib/X4D_Core/X4D_Core.lua
+lib/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
+lib/X4D_Core.lua
+lib/X4D_Strings.lua
+lib/X4D_Convert.lua
+lib/X4D_Colors.lua
+lib/X4D_Icons.lua
+lib/X4D_Debug.lua
+lib/X4D_Async.lua
+lib/X4D_Settings.lua
+lib/X4D_DB.lua
+lib/X4D_Items.lua
+lib/X4D_Players.lua
+lib/X4D_Guilds.lua
 </pre>
 
 ## Versions

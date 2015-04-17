@@ -18,7 +18,7 @@ X4D_Debug.lua
 
 X4D_Async.lua
 
-X4D_Options.lua
+X4D_Settings.lua
 
 X4D_DB.lua
 

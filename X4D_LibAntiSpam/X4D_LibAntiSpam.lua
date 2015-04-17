@@ -8,9 +8,9 @@ X4D.AntiSpam = X4D_LibAntiSpam
 X4D_LibAntiSpam.NAME = 'X4D_LibAntiSpam'
 X4D_LibAntiSpam.VERSION = '1.59'
 
-X4D_LibAntiSpam.Options = {}
-X4D_LibAntiSpam.Options.Saved = {}
-X4D_LibAntiSpam.Options.Default = {
+X4D_LibAntiSpam.Settings = {}
+X4D_LibAntiSpam.Settings.Saved = {}
+X4D_LibAntiSpam.Settings.Default = {
 	NotifyWhenDetected = true,
 	UseInternalPatterns = true,
 	FloodTime = 30,
@@ -18,31 +18,31 @@ X4D_LibAntiSpam.Options.Default = {
 	Patterns = {},
 }
 
-local function GetOption(name)
+local function GetSetting(name)
 	local scope = 'Account-Wide'
-	if (X4D_LibAntiSpam.Options.Saved.SettingsAre and X4D_LibAntiSpam.Options.Saved.SettingsAre ~= 'Account-Wide') then
+	if (X4D_LibAntiSpam.Settings.Saved.SettingsAre and X4D_LibAntiSpam.Settings.Saved.SettingsAre ~= 'Account-Wide') then
 		scope = GetUnitName("player")
 	end
-	local scoped = X4D_LibAntiSpam.Options.Saved[scope]
+	local scoped = X4D_LibAntiSpam.Settings.Saved[scope]
 	if (scoped == nil) then
-		return X4D_LibAntiSpam.Options.Default[name]
+		return X4D_LibAntiSpam.Settings.Default[name]
 	end
 	local value = scoped[name]
 	if (value == nil) then
-		value = X4D_LibAntiSpam.Options.Default[name]
+		value = X4D_LibAntiSpam.Settings.Default[name]
 	end
 	return value
 end
 
-local function SetOption(name, value)
+local function SetSetting(name, value)
 	local scope = 'Account-Wide'
-	if (X4D_LibAntiSpam.Options.Saved.SettingsAre and X4D_LibAntiSpam.Options.Saved.SettingsAre ~= 'Account-Wide') then
+	if (X4D_LibAntiSpam.Settings.Saved.SettingsAre and X4D_LibAntiSpam.Settings.Saved.SettingsAre ~= 'Account-Wide') then
 		scope = GetUnitName("player")
 	end
-	local scoped = X4D_LibAntiSpam.Options.Saved[scope]
+	local scoped = X4D_LibAntiSpam.Settings.Saved[scope]
 	if (scoped == nil) then
 		scoped = {}
-		X4D_LibAntiSpam.Options.Saved[scope] = scoped
+		X4D_LibAntiSpam.Settings.Saved[scope] = scoped
 	end
 	scoped[name] = value
 end
@@ -278,7 +278,7 @@ local function GetEightyPercent(input)
 end
 
 local function UpdateFloodState(player, normalized, reason)
-	if (player.IsWhitelist or (GetOption('FloodTime') == 0)) then
+	if (player.IsWhitelist or (GetSetting('FloodTime') == 0)) then
 		player.IsFlood = false
 		return false
 	end
@@ -286,12 +286,12 @@ local function UpdateFloodState(player, normalized, reason)
 		player.Time = GetGameTimeMilliseconds()
 		if (not player.IsFlood) then
 			player.IsFlood = true
-			if (GetOption('NotifyWhenDetected') and (not player.IsSpam)) then
+			if (GetSetting('NotifyWhenDetected') and (not player.IsSpam)) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected ' .. reason .. ' Flood from: |cFFAE19' .. player.From)
 			end
 			return true
 		end
-	elseif (player.Time <= (GetGameTimeMilliseconds() - (GetOption('FloodTime') * 1000))) then
+	elseif (player.Time <= (GetGameTimeMilliseconds() - (GetSetting('FloodTime') * 1000))) then
 		player.IsFlood = false
 	end
 	return false
@@ -323,10 +323,10 @@ local function UpdateSpamState(player, normalized)
 		return
 	end
 	if (not player.IsSpam) then
-		if (GetOption('UseInternalPatterns')) then
+		if (GetSetting('UseInternalPatterns')) then
 			CheckPatterns(player, normalized, X4D_LibAntiSpam.InternalPatterns)
 		end		
-		CheckPatterns(player, normalized, GetOption('Patterns'))
+		CheckPatterns(player, normalized, GetSetting('Patterns'))
 		return player.IsSpam -- new spammer detected
 	end
 	return false -- may or may not be a spammer, but definitely not a 'new' spammer
@@ -445,7 +445,7 @@ local function ToASCII(input, fromName)
 						if (chB ~= chC) then
 							stripped = stripped .. FromCharMap(chC)
 						else
-							if (GetOption('ShowNormalizations')) then
+							if (GetSetting('ShowNormalizations')) then
 								if (x3) then
 									ustrips = ustrips .. string.format(' %s+%x+%x+%x', chB, x1, x2, x3)
 								elseif (x2) then
@@ -467,7 +467,7 @@ local function ToASCII(input, fromName)
 		end
 		output = stripped:lower()
 	end
-	if (GetOption('ShowNormalizations') and ustrips:len() > 0) then
+	if (GetSetting('ShowNormalizations') and ustrips:len() > 0) then
 		InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. ustrips .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 	end
 	return output
@@ -538,7 +538,7 @@ function X4D_LibAntiSpam:Check(text, fromName, reason)
 		if (not noFlood) then
 			local wasFlood = player.IsFlood
 			if (UpdateFloodState(player, normalized, reason) and not (player.IsSpam or wasFlood)) then
-				if (GetOption('ShowNormalizations')) then
+				if (GetSetting('ShowNormalizations')) then
 					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 				end	
 			end
@@ -549,16 +549,16 @@ function X4D_LibAntiSpam:Check(text, fromName, reason)
 	if (not noSpam) then		
 		normalized = normalized .. pivot
 		if (UpdateSpamState(player, normalized)) then
-			if (GetOption('NotifyWhenDetected')) then
+			if (GetSetting('NotifyWhenDetected')) then
 				local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
-				if (GetOption('ShowNormalizations')) then
+				if (GetSetting('ShowNormalizations')) then
 					local highlighted = normalized:gsub('(' .. player.SpamPattern .. ')', X4D_LibAntiSpam.Colors.X4D .. '%1' .. '|c993333')
 					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. highlighted .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 				end	
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected ' .. reason .. ' Spam from |cFFAE19' .. (fromLink or fromName or '') .. '|c5C5C5C [' .. player.SpamPattern .. ']')
 			end	
 		else
-			if (GetOption('ShowNormalizations') and not (player.IsSpam or player.IsFlood)) then
+			if (GetSetting('ShowNormalizations') and not (player.IsSpam or player.IsFlood)) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) |c993333' .. normalized .. ' |cFFFF00 ' .. (fromName or '') .. '|c5C5C5C (v' .. X4D_LibAntiSpam.VERSION .. ')')
 			end	
 		end
@@ -582,7 +582,7 @@ local function RejectSpammerGuildInvites()
 			end
 			local isSpam, isFlood = X4D_LibAntiSpam:Check(text, fromName)
 			if (isSpam or isFlood) then
-				if (GetOption('NotifyWhenDetected')) then
+				if (GetSetting('NotifyWhenDetected')) then
 					local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
 					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, '(LibAntiSpam) Detected Invite Spam from |cFFAE19' .. (fromLink or fromName))
 				end
@@ -628,7 +628,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 		return
 	end
 
-	X4D_LibAntiSpam.Options.Saved = ZO_SavedVars:NewAccountWide(X4D_LibAntiSpam.NAME .. '_SV', 1.45, nil, {})
+	X4D_LibAntiSpam.Settings.Saved = ZO_SavedVars:NewAccountWide(X4D_LibAntiSpam.NAME .. '_SV', 1.45, nil, {})
 
 	local LAM = LibStub('LibAddonMenu-2.0')
 	local cplId = LAM:RegisterAddonPanel(
@@ -645,16 +645,16 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
                 type = 'checkbox',
                 name = 'Notify when detected Spam?', 
                 tooltip = 'When enabled, Names are logged to the chat frame when spam is detected.', 
-                getFunc = function() return GetOption('NotifyWhenDetected') end,
-                setFunc = function() SetOption('NotifyWhenDetected', not GetOption('NotifyWhenDetected')) end,
+                getFunc = function() return GetSetting('NotifyWhenDetected') end,
+                setFunc = function() SetSetting('NotifyWhenDetected', not GetSetting('NotifyWhenDetected')) end,
             },
             [2] = {
                 type = 'slider',
                 name = 'Max Flood Time',
                 tooltip = 'This determines mininum amount of time, in seconds, before repeated text is not considered Flooding. Flooding is when a user types the same thing into chat over and over.',
                 min = 0, max = 900, step = 5,
-                getFunc = function () return GetOption('FloodTime') end,
-                setFunc = function (v) SetOption('FloodTime', tonumber(tostring(v))) end,
+                getFunc = function () return GetSetting('FloodTime') end,
+                setFunc = function (v) SetSetting('FloodTime', tonumber(tostring(v))) end,
             },
             [3] = {
                 type = 'editbox',
@@ -662,12 +662,11 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
                 tooltip = 'Line-delimited list of User-Defined AntiSpam Patterns, each one should be on a new line.', 
                 isMultiline = true,
                 getFunc = function () 
-                    local patternsOption = GetOption('Patterns')
-                    if (patternsOption == nil or type(patternsOption) == 'string') then
-                        patternsOption = { }
+                    local patterns = GetSetting('Patterns')
+                    if (patterns == nil or type(patterns) == 'string') then
+                        patterns = { }
                     end
-                    local patterns = table.concat(patternsOption, '\n')
-                    return patterns
+                    return table.concat(patterns, '\n')
                 end,
                 setFunc = function(v)
                     --local v = _G['X4D_LIBANTISPAM_EDIT_PATTERNS']['edit']:GetText()
@@ -678,22 +677,22 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
                             result[_] = x .. '+'
                         end
                     end
-                    SetOption('Patterns', result)
+                    SetSetting('Patterns', result)
                 end,
             },
             [4] = {
                 type = 'checkbox',
                 name = 'Use Internal Patterns?', 
                 tooltip = 'When enabled, an internal set of patterns are used (in addition to any "User Patterns" you define.)', 
-                getFunc = function() return GetOption('UseInternalPatterns') end,
-                setFunc = function() SetOption('UseInternalPatterns', not GetOption('UseInternalPatterns')) end,
+                getFunc = function() return GetSetting('UseInternalPatterns') end,
+                setFunc = function() SetSetting('UseInternalPatterns', not GetSetting('UseInternalPatterns')) end,
             },
             [5] = {
                 type = 'checkbox',
                 name = '[DEV] Show normalized text.', 
                 tooltip = 'When enabled, all normalized text is dumped to the chat frame to aid in creating new patterns.', 
-                getFunc = function() return GetOption('ShowNormalizations') end,
-                setFunc = function() SetOption('ShowNormalizations', not GetOption('ShowNormalizations')) end,
+                getFunc = function() return GetSetting('ShowNormalizations') end,
+                setFunc = function() SetSetting('ShowNormalizations', not GetSetting('ShowNormalizations')) end,
             },
         })
 

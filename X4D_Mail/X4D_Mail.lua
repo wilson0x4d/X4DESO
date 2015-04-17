@@ -68,11 +68,11 @@ function X4D_Mail:HandleMailAttachments(mailId)
 		return
 	end
 	local mail = _readableMail[mailId]
-	if (mail.IsReturnedMail and X4D_Mail.Options:GetOption('LeaveReturnedMailAlone')) then
+	if (mail.IsReturnedMail and X4D_Mail.Settings:Get('LeaveReturnedMailAlone')) then
 		return
 	end
 	local shouldDelete = false
-	if (X4D_Mail.Options:GetOption('AutoAcceptAttachments')) then
+	if (X4D_Mail.Settings:Get('AutoAcceptAttachments')) then
 		if (mail.IsFromSystem and (not mail.IsCustomerService)) then
 			shouldDelete = true
 			if (mail.AttachedItemsCount > 0 or mail.AttachedMoney > 0) then
@@ -101,7 +101,7 @@ function X4D_Mail:HandleMailAttachments(mailId)
 			end
 		end
 	end
-    if (shouldDelete and X4D_Mail.Options:GetOption('AutoDeleteMail')) then
+    if (shouldDelete and X4D_Mail.Settings:Get('AutoDeleteMail')) then
 	    X4D.Debug:Verbose('Deleting mail from: ' .. mail.SenderDisplayName, 'X4D Mail')
 	    DeleteMail(mailId, false)
     end
@@ -113,7 +113,7 @@ function X4D_Mail:HandleSpam(mailId)
 		return
 	end
 	local mail = _readableMail[mailId]
-	if (X4D_Mail.Options:GetOption('EnableAntiSpam')) then
+	if (X4D_Mail.Settings:Get('EnableAntiSpam')) then
 		if (not (mail.IsCustomerService or mail.IsFromSystem)) then
 			if (X4D.AntiSpam ~= nil) then
 				local isSpam = X4D.AntiSpam:Check({
@@ -175,66 +175,66 @@ end
 local function Unregister()
 end
 
-local function InitializeOptionsUI()
+local function InitializeSettingsUI()
 	local LAM = LibStub('LibAddonMenu-2.0')
 	local cplId = LAM:RegisterAddonPanel('X4D_MAIL_CPL', {
         type = 'panel',
         name = 'X4D |cFFAE19Mail',
     })
 
-    local panelOptions = { }
+    local panelControls = { }
 
-    table.insert(panelOptions, {
+    table.insert(panelControls, {
             type = 'checkbox',
             name = 'Auto-Accept Attachments', 
             tooltip = 'When enabled, mail attachments are automatically accepted.', 
             getFunc = function() 
-                return X4D.Mail.Options:GetOption('AutoAcceptAttachments')
+                return X4D.Mail.Settings:Get('AutoAcceptAttachments')
             end,
             setFunc = function()
-                X4D.Mail.Options:SetOption('AutoAcceptAttachments', not X4D.Mail.Options:GetOption('AutoAcceptAttachments')) 
+                X4D.Mail.Settings:Set('AutoAcceptAttachments', not X4D.Mail.Settings:Get('AutoAcceptAttachments')) 
             end,
         })
 
-    table.insert(panelOptions, {
+    table.insert(panelControls, {
             type = 'checkbox',
             name = 'Ignore Return Mail', 
             tooltip = 'When enabled, mail returned to you is ignored (attachments are not auto-accepted, and the message will not be auto-deleted.)', 
             getFunc = function() 
-                return X4D.Mail.Options:GetOption('LeaveReturnedMailAlone')
+                return X4D.Mail.Settings:Get('LeaveReturnedMailAlone')
             end,
             setFunc = function()
-                X4D.Mail.Options:SetOption('LeaveReturnedMailAlone', not X4D.Mail.Options:GetOption('LeaveReturnedMailAlone')) 
+                X4D.Mail.Settings:Set('LeaveReturnedMailAlone', not X4D.Mail.Settings:Get('LeaveReturnedMailAlone')) 
             end,
         })
 
-    table.insert(panelOptions, {
+    table.insert(panelControls, {
             type = 'checkbox',
             name = 'Auto-Delete System Messages', 
             tooltip = 'When enabled, System Messages are automatically deleted after all attachments are received, this includes messages from Crown Store, Guild Store and Hirelings. |cFFFFFFThis option does NOT apply to mail from Customer Support, nor mail from other users.', 
             getFunc = function() 
-                return X4D.Mail.Options:GetOption('AutoDeleteMail')
+                return X4D.Mail.Settings:Get('AutoDeleteMail')
             end,
             setFunc = function()
-                X4D.Mail.Options:SetOption('AutoDeleteMail', not X4D.Mail.Options:GetOption('AutoDeleteMail')) 
+                X4D.Mail.Settings:Set('AutoDeleteMail', not X4D.Mail.Settings:Get('AutoDeleteMail')) 
             end,
         })
 
-    table.insert(panelOptions, {
+    table.insert(panelControls, {
             type = 'checkbox',
             name = 'Use AntiSpam Library', 
             tooltip = 'When enabled, if an AntiSpam Library is detected it will be used to filter spam from your mailbox. Use with Auto-Delete option for spam removal.',
             getFunc = function() 
-                return X4D.Mail.Options:GetOption('EnableAntiSpam')
+                return X4D.Mail.Settings:Get('EnableAntiSpam')
             end,
             setFunc = function()
-                X4D.Mail.Options:SetOption('EnableAntiSpam', not X4D.Mail.Options:GetOption('EnableAntiSpam')) 
+                X4D.Mail.Settings:Set('EnableAntiSpam', not X4D.Mail.Settings:Get('EnableAntiSpam')) 
             end,
         })
 
     LAM:RegisterOptionControls(
         'X4D_MAIL_CPL',
-        panelOptions
+        panelControls
     )
 end
 
@@ -243,7 +243,7 @@ local function OnAddOnLoaded(event, addonName)
 		return
 	end	
 
-	X4D_Mail.Options = X4D.Options(
+	X4D_Mail.Settings = X4D.Settings(
 		X4D_Mail.NAME .. '_SV',
 		{
             SettingsAre = 'Account-Wide',
@@ -253,7 +253,7 @@ local function OnAddOnLoaded(event, addonName)
 			LeaveReturnedMailAlone = true,
 		})
 
-    InitializeOptionsUI()
+    InitializeSettingsUI()
 
 	Register()
 end

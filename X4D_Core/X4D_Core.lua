@@ -11,7 +11,7 @@ local _oneTimeVersionReport = false
 EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
     function(event, name)
         if (name == 'X4D_Core') then
-            X4D.Options(
+            X4D.Settings(
                 'X4D_CORE_SV',
                 {
                     SettingsAre = 'Account-Wide',
@@ -91,7 +91,7 @@ function X4D:Test()
     local asyncTimer2 = X4D.Async.CreateTimer(callback2, 47, { counter = 0 }):Start()
 
     -- SavedVars API
-    -- DB API (indirectly also verifies 'Options API')
+    -- DB API (indirectly also verifies 'Settings API')
     local nonPersistentDb = X4D.DB()
     nonPersistentDb:Add({
         Id = ITEMTYPE_NONE,

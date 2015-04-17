@@ -1,12 +1,12 @@
-local X4D_Options = LibStub:NewLibrary('X4D_Options', 1001)
-if (not X4D_Options) then
+local X4D_Settings = LibStub:NewLibrary('X4D_Settings', 1001)
+if (not X4D_Settings) then
 	return
 end
 local X4D = LibStub('X4D')
-X4D.Options = X4D_Options
+X4D.Settings = X4D_Settings
 
 
-function X4D_Options:GetOption(name)
+function X4D_Settings:Get(name)
 	if (self.Saved == nil) then
 		return nil
 	end
@@ -25,7 +25,7 @@ function X4D_Options:GetOption(name)
 	return value
 end
 
-function X4D_Options:SetOption(name, value)
+function X4D_Settings:Set(name, value)
 	if (self.Saved == nil) then
 		return nil
 	end
@@ -39,9 +39,19 @@ function X4D_Options:SetOption(name, value)
 		self.Saved[scope] = scoped
 	end
 	scoped[name] = value
+    return value
 end
 
-function X4D_Options:Create(savedVarsName, defaults, versions)
+function X4D_Settings:GetOrSet(name, value)
+    if (value ~= nil) then
+        self.Set(name, value)
+        return value
+    else
+        return self.Get(name)
+    end
+end
+
+function X4D_Settings:Create(savedVarsName, defaults, versions)
     if (version == nil) then
         version = 1 -- changing this causes settings to wipe
     end	
@@ -57,8 +67,9 @@ function X4D_Options:Create(savedVarsName, defaults, versions)
     -- TODO: if 'Saved' is missing members that are present in 'Default', perform merge of missing members (e.g. apply missing defaults)
     -- TODO: if members of 'Default' are assigned the value of 'retired-variable' and it exists in 'Saved', then is to be removed from 'Saved'
 
-	setmetatable(proto, { __index = self })--{ __index = self })
+	setmetatable(proto, { __index = self, __call = self.GetOrSet })
+
 	return proto
 end
 
-setmetatable(X4D_Options, { __call = X4D_Options.Create })
+setmetatable(X4D_Settings, { __call = X4D_Settings.Create })

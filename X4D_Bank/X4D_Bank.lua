@@ -12,19 +12,11 @@ local constLeaveAlone = 'Leave Alone'
 local constDeposit = X4D.Colors.Deposit .. 'Deposit'
 local constWithdraw = X4D.Colors.Withdraw .. 'Withdraw'
 
-local _itemTypeOptions = {
+local _itemTypeChoices = {
     constLeaveAlone,
     constDeposit,
     constWithdraw,
 }
-
-local function GetOption(name)
-    return X4D_Bank.Options:GetOption(name)
-end
-
-local function SetOption(name, value)
-    X4D_Bank.Options:SetOption(name, value)
-end
 
 X4D_Bank.Colors = {
     X4D = '|cFFAE19',
@@ -79,7 +71,7 @@ end
 
 local function IsSlotIgnoredItem(slot)
     if (not slot.IsEmpty) then
-        local patterns = GetOption('IgnoredItemPatterns')
+        local patterns = X4D_Bank.Settings:Get('IgnoredItemPatterns')
         for i = 1, #patterns do
             local pattern = patterns[i]
             local isIgnored = false
@@ -166,7 +158,7 @@ local function TryGetBagState(bagId)
 end
 
 local function TryFillPartialStacks()
-    if (not GetOption('AutoDepositItems')) then
+    if (not X4D_Bank.Settings:Get('AutoDepositItems')) then
         return
     end
 
@@ -203,7 +195,7 @@ local function TryFillPartialStacks()
         end
     end
 
-    if ((not GetOption('StartNewStacks')) or(bankState.FreeSlotCount == 0)) then
+    if ((not X4D_Bank.Settings:Get('StartNewStacks')) or(bankState.FreeSlotCount == 0)) then
         return
     end
 
@@ -232,8 +224,8 @@ local function TryFillPartialStacks()
 end
 
 local function TryDepositFixedAmount()
-    local availableAmount = GetCurrentMoney() - GetOption('AutoDepositReserve')
-    local depositAmount = GetOption('AutoDepositFixedAmount')
+    local availableAmount = GetCurrentMoney() - X4D_Bank.Settings:Get('AutoDepositReserve')
+    local depositAmount = X4D_Bank.Settings:Get('AutoDepositFixedAmount')
     if (depositAmount > 0) then
         if (availableAmount < depositAmount) then
             depositAmount = availableAmount
@@ -246,7 +238,7 @@ local function TryDepositFixedAmount()
 end
 
 local function TryDepositPercentage(availableAmount)
-    local depositAmount =(availableAmount *(GetOption('AutoDepositPercentage') / 100))
+    local depositAmount = (availableAmount * (X4D_Bank.Settings:Get('AutoDepositPercentage') / 100))
     if (depositAmount > 0) then
         DepositMoneyIntoBank(depositAmount)
     end
@@ -254,11 +246,11 @@ local function TryDepositPercentage(availableAmount)
 end
 
 local function TryWithdrawReserveAmount()
-    if (not GetOption('AutoWithdrawReserve')) then
+    if (not X4D_Bank.Settings:Get('AutoWithdrawReserve')) then
         return
     end
     local carriedAmount = GetCurrentMoney()
-    local deficit = GetOption('AutoDepositReserve') - carriedAmount
+    local deficit = X4D_Bank.Settings:Get('AutoDepositReserve') - carriedAmount
     if (deficit > 0) then
         if (GetBankedMoney() > deficit) then
             WithdrawMoneyFromBank(deficit)
@@ -284,7 +276,7 @@ local function GetItemTypeDirectionalities()
         for _,itemType in pairs(X4D.Items.ItemTypes) do
             if (itemType.Group == groupName) then
                 local dropdownName = CreateDropdownName(itemType)
-                local direction = GetOption(dropdownName) or constLeaveAlone
+                local direction = X4D_Bank.Settings:Get(dropdownName) or constLeaveAlone
                 itemTypeDirections[itemType.Id] = direction
             end
         end
@@ -457,7 +449,7 @@ end
 
 local function OnOpenBank(eventCode)
     if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
-        _nextAutoDepositTime = GetGameTimeMilliseconds() +(GetOption('AutoDepositDowntime') * 1000)
+        _nextAutoDepositTime = GetGameTimeMilliseconds() +(X4D_Bank.Settings:Get('AutoDepositDowntime') * 1000)
         local availableAmount = TryDepositFixedAmount()
         TryDepositPercentage(availableAmount)
     end
@@ -497,23 +489,23 @@ local function SetSliderValue(controlName, value, minValue, maxValue)
     slidervalue:SetText(tostring(value))
 end
 
-local function InitializeOptionsUI()
+local function InitializeSettingsUI()
     local LAM = LibStub('LibAddonMenu-2.0')
     local cplId = LAM:RegisterAddonPanel('X4D_BANK_CPL', {
         type = 'panel',
         name = 'X4D |cFFAE19Bank',
     } )
 
-    local panelOptions = {
+    local panelControls = {
         [1] =
         {
             type = 'dropdown',
             name = 'Settings Are..',
-            tooltip = 'Settings Option',
+            tooltip = 'Settings Scope',
             choices = { 'Account-Wide', 'Per-Character' },
-            getFunc = function() return X4D_Bank.Options:GetOption('SettingsAre') or 'Account-Wide' end,
-            setFunc = function(option)
-                X4D_Bank.Options:SetOption('SettingsAre', option)
+            getFunc = function() return X4D_Bank.Settings:Get('SettingsAre') or 'Account-Wide' end,
+            setFunc = function(v)
+                X4D_Bank.Settings:Set('SettingsAre', v)
                 ReloadUI()
             end,
         },
@@ -530,16 +522,16 @@ local function InitializeOptionsUI()
             min = 0,
             max = 10000,
             step = 100,
-            getFunc = function() return GetOption('AutoDepositReserve') end,
-            setFunc = function(v) SetOption('AutoDepositReserve', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositReserve') end,
+            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositReserve', tonumber(tostring(v))) end,
         },
         [4] =
         {
             type = 'checkbox',
             name = 'Auto-Withdraw Reserve',
             tooltip = 'When enabled, if you are carrying less than your specified reserve the difference will be withdrawn from the bank.',
-            getFunc = function() return GetOption('AutoWithdrawReserve') end,
-            setFunc = function() SetOption('AutoWithdrawReserve', not GetOption('AutoWithdrawReserve')) end,
+            getFunc = function() return X4D_Bank.Settings:Get('AutoWithdrawReserve') end,
+            setFunc = function() X4D_Bank.Settings:Set('AutoWithdrawReserve', not X4D_Bank.Settings:Get('AutoWithdrawReserve')) end,
         },
         [5] =
         {
@@ -549,8 +541,8 @@ local function InitializeOptionsUI()
             min = 0,
             max = 1000,
             step = 100,
-            getFunc = function() return GetOption('AutoDepositFixedAmount') end,
-            setFunc = function(v) SetOption('AutoDepositFixedAmount', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositFixedAmount') end,
+            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositFixedAmount', tonumber(tostring(v))) end,
         },
         [6] =
         {
@@ -560,8 +552,8 @@ local function InitializeOptionsUI()
             min = 0,
             max = 100,
             step = 1,
-            getFunc = function() return GetOption('AutoDepositPercentage') end,
-            setFunc = function(v) SetOption('AutoDepositPercentage', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositPercentage') end,
+            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositPercentage', tonumber(tostring(v))) end,
         },
         [7] =
         {
@@ -571,8 +563,8 @@ local function InitializeOptionsUI()
             min = 0,
             max = 3600,
             step = 30,
-            getFunc = function() return GetOption('AutoDepositDowntime') end,
-            setFunc = function(v) SetOption('AutoDepositDowntime', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositDowntime') end,
+            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositDowntime', tonumber(tostring(v))) end,
         },
         [8] =
         {
@@ -580,12 +572,12 @@ local function InitializeOptionsUI()
             name = 'Display Money Updates',
             tooltip = 'When enabled, money updates are displayed in the Chat Window.',
             getFunc = function()
-                return X4D.Bank.Options:GetOption('DisplayMoneyUpdates')
+                return X4D.Bank.Settings:Get('DisplayMoneyUpdates')
             end,
             setFunc = function()
-                X4D.Bank.Options:SetOption('DisplayMoneyUpdates', not X4D.Bank.Options:GetOption('DisplayMoneyUpdates'))
+                X4D.Bank.Settings:Set('DisplayMoneyUpdates', not X4D.Bank.Settings:Get('DisplayMoneyUpdates'))
                 if (X4D.Loot ~= nil) then
-                    X4D.Loot.Options:SetOption('DisplayMoneyUpdates', X4D.Bank.Options:GetOption('DisplayMoneyUpdates'))
+                    X4D.Loot.Settings:Set('DisplayMoneyUpdates', X4D.Bank.Settings:Get('DisplayMoneyUpdates'))
                 end
             end,
         },
@@ -599,29 +591,28 @@ local function InitializeOptionsUI()
             type = 'checkbox',
             name = 'Fill Partial Stacks?',
             tooltip = 'When enabled, partial stacks in the bank will be filled from your inventory, overriding any "item type" settings you may have.',
-            getFunc = function() return GetOption('AutoDepositItems') end,
-            setFunc = function() SetOption('AutoDepositItems', not GetOption('AutoDepositItems')) end,
+            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositItems') end,
+            setFunc = function() X4D_Bank.Settings:Set('AutoDepositItems', not X4D_Bank.Settings:Get('AutoDepositItems')) end,
         },
     }
 
     -- LAM:AddCheckbox(cplId,
     -- 'X4D_BANK_CHECK_START_NEW_STACKS', 'Start New Stacks?',
     -- 'When enabled, new stacks of items will be created in your bank after partial stacks are filled.',
-    -- function() return GetOption('StartNewStacks') end,
-    -- function() SetOption('StartNewStacks', not GetOption('StartNewStacks')) end)
+    -- function() return X4D_Bank.Settings:Get('StartNewStacks') end,
+    -- function() X4D_Bank.Settings:Set('StartNewStacks', not X4D_Bank.Settings:Get('StartNewStacks')) end)
 
-    table.insert(panelOptions, {
+    table.insert(panelControls, {
         type = 'editbox',
         name = 'Item Ignore List',
         tooltip = 'Line-delimited list of items to ignore using "lua patterns". Ignored items will not be withdrawn, deposited nor restacked.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc',
         isMultiline = true,
         getFunc = function()
-            local patternsOption = GetOption('IgnoredItemPatterns')
-            if (patternsOption == nil or type(patternsOption) == 'string') then
-                patternsOption = { }
+            local patterns = X4D_Bank.Settings:Get('IgnoredItemPatterns')
+            if (patterns == nil or type(patterns) == 'string') then
+                patterns = { }
             end
-            local patterns = table.concat(patternsOption, '\n')
-            return patterns
+            return table.concat(patterns, '\n')
         end,
         setFunc = function(v)
             local result = v:Split('\n')
@@ -631,28 +622,28 @@ local function InitializeOptionsUI()
                     result[_] = x .. '+'
                 end
             end
-            SetOption('IgnoredItemPatterns', result)
+            X4D_Bank.Settings:Set('IgnoredItemPatterns', result)
         end,
     })
 
     for _,groupName in pairs(X4D.Items.ItemGroups) do
-        table.insert(panelOptions, {
+        table.insert(panelControls, {
             type = 'header',
             name = groupName,
         })
         for _,itemType in pairs(X4D.Items.ItemTypes) do
             if (itemType.Group == groupName) then
                 local dropdownName = CreateDropdownName(itemType)
-                table.insert(panelOptions, {
+                table.insert(panelControls, {
                     type = 'dropdown',
                     name = itemType.Name,
                     tooltip = itemType.Tooltip or itemType.Canonical,
-                    choices = _itemTypeOptions,
+                    choices = _itemTypeChoices,
                     getFunc = function() return 
-                        GetOption(dropdownName) or 'Leave Alone' 
+                        X4D_Bank.Settings:Get(dropdownName) or 'Leave Alone' 
                     end,
-                    setFunc = function(option)
-                        SetOption(dropdownName, option)
+                    setFunc = function(v)
+                        X4D_Bank.Settings:Set(dropdownName, v)
                     end,
                     width = 'half',
                 })
@@ -662,7 +653,7 @@ local function InitializeOptionsUI()
 
     LAM:RegisterOptionControls(
         'X4D_BANK_CPL',
-        panelOptions
+        panelControls
     )
 
 end
@@ -691,7 +682,7 @@ end
 
 
 local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
-    if (not X4D.Bank.Options:GetOption('DisplayMoneyUpdates')) then
+    if (not X4D.Bank.Settings:Get('DisplayMoneyUpdates')) then
         return
     end
     local icon = X4D.Icons.Create('EsoUI/Art/currency/currency_gold.dds')
@@ -709,10 +700,10 @@ local function OnAddOnLoaded(eventCode, addonName)
         return
     end
 
-    X4D_Bank.Options = X4D.Options(
+    X4D_Bank.Settings = X4D.Settings(
         X4D_Bank.NAME .. '_SV',
         {
-            SettingsAre = 'Account-Wide',
+            SettingsAre = 'Per-Character',
             AutoDepositDowntime = 300,
             AutoDepositReserve = 500,
             AutoDepositFixedAmount = 100,
@@ -727,7 +718,7 @@ local function OnAddOnLoaded(eventCode, addonName)
             }
         })
 
-    InitializeOptionsUI()
+    InitializeSettingsUI()
     EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_OPEN_BANK, OnOpenBank)
     if (LibStub('X4D_Loot') == nil) then
         EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_MONEY_UPDATE, OnMoneyUpdate)

@@ -26,7 +26,7 @@ If ESO is already running, execute **/reloadui** command.
 
 ## User Patterns
 
-Users can define their own anti-spam patterns in the Options UI. Each pattern must appear on a separate line to work correctly. If you're not sure, enter extra blank lines, the Add-On will strip them out on the next reload.
+Users can define their own anti-spam patterns in the Settings UI. Each pattern must appear on a separate line to work correctly. If you're not sure, enter extra blank lines, the Add-On will strip them out on the next reload.
 
 ### LUA Pattern Matching
 
@@ -39,7 +39,7 @@ LibAntiSpam Patterns are similar to LUA Patterns, thus you may find the followin
 
 Patterns are applied to Normalized Text as well as Original Text, and are used to filter Chat, Guild Invite, and Mail spam.
 
-Normalization is the process of taking otherwise codified text and translating it into a human-readable equivalent, for example translating "\/\/*V\/*\/V*G*0*I*D*3*X*P*R*3*5*5*(*0*|V|" into "wwwgoldexpresscom". This makes pattern construction much easier, since most of the time users can enter a snippet from the normalized text and NOT have to worry about constructing a LUA Pattern (Fx. to block the above "spam" text, you would enter "goldexpress" on a new line in the Options UI.)
+Normalization is the process of taking otherwise codified text and translating it into a human-readable equivalent, for example translating "\/\/*V\/*\/V*G*0*I*D*3*X*P*R*3*5*5*(*0*|V|" into "wwwgoldexpresscom". This makes pattern construction much easier, since most of the time users can enter a snippet from the normalized text and NOT have to worry about constructing a LUA Pattern (Fx. to block the above "spam" text, you would enter "goldexpress" on a new line in the Settings UI.)
 
 
 ## Versions
