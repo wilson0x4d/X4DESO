@@ -1,7 +1,7 @@
 function string:Split(delimiter)
-    local input = '' .. self
+    local input = "" .. self
     local result = {}
-    for match in (input..delimiter):gmatch("(.-)"..delimiter) do
+    for match in (input..delimiter):gmatch('(.-)'..delimiter) do
 		local s = tostring(match)
 		if (s:len() > 0) then
 			table.insert(result, match)
@@ -15,6 +15,6 @@ function string:StartsWith(v)
 end
 
 function string:EndsWith(v)
-    local input = '' .. self
-    return v=='' or string.sub(input,-string.len(v))==v
+    local input = "" .. self
+    return v=="" or string.sub(input,-string.len(v))==v
 end

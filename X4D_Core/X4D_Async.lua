@@ -1,8 +1,8 @@
-local X4D_Async = LibStub:NewLibrary('X4D_Async', 1001)
+local X4D_Async = LibStub:NewLibrary("X4D_Async", 1001)
 if (not X4D_Async) then
 	return
 end
-local X4D = LibStub('X4D')
+local X4D = LibStub("X4D")
 X4D.Async = X4D_Async
 
 local X4D_Timer = {}
@@ -51,8 +51,8 @@ function X4D_Timer:Elapsed()
 	end
 end
 
--- 'state' is passed into timer callback
--- 'interval' is optional, and can be used to change the timer interval during execution
+-- "state" is passed into timer callback
+-- "interval" is optional, and can be used to change the timer interval during execution
 function X4D_Timer:Start(state, interval)
 	if (state) then
 		self._state = state

@@ -1,8 +1,8 @@
-local X4D_Convert = LibStub:NewLibrary('X4D_Convert', 1001)
+local X4D_Convert = LibStub:NewLibrary("X4D_Convert", 1001)
 if (not X4D_Convert) then
 	return
 end
-local X4D = LibStub('X4D')
+local X4D = LibStub("X4D")
 X4D.Convert = X4D_Convert
 
 local _chatChannelCategories = {
@@ -67,5 +67,5 @@ end
 function X4D_Convert.DEC2HEX(input)
 	local h = (input / 16)
 	local l = (input - (h * 16))
-	return string.format('%x%x', h, l)
+	return string.format("%x%x", h, l)
 end

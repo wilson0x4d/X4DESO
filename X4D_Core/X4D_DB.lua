@@ -1,24 +1,24 @@
-local X4D_DB = LibStub:NewLibrary('X4D_DB', 1001)
+local X4D_DB = LibStub:NewLibrary("X4D_DB", 1001)
 if (not X4D_DB) then
 	return
 end
-local X4D = LibStub('X4D')
+local X4D = LibStub("X4D")
 X4D.DB = X4D_DB
 
 local _databases = nil
 
 -- NOTE: not valid to call except during addon loaded events, unless the input is a Lua table object, in which case it can be called at any time
--- 'non-persistent' databases can be created by providing a reference to a Lua 'table', X4D_DB delegates access to the table
--- 'persistent' databases are opened when a database name (string) is provided
+-- "non-persistent" databases can be created by providing a reference to a Lua "table", X4D_DB delegates access to the table
+-- "persistent" databases are opened when a database name (string) is provided
 function X4D_DB:Open(database)
     if (database == nil) then
         database = {}
     end
-    if (type(database) ~= 'table') then
+    if (type(database) ~= "table") then
         if (_databases == nil) then
-            local sv = X4D.Settings('X4D_CORE_SV')
+            local sv = X4D.Settings("X4D_CORE_SV")
             if (sv.Saved.X4DB == nil) then
-                sv.Saved['X4DB'] = {}
+                sv.Saved["X4DB"] = {}
             end
             _databases = sv.Saved.X4DB
         end
@@ -71,7 +71,7 @@ function X4D_DB:ForEach(visitor)
 end
 
 function X4D_DB:Add(key, value)
-    -- if single arg, assume 'key' contains the value, and attempt to resolve the storage key using common conventions
+    -- if single arg, assume "key" contains the value, and attempt to resolve the storage key using common conventions
     if (value == nil) then
         value = key
         key = value.Id or value.Key or value.id or value.key or value.ID

@@ -1,16 +1,16 @@
-local X4D_Bank = LibStub:NewLibrary('X4D_Bank', 1013)
+local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1013)
 if (not X4D_Bank) then
     return
 end
-local X4D = LibStub('X4D')
+local X4D = LibStub("X4D")
 X4D.Bank = X4D_Bank
 
-X4D_Bank.NAME = 'X4D_Bank'
-X4D_Bank.VERSION = '1.13'
+X4D_Bank.NAME = "X4D_Bank"
+X4D_Bank.VERSION = "1.13"
 
-local constLeaveAlone = 'Leave Alone'
-local constDeposit = X4D.Colors.Deposit .. 'Deposit'
-local constWithdraw = X4D.Colors.Withdraw .. 'Withdraw'
+local constLeaveAlone = "Leave Alone"
+local constDeposit = X4D.Colors.Deposit .. "Deposit"
+local constWithdraw = X4D.Colors.Withdraw .. "Withdraw"
 
 local _itemTypeChoices = {
     constLeaveAlone,
@@ -19,19 +19,19 @@ local _itemTypeChoices = {
 }
 
 X4D_Bank.Colors = {
-    X4D = '|cFFAE19',
-    Gray = '|cC5C5C5',
-    Gold = '|cFFD700',
-    StackCount = '|cFFFFFF',
-    BagSpaceLow = '|cFFd00b',
-    BagSpaceFull = '|cAA0000',
-    Subtext = '|c5C5C5C',
+    X4D = "|cFFAE19",
+    Gray = "|cC5C5C5",
+    Gold = "|cFFD700",
+    StackCount = "|cFFFFFF",
+    BagSpaceLow = "|cFFd00b",
+    BagSpaceFull = "|cAA0000",
+    Subtext = "|c5C5C5C",
 }
 
 local _nextAutoDepositTime = 0
 
 local function GetItemLinkInternal(bagId, slotIndex)
-    local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS):gsub('(%[%l)', function(i) return i:upper() end):gsub('(%s%l)', function(i) return i:upper() end):gsub('%^[^%]]*', '')
+    local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS):gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
     return itemLink, itemColor, itemQuality
 end
@@ -59,10 +59,10 @@ end
 local function InvokeCallbackSafe(color, text)
     local callback = X4D_Bank.EmitCallback
     if (color == nil) then
-        color = '|cFF0000'
+        color = "|cFF0000"
     end
     if (color:len() < 8) then
-        color = '|cFF0000'
+        color = "|cFF0000"
     end
     if (callback ~= nil) then
         callback(color, text)
@@ -71,7 +71,7 @@ end
 
 local function IsSlotIgnoredItem(slot)
     if (not slot.IsEmpty) then
-        local patterns = X4D_Bank.Settings:Get('IgnoredItemPatterns')
+        local patterns = X4D_Bank.Settings:Get("IgnoredItemPatterns")
         for i = 1, #patterns do
             local pattern = patterns[i]
             local isIgnored = false
@@ -80,7 +80,7 @@ local function IsSlotIgnoredItem(slot)
                         isIgnored = true
                     end
                 end )) then
-                InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, '(BANK) Bad Item Pattern: |cFF7777' .. pattern)
+                InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(BANK) Bad Item Pattern: |cFF7777" .. pattern)
             end
             if (isIgnored) then
                 return true
@@ -94,7 +94,7 @@ local function TryGetBagState(bagId)
     local numSlots = GetBagSize(bagId)
     local bagIcon = nil
     if (bagIcon == nil or bagIcon:len() == 0) then
-        bagIcon = 'EsoUI/Art/Icons/icon_missing.dds'
+        bagIcon = "EsoUI/Art/Icons/icon_missing.dds"
         -- TODO: how to know which icon to use? also, choose better default icon for this case
     end
     local bagState = {
@@ -118,10 +118,10 @@ local function TryGetBagState(bagId)
             local itemLevel = GetItemLevel(bagId, slotIndex)
             local isStolen = IsItemStolen(bagId, slotIndex)
 
-            local normalizedItemData = (' L' .. itemLevel .. ' ' .. itemQualityString .. ' T' .. itemType.Id .. ' ' .. itemType.Canonical .. ' ' .. itemName:lower() .. ' ' .. itemLink)
+            local normalizedItemData = (" L" .. itemLevel .. " " .. itemQualityString .. " T" .. itemType.Id .. " " .. itemType.Canonical .. " " .. itemName:lower() .. " " .. itemLink)
             if (isStolen) then
-                normalizedItemData = ' STOLEN' .. normalizedItemData
-                -- TODO: handler for when 'stolen' state of an item changes
+                normalizedItemData = " STOLEN" .. normalizedItemData
+                -- TODO: handler for when "stolen" state of an item changes
             end
             local slot = {
                 Id = slotIndex,
@@ -148,7 +148,7 @@ local function TryGetBagState(bagId)
             local slot = {
                 Id = slotIndex,
                 IsEmpty = true,
-                Normalized = '~ISEMPTY'
+                Normalized = "~ISEMPTY"
             }
             bagState.Slots[slotIndex] = slot
             table.insert(bagState.FreeSlots, slot)
@@ -158,7 +158,7 @@ local function TryGetBagState(bagId)
 end
 
 local function TryFillPartialStacks()
-    if (not X4D_Bank.Settings:Get('AutoDepositItems')) then
+    if (not X4D_Bank.Settings:Get("AutoDepositItems")) then
         return
     end
 
@@ -179,7 +179,7 @@ local function TryFillPartialStacks()
                         if (stackRemaining > 0) then
                             CallSecureProtected("PickupInventoryItem", inventoryState.Id, inventorySlotInfo.Id, stackRemaining)
                             CallSecureProtected("PlaceInInventory", bankState.Id, bankSlotInfo.Id)
-                            InvokeCallbackSafe(bankSlotInfo.ItemColor, 'Deposited ' .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. stackRemaining)
+                            InvokeCallbackSafe(bankSlotInfo.ItemColor, "Deposited " .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. stackRemaining)
                             inventorySlotInfo.StackCount = inventorySlotInfo.StackCount - stackRemaining
                             if (inventorySlotInfo.StackCount <= 0) then
                                 if (not inventorySlotInfo.IsEmpty) then
@@ -195,7 +195,7 @@ local function TryFillPartialStacks()
         end
     end
 
-    if ((not X4D_Bank.Settings:Get('StartNewStacks')) or(bankState.FreeSlotCount == 0)) then
+    if ((not X4D_Bank.Settings:Get("StartNewStacks")) or(bankState.FreeSlotCount == 0)) then
         return
     end
 
@@ -212,7 +212,7 @@ local function TryFillPartialStacks()
                                 if (emptyBankSlot ~= nil) then
                                     CallSecureProtected("PickupInventoryItem", inventoryState.Id, inventorySlotInfo.Id, stackRemaining)
                                     CallSecureProtected("PlaceInInventory", bankState.Id, emptyBankSlot.Id)
-                                    InvokeCallbackSafe(inventorySlotInfo.ItemColor, 'Deposited ' .. inventorySlotInfo.ItemIcon .. inventorySlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. stackRemaining)
+                                    InvokeCallbackSafe(inventorySlotInfo.ItemColor, "Deposited " .. inventorySlotInfo.ItemIcon .. inventorySlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. stackRemaining)
                                 end
                             end
                         end
@@ -224,8 +224,8 @@ local function TryFillPartialStacks()
 end
 
 local function TryDepositFixedAmount()
-    local availableAmount = GetCurrentMoney() - X4D_Bank.Settings:Get('AutoDepositReserve')
-    local depositAmount = X4D_Bank.Settings:Get('AutoDepositFixedAmount')
+    local availableAmount = GetCurrentMoney() - X4D_Bank.Settings:Get("AutoDepositReserve")
+    local depositAmount = X4D_Bank.Settings:Get("AutoDepositFixedAmount")
     if (depositAmount > 0) then
         if (availableAmount < depositAmount) then
             depositAmount = availableAmount
@@ -238,7 +238,7 @@ local function TryDepositFixedAmount()
 end
 
 local function TryDepositPercentage(availableAmount)
-    local depositAmount = (availableAmount * (X4D_Bank.Settings:Get('AutoDepositPercentage') / 100))
+    local depositAmount = (availableAmount * (X4D_Bank.Settings:Get("AutoDepositPercentage") / 100))
     if (depositAmount > 0) then
         DepositMoneyIntoBank(depositAmount)
     end
@@ -246,11 +246,11 @@ local function TryDepositPercentage(availableAmount)
 end
 
 local function TryWithdrawReserveAmount()
-    if (not X4D_Bank.Settings:Get('AutoWithdrawReserve')) then
+    if (not X4D_Bank.Settings:Get("AutoWithdrawReserve")) then
         return
     end
     local carriedAmount = GetCurrentMoney()
-    local deficit = X4D_Bank.Settings:Get('AutoDepositReserve') - carriedAmount
+    local deficit = X4D_Bank.Settings:Get("AutoDepositReserve") - carriedAmount
     if (deficit > 0) then
         if (GetBankedMoney() > deficit) then
             WithdrawMoneyFromBank(deficit)
@@ -259,15 +259,15 @@ local function TryWithdrawReserveAmount()
 end
 
 local function ShouldDepositItem(slot, itemTypeDirections)
-    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith('Deposit')
+    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith("Deposit")
 end
 
 local function ShouldWithdrawItem(slot, itemTypeDirections)
-    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith('Withdraw')
+    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith("Withdraw")
 end
 
 local function CreateDropdownName(itemType)
-    return ('X4D_BANK_' .. itemType.Canonical):upper()
+    return ("X4D_BANK_" .. itemType.Canonical):upper()
 end
 
 local function GetItemTypeDirectionalities()
@@ -317,9 +317,9 @@ local function TryCombinePartialStacks(bagState, depth)
         if (countToMove > 0) then
             rval.StackCount = rval.StackCount + countToMove
             lval.StackCount = lval.StackCount - countToMove
-            CallSecureProtected('PickupInventoryItem', bagState.Id, lval.Id, countToMove)
-            CallSecureProtected('PlaceInInventory', bagState.Id, rval.Id)
-            InvokeCallbackSafe(lval.ItemColor, 'Restacked ' .. lval.ItemIcon .. lval.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. countToMove)
+            CallSecureProtected("PickupInventoryItem", bagState.Id, lval.Id, countToMove)
+            CallSecureProtected("PlaceInInventory", bagState.Id, rval.Id)
+            InvokeCallbackSafe(lval.ItemColor, "Restacked " .. lval.ItemIcon .. lval.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. countToMove)
         end
     end
     if (combineCount > 0 and depth > 0) then
@@ -354,8 +354,8 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         if (countToMove > sourceSlot.StackCount) then
             countToMove = sourceSlot.StackCount
         end
-        CallSecureProtected('PickupInventoryItem', sourceBag.Id, sourceSlot.Id, countToMove)
-        CallSecureProtected('PlaceInInventory', targetBag.Id, targetSlot.Id)
+        CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
+        CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
         totalMoved = totalMoved + countToMove
         sourceSlot.StackCount = sourceSlot.StackCount - countToMove
         if (sourceSlot.StackCount <= 0) then
@@ -367,8 +367,8 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         for _, targetSlot in pairs(emptySlots) do
             if (targetSlot.IsEmpty) then
                 local countToMove = sourceSlot.StackCount
-                CallSecureProtected('PickupInventoryItem', sourceBag.Id, sourceSlot.Id, countToMove)
-                CallSecureProtected('PlaceInInventory', targetBag.Id, targetSlot.Id)
+                CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
+                CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
                 totalMoved = totalMoved + countToMove
                 sourceSlot.StackCount = sourceSlot.StackCount - countToMove
                 if (sourceSlot.StackCount <= 0) then
@@ -380,7 +380,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         end
     end
     if (totalMoved > 0) then
-        InvokeCallbackSafe(sourceSlot.ItemColor, directionText .. ' ' .. sourceSlot.ItemIcon .. sourceSlot.ItemLink .. X4D_Bank.Colors.StackCount .. ' x' .. totalMoved)
+        InvokeCallbackSafe(sourceSlot.ItemColor, directionText .. " " .. sourceSlot.ItemIcon .. sourceSlot.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. totalMoved)
         return true
     else
         return false
@@ -426,7 +426,7 @@ local function TryDepositsAndWithdrawals()
             local sourceBag = inventoryState
             local sourceSlot = table.remove(pendingDeposits, 1)
             local targetBag = bankState
-            if (TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, 'Deposited')) then
+            if (TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")) then
                 changeWasMade = true
                 pendingDepositCount = pendingDepositCount - 1
             else
@@ -437,7 +437,7 @@ local function TryDepositsAndWithdrawals()
             local sourceBag = bankState
             local sourceSlot = table.remove(pendingWithdrawals, 1)
             local targetBag = inventoryState
-            if (TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, 'Withdrew')) then
+            if (TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")) then
                 changeWasMade = true
                 pendingWithdrawalCount = pendingWithdrawalCount - 1
             else
@@ -449,7 +449,7 @@ end
 
 local function OnOpenBank(eventCode)
     if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
-        _nextAutoDepositTime = GetGameTimeMilliseconds() +(X4D_Bank.Settings:Get('AutoDepositDowntime') * 1000)
+        _nextAutoDepositTime = GetGameTimeMilliseconds() +(X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000)
         local availableAmount = TryDepositFixedAmount()
         TryDepositPercentage(availableAmount)
     end
@@ -460,7 +460,7 @@ end
 
 local function SetComboboxValue(controlName, value)
     local combobox = _G[controlName]
-    local dropmenu = ZO_ComboBox_ObjectFromContainer(GetControl(combobox, "Dropdown"))
+    local dropmenu = ZO_ComboBox_ObjectFromContainer(GetControl(combobox, 'Dropdown'))
     local items = dropmenu:GetItems()
     for k, v in pairs(items) do
         if (v.name == value) then
@@ -472,7 +472,7 @@ end
 local function SetCheckboxValue(controlName, value)
     local control = _G[controlName]
     if (control ~= nil) then
-        local checkbox = control:GetNamedChild('Checkbox')
+        local checkbox = control:GetNamedChild("Checkbox")
         if (checkbox ~= nil) then
             checkbox:SetState(value and 1 or 0)
             checkbox:toggleFunction(value)
@@ -483,215 +483,215 @@ end
 local function SetSliderValue(controlName, value, minValue, maxValue)
     local range = maxValue - minValue
     local slider = _G[controlName]
-    local slidercontrol = slider:GetNamedChild("Slider")
-    local slidervalue = slider:GetNamedChild("ValueLabel")
+    local slidercontrol = slider:GetNamedChild('Slider')
+    local slidervalue = slider:GetNamedChild('ValueLabel')
     slidercontrol:SetValue((value - minValue) / range)
     slidervalue:SetText(tostring(value))
 end
 
 local function InitializeSettingsUI()
-    local LAM = LibStub('LibAddonMenu-2.0')
-    local cplId = LAM:RegisterAddonPanel('X4D_BANK_CPL', {
-        type = 'panel',
-        name = 'X4D |cFFAE19Bank',
+    local LAM = LibStub("LibAddonMenu-2.0")
+    local cplId = LAM:RegisterAddonPanel("X4D_BANK_CPL", {
+        type = "panel",
+        name = "X4D |cFFAE19Bank",
     } )
 
     local panelControls = {
         [1] =
         {
-            type = 'dropdown',
-            name = 'Settings Are..',
-            tooltip = 'Settings Scope',
-            choices = { 'Account-Wide', 'Per-Character' },
-            getFunc = function() return X4D_Bank.Settings:Get('SettingsAre') or 'Account-Wide' end,
+            type = "dropdown",
+            name = "Settings Are..",
+            tooltip = "Settings Scope",
+            choices = { "Account-Wide", "Per-Character" },
+            getFunc = function() return X4D_Bank.Settings:Get("SettingsAre") or "Account-Wide" end,
             setFunc = function(v)
-                X4D_Bank.Settings:Set('SettingsAre', v)
+                X4D_Bank.Settings:Set("SettingsAre", v)
                 ReloadUI()
             end,
         },
         [2] =
         {
-            type = 'header',
-            name = 'Gold Deposits and Withdrawals',
+            type = "header",
+            name = "Gold Deposits and Withdrawals",
         },
         [3] =
         {
-            type = 'slider',
-            name = 'Reserve Amount',
-            tooltip = 'If non-zero, the specified amount of carried gold will never be auto-deposited.',
+            type = "slider",
+            name = "Reserve Amount",
+            tooltip = "If non-zero, the specified amount of carried gold will never be auto-deposited.",
             min = 0,
             max = 10000,
             step = 100,
-            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositReserve') end,
-            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositReserve', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositReserve") end,
+            setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositReserve", tonumber(tostring(v))) end,
         },
         [4] =
         {
-            type = 'checkbox',
-            name = 'Auto-Withdraw Reserve',
-            tooltip = 'When enabled, if you are carrying less than your specified reserve the difference will be withdrawn from the bank.',
-            getFunc = function() return X4D_Bank.Settings:Get('AutoWithdrawReserve') end,
-            setFunc = function() X4D_Bank.Settings:Set('AutoWithdrawReserve', not X4D_Bank.Settings:Get('AutoWithdrawReserve')) end,
+            type = "checkbox",
+            name = "Auto-Withdraw Reserve",
+            tooltip = "When enabled, if you are carrying less than your specified reserve the difference will be withdrawn from the bank.",
+            getFunc = function() return X4D_Bank.Settings:Get("AutoWithdrawReserve") end,
+            setFunc = function() X4D_Bank.Settings:Set("AutoWithdrawReserve", not X4D_Bank.Settings:Get("AutoWithdrawReserve")) end,
         },
         [5] =
         {
-            type = 'slider',
-            name = 'Auto-Deposit Fixed Amount',
-            tooltip = 'If non-zero, will auto-deposit up to the configured amount when accessing the bank.',
+            type = "slider",
+            name = "Auto-Deposit Fixed Amount",
+            tooltip = "If non-zero, will auto-deposit up to the configured amount when accessing the bank.",
             min = 0,
             max = 1000,
             step = 100,
-            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositFixedAmount') end,
-            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositFixedAmount', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositFixedAmount") end,
+            setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositFixedAmount", tonumber(tostring(v))) end,
         },
         [6] =
         {
-            type = 'slider',
-            name = 'Auto-Deposit Percentage',
-            tooltip = 'If non-zero, will auto-deposit percentage of non-reserve gold when accessing the bank.',
+            type = "slider",
+            name = "Auto-Deposit Percentage",
+            tooltip = "If non-zero, will auto-deposit percentage of non-reserve gold when accessing the bank.",
             min = 0,
             max = 100,
             step = 1,
-            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositPercentage') end,
-            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositPercentage', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositPercentage") end,
+            setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositPercentage", tonumber(tostring(v))) end,
         },
         [7] =
         {
-            type = 'slider',
-            name = 'Auto-Deposit Down-Time',
-            tooltip = 'If non-zero, will wait specified time (in seconds) between bank interactions before auto-depositing again.',
+            type = "slider",
+            name = "Auto-Deposit Down-Time",
+            tooltip = "If non-zero, will wait specified time (in seconds) between bank interactions before auto-depositing again.",
             min = 0,
             max = 3600,
             step = 30,
-            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositDowntime') end,
-            setFunc = function(v) X4D_Bank.Settings:Set('AutoDepositDowntime', tonumber(tostring(v))) end,
+            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositDowntime") end,
+            setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositDowntime", tonumber(tostring(v))) end,
         },
         [8] =
         {
-            type = 'checkbox',
-            name = 'Display Money Updates',
-            tooltip = 'When enabled, money updates are displayed in the Chat Window.',
+            type = "checkbox",
+            name = "Display Money Updates",
+            tooltip = "When enabled, money updates are displayed in the Chat Window.",
             getFunc = function()
-                return X4D.Bank.Settings:Get('DisplayMoneyUpdates')
+                return X4D.Bank.Settings:Get("DisplayMoneyUpdates")
             end,
             setFunc = function()
-                X4D.Bank.Settings:Set('DisplayMoneyUpdates', not X4D.Bank.Settings:Get('DisplayMoneyUpdates'))
+                X4D.Bank.Settings:Set("DisplayMoneyUpdates", not X4D.Bank.Settings:Get("DisplayMoneyUpdates"))
                 if (X4D.Loot ~= nil) then
-                    X4D.Loot.Settings:Set('DisplayMoneyUpdates', X4D.Bank.Settings:Get('DisplayMoneyUpdates'))
+                    X4D.Loot.Settings:Set("DisplayMoneyUpdates", X4D.Bank.Settings:Get("DisplayMoneyUpdates"))
                 end
             end,
         },
         [9] =
         {
-            type = 'header',
-            name = 'Item Deposits and Withdrawals',
+            type = "header",
+            name = "Item Deposits and Withdrawals",
         },
         [10] =
         {
-            type = 'checkbox',
-            name = 'Fill Partial Stacks?',
-            tooltip = 'When enabled, partial stacks in the bank will be filled from your inventory, overriding any "item type" settings you may have.',
-            getFunc = function() return X4D_Bank.Settings:Get('AutoDepositItems') end,
-            setFunc = function() X4D_Bank.Settings:Set('AutoDepositItems', not X4D_Bank.Settings:Get('AutoDepositItems')) end,
+            type = "checkbox",
+            name = "Fill Partial Stacks?",
+            tooltip = "When enabled, partial stacks in the bank will be filled from your inventory, overriding any 'item type' settings you may have.",
+            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositItems") end,
+            setFunc = function() X4D_Bank.Settings:Set("AutoDepositItems", not X4D_Bank.Settings:Get("AutoDepositItems")) end,
         },
     }
 
     -- LAM:AddCheckbox(cplId,
-    -- 'X4D_BANK_CHECK_START_NEW_STACKS', 'Start New Stacks?',
-    -- 'When enabled, new stacks of items will be created in your bank after partial stacks are filled.',
-    -- function() return X4D_Bank.Settings:Get('StartNewStacks') end,
-    -- function() X4D_Bank.Settings:Set('StartNewStacks', not X4D_Bank.Settings:Get('StartNewStacks')) end)
+    -- "X4D_BANK_CHECK_START_NEW_STACKS", "Start New Stacks?",
+    -- "When enabled, new stacks of items will be created in your bank after partial stacks are filled.",
+    -- function() return X4D_Bank.Settings:Get("StartNewStacks") end,
+    -- function() X4D_Bank.Settings:Set("StartNewStacks", not X4D_Bank.Settings:Get("StartNewStacks")) end)
 
     table.insert(panelControls, {
-        type = 'editbox',
-        name = 'Item Ignore List',
-        tooltip = 'Line-delimited list of items to ignore using "lua patterns". Ignored items will not be withdrawn, deposited nor restacked.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc',
+        type = "editbox",
+        name = "Item Ignore List",
+        tooltip = "Line-delimited list of items to ignore using 'lua patterns'. Ignored items will not be withdrawn, deposited nor restacked.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
         isMultiline = true,
         getFunc = function()
-            local patterns = X4D_Bank.Settings:Get('IgnoredItemPatterns')
-            if (patterns == nil or type(patterns) == 'string') then
+            local patterns = X4D_Bank.Settings:Get("IgnoredItemPatterns")
+            if (patterns == nil or type(patterns) == "string") then
                 patterns = { }
             end
-            return table.concat(patterns, '\n')
+            return table.concat(patterns, "\n")
         end,
         setFunc = function(v)
-            local result = v:Split('\n')
+            local result = v:Split("\n")
             -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
             for _, x in pairs(result) do
-                if (x:EndsWith(']')) then
-                    result[_] = x .. '+'
+                if (x:EndsWith("]")) then
+                    result[_] = x .. "+"
                 end
             end
-            X4D_Bank.Settings:Set('IgnoredItemPatterns', result)
+            X4D_Bank.Settings:Set("IgnoredItemPatterns", result)
         end,
     })
 
     for _,groupName in pairs(X4D.Items.ItemGroups) do
         table.insert(panelControls, {
-            type = 'header',
+            type = "header",
             name = groupName,
         })
         for _,itemType in pairs(X4D.Items.ItemTypes) do
             if (itemType.Group == groupName) then
                 local dropdownName = CreateDropdownName(itemType)
                 table.insert(panelControls, {
-                    type = 'dropdown',
+                    type = "dropdown",
                     name = itemType.Name,
                     tooltip = itemType.Tooltip or itemType.Canonical,
                     choices = _itemTypeChoices,
                     getFunc = function() return 
-                        X4D_Bank.Settings:Get(dropdownName) or 'Leave Alone' 
+                        X4D_Bank.Settings:Get(dropdownName) or "Leave Alone" 
                     end,
                     setFunc = function(v)
                         X4D_Bank.Settings:Set(dropdownName, v)
                     end,
-                    width = 'half',
+                    width = "half",
                 })
             end
         end
     end
 
     LAM:RegisterOptionControls(
-        'X4D_BANK_CPL',
+        "X4D_BANK_CPL",
         panelControls
     )
 
 end
 
 local function formatnum(n)
-    local left, num, right = string.match(n, '^([^%d]*%d)(%d*)(.-)$')
-    return left ..(num:reverse():gsub('(%d%d%d)', '%1,'):reverse()) .. right
+    local left, num, right = string.match(n, "^([^%d]*%d)(%d*)(.-)$")
+    return left ..(num:reverse():gsub("(%d%d%d)", "%1,"):reverse()) .. right
 end
 
 local _moneyUpdateReason = {
-    [0] = { 'Looted', 'Stored' },
-    [1] = { 'Earned', 'Spent' },
-    [2] = { 'Received', 'Sent' },
-    [4] = { 'Gained', 'Lost' },
-    [5] = { 'Earned', 'Spent' },
-    [19] = { 'Gained', 'Spent' },
-    [28] = { 'Gained', 'Spent' },
-    [29] = { 'Gained', 'Spent' },
-    [42] = { 'Withdrew', 'Deposited' },
-    [43] = { 'Withdrew', 'Deposited' },
+    [0] = { "Looted", "Stored" },
+    [1] = { "Earned", "Spent" },
+    [2] = { "Received", "Sent" },
+    [4] = { "Gained", "Lost" },
+    [5] = { "Earned", "Spent" },
+    [19] = { "Gained", "Spent" },
+    [28] = { "Gained", "Spent" },
+    [29] = { "Gained", "Spent" },
+    [42] = { "Withdrew", "Deposited" },
+    [43] = { "Withdrew", "Deposited" },
 }	
 
 local function GetMoneyReason(reasonId)
-    return _moneyUpdateReason[reasonId] or { 'Gained', 'Lost' }
+    return _moneyUpdateReason[reasonId] or { "Gained", "Lost" }
 end
 
 
 local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
-    if (not X4D.Bank.Settings:Get('DisplayMoneyUpdates')) then
+    if (not X4D.Bank.Settings:Get("DisplayMoneyUpdates")) then
         return
     end
-    local icon = X4D.Icons.Create('EsoUI/Art/currency/currency_gold.dds')
+    local icon = X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
     local reason = GetMoneyReason(reasonId)
     local amount = newMoney - oldMoney
     if (amount >= 0) then
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format('%s %s%s %s  (%s total)', reason[1], formatnum(amount), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s total)", reason[1], formatnum(amount), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     else
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format('%s %s%s %s  (%s remaining)', reason[2], formatnum(math.abs(amount)), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s remaining)", reason[2], formatnum(math.abs(amount)), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     end
 end
 
@@ -701,9 +701,9 @@ local function OnAddOnLoaded(eventCode, addonName)
     end
 
     X4D_Bank.Settings = X4D.Settings(
-        X4D_Bank.NAME .. '_SV',
+        X4D_Bank.NAME .. "_SV",
         {
-            SettingsAre = 'Per-Character',
+            SettingsAre = "Per-Character",
             AutoDepositDowntime = 300,
             AutoDepositReserve = 500,
             AutoDepositFixedAmount = 100,
@@ -714,13 +714,13 @@ local function OnAddOnLoaded(eventCode, addonName)
             DisplayMoneyUpdates = true,
             IgnoredItemPatterns =
             {
-                'STOLEN',
+                "STOLEN",
             }
         })
 
     InitializeSettingsUI()
     EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_OPEN_BANK, OnOpenBank)
-    if (LibStub('X4D_Loot') == nil) then
+    if (LibStub("X4D_Loot") == nil) then
         EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_MONEY_UPDATE, OnMoneyUpdate)
     end
 end

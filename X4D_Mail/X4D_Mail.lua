@@ -1,25 +1,25 @@
-local X4D_Mail = LibStub:NewLibrary('X4D_Mail', 1001)
+local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1001)
 if (not X4D_Mail) then
 	return
 end
-local X4D = LibStub('X4D')
+local X4D = LibStub("X4D")
 X4D.Mail = X4D_Mail
 
-X4D_Mail.NAME = 'X4D_Mail'
-X4D_Mail.VERSION = '1.1'
+X4D_Mail.NAME = "X4D_Mail"
+X4D_Mail.VERSION = "1.1"
 
 -- 1.0
 -- X4D_Mail:IsMailReadable(mailId)
 -- X4D_Mail:HandleMailAttachments(mailId)
 -- X4D_Mail:HandleSpam(mailId)
 
-local X4D_Loot = LibStub('X4D_Loot')
+local X4D_Loot = LibStub("X4D_Loot")
 if (X4D.AntiSpam == nil) then
-	X4D.Debug:Warning('No usable AntiSpam Library was detected.', 'X4D Mail')
+	X4D.Debug:Warning("No usable AntiSpam Library was detected.", "X4D Mail")
 end
 
 local function DefaultEmitCallback(color, text)
-	X4D.Debug:Info(color .. text, 'X4D Mail')
+	X4D.Debug:Info(color .. text, "X4D Mail")
 end 
 
 local _emitCallback = DefaultEmitCallback
@@ -41,10 +41,10 @@ end
 local function InvokeEmitCallbackSafe(color, text)
 	local callback = _emitCallback
 	if (color == nil) then
-		color = '|cFF0000'
+		color = "|cFF0000"
 	end
 	if (color:len() < 8) then
-		color = '|cFF0000'
+		color = "|cFF0000"
 	end
 	if (callback ~= nil) then	
 		callback(color, text)
@@ -52,8 +52,8 @@ local function InvokeEmitCallbackSafe(color, text)
 end
 
 local function formatnum(n)
-	local left, num, right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
-	return left .. (num:reverse():gsub('(%d%d%d)','%1,'):reverse()) .. right
+	local left, num, right = string.match(n,"^([^%d]*%d)(%d*)(.-)$")
+	return left .. (num:reverse():gsub("(%d%d%d)","%1,"):reverse()) .. right
 end
 
 local _readableMail = { }
@@ -64,15 +64,15 @@ end
 
 function X4D_Mail:HandleMailAttachments(mailId)
 	if (not X4D_Mail:IsMailReadable(mailId)) then
-		X4D.Debug:Error({ 'HandleMailAttachments', '!IsMailReadable', mailId }, 'X4D Mail')
+		X4D.Debug:Error({ "HandleMailAttachments", "!IsMailReadable", mailId }, "X4D Mail")
 		return
 	end
 	local mail = _readableMail[mailId]
-	if (mail.IsReturnedMail and X4D_Mail.Settings:Get('LeaveReturnedMailAlone')) then
+	if (mail.IsReturnedMail and X4D_Mail.Settings:Get("LeaveReturnedMailAlone")) then
 		return
 	end
 	local shouldDelete = false
-	if (X4D_Mail.Settings:Get('AutoAcceptAttachments')) then
+	if (X4D_Mail.Settings:Get("AutoAcceptAttachments")) then
 		if (mail.IsFromSystem and (not mail.IsCustomerService)) then
 			shouldDelete = true
 			if (mail.AttachedItemsCount > 0 or mail.AttachedMoney > 0) then
@@ -82,49 +82,49 @@ function X4D_Mail:HandleMailAttachments(mailId)
 							local itemIcon, stackCount, creatorName = GetAttachedItemInfo(mailId, attachmentIndex)
 							local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
 							local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
-							InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. X4D.Icons.Create(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName)
+							InvokeEmitCallbackSafe(itemColor, "Accepted " .. X4D.Icons.Create(itemIcon) .. itemLink .. " x" .. stackCount .. " from " .. mail.SenderDisplayName)
 
 						end
 						TakeMailAttachedItems(mailId)
 					else
 						shouldDelete = false
-						InvokeEmitCallbackSafe('|cFFFFFF', 'Could not accept Attachments from ' .. mail.SenderDisplayName .. ', not enough bag space.')
+						InvokeEmitCallbackSafe("|cFFFFFF", "Could not accept Attachments from " .. mail.SenderDisplayName .. ", not enough bag space.")
 					end
 				end
 				if (mail.AttachedMoney > 0) then
 					if (X4D.Loot == nil) then
 						local newMoney = GetCurrentMoney() + mail.AttachedMoney
-						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format('%s %s%s %s  (%s total)', 'Accepted', formatnum(mail.AttachedMoney), X4D.Icons.Create('EsoUI/Art/currency/currency_gold.dds'), X4D.Colors.Subtext, formatnum(newMoney)))
+						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format("%s %s%s %s  (%s total)", "Accepted", formatnum(mail.AttachedMoney), X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds"), X4D.Colors.Subtext, formatnum(newMoney)))
 					end				
 					TakeMailAttachedMoney(mailId)
 				end
 			end
 		end
 	end
-    if (shouldDelete and X4D_Mail.Settings:Get('AutoDeleteMail')) then
-	    X4D.Debug:Verbose('Deleting mail from: ' .. mail.SenderDisplayName, 'X4D Mail')
+    if (shouldDelete and X4D_Mail.Settings:Get("AutoDeleteMail")) then
+	    X4D.Debug:Verbose("Deleting mail from: " .. mail.SenderDisplayName, "X4D Mail")
 	    DeleteMail(mailId, false)
     end
 end
 
 function X4D_Mail:HandleSpam(mailId)
 	if (not X4D_Mail:IsMailReadable(mailId)) then
-		X4D.Debug:Error({ 'HandleSpam', '!IsMailReadable', mailId }, 'X4D Mail')
+		X4D.Debug:Error({ "HandleSpam", "!IsMailReadable", mailId }, "X4D Mail")
 		return
 	end
 	local mail = _readableMail[mailId]
-	if (X4D_Mail.Settings:Get('EnableAntiSpam')) then
+	if (X4D_Mail.Settings:Get("EnableAntiSpam")) then
 		if (not (mail.IsCustomerService or mail.IsFromSystem)) then
 			if (X4D.AntiSpam ~= nil) then
 				local isSpam = X4D.AntiSpam:Check({
-						Text = mail.SubjectText .. ' ' .. mail.BodyText,
+						Text = mail.SubjectText .. " " .. mail.BodyText,
 						Name = mail.SenderDisplayName,
-						Reason = 'Mail',
+						Reason = "Mail",
 						NoFlood = true, -- we do not want mail to result in flood triggering
 					})
 				if (isSpam) then
 					mail.IsSpam = true
-					X4D.Debug:Verbose('Deleting mail from spammer: ' .. mail.SenderDisplayName, 'X4D Mail')
+					X4D.Debug:Verbose("Deleting mail from spammer: " .. mail.SenderDisplayName, "X4D Mail")
 					DeleteMail(mailId, false)
 				end
 			end
@@ -176,64 +176,64 @@ local function Unregister()
 end
 
 local function InitializeSettingsUI()
-	local LAM = LibStub('LibAddonMenu-2.0')
-	local cplId = LAM:RegisterAddonPanel('X4D_MAIL_CPL', {
-        type = 'panel',
-        name = 'X4D |cFFAE19Mail',
+	local LAM = LibStub("LibAddonMenu-2.0")
+	local cplId = LAM:RegisterAddonPanel("X4D_MAIL_CPL", {
+        type = "panel",
+        name = "X4D |cFFAE19Mail",
     })
 
     local panelControls = { }
 
     table.insert(panelControls, {
-            type = 'checkbox',
-            name = 'Auto-Accept Attachments', 
-            tooltip = 'When enabled, mail attachments are automatically accepted.', 
+            type = "checkbox",
+            name = "Auto-Accept Attachments", 
+            tooltip = "When enabled, mail attachments are automatically accepted.", 
             getFunc = function() 
-                return X4D.Mail.Settings:Get('AutoAcceptAttachments')
+                return X4D.Mail.Settings:Get("AutoAcceptAttachments")
             end,
             setFunc = function()
-                X4D.Mail.Settings:Set('AutoAcceptAttachments', not X4D.Mail.Settings:Get('AutoAcceptAttachments')) 
+                X4D.Mail.Settings:Set("AutoAcceptAttachments", not X4D.Mail.Settings:Get("AutoAcceptAttachments")) 
             end,
         })
 
     table.insert(panelControls, {
-            type = 'checkbox',
-            name = 'Ignore Return Mail', 
-            tooltip = 'When enabled, mail returned to you is ignored (attachments are not auto-accepted, and the message will not be auto-deleted.)', 
+            type = "checkbox",
+            name = "Ignore Return Mail", 
+            tooltip = "When enabled, mail returned to you is ignored (attachments are not auto-accepted, and the message will not be auto-deleted.)", 
             getFunc = function() 
-                return X4D.Mail.Settings:Get('LeaveReturnedMailAlone')
+                return X4D.Mail.Settings:Get("LeaveReturnedMailAlone")
             end,
             setFunc = function()
-                X4D.Mail.Settings:Set('LeaveReturnedMailAlone', not X4D.Mail.Settings:Get('LeaveReturnedMailAlone')) 
+                X4D.Mail.Settings:Set("LeaveReturnedMailAlone", not X4D.Mail.Settings:Get("LeaveReturnedMailAlone")) 
             end,
         })
 
     table.insert(panelControls, {
-            type = 'checkbox',
-            name = 'Auto-Delete System Messages', 
-            tooltip = 'When enabled, System Messages are automatically deleted after all attachments are received, this includes messages from Crown Store, Guild Store and Hirelings. |cFFFFFFThis option does NOT apply to mail from Customer Support, nor mail from other users.', 
+            type = "checkbox",
+            name = "Auto-Delete System Messages", 
+            tooltip = "When enabled, System Messages are automatically deleted after all attachments are received, this includes messages from Crown Store, Guild Store and Hirelings. |cFFFFFFThis option does NOT apply to mail from Customer Support, nor mail from other users.", 
             getFunc = function() 
-                return X4D.Mail.Settings:Get('AutoDeleteMail')
+                return X4D.Mail.Settings:Get("AutoDeleteMail")
             end,
             setFunc = function()
-                X4D.Mail.Settings:Set('AutoDeleteMail', not X4D.Mail.Settings:Get('AutoDeleteMail')) 
+                X4D.Mail.Settings:Set("AutoDeleteMail", not X4D.Mail.Settings:Get("AutoDeleteMail")) 
             end,
         })
 
     table.insert(panelControls, {
-            type = 'checkbox',
-            name = 'Use AntiSpam Library', 
-            tooltip = 'When enabled, if an AntiSpam Library is detected it will be used to filter spam from your mailbox. Use with Auto-Delete option for spam removal.',
+            type = "checkbox",
+            name = "Use AntiSpam Library", 
+            tooltip = "When enabled, if an AntiSpam Library is detected it will be used to filter spam from your mailbox. Use with Auto-Delete option for spam removal.",
             getFunc = function() 
-                return X4D.Mail.Settings:Get('EnableAntiSpam')
+                return X4D.Mail.Settings:Get("EnableAntiSpam")
             end,
             setFunc = function()
-                X4D.Mail.Settings:Set('EnableAntiSpam', not X4D.Mail.Settings:Get('EnableAntiSpam')) 
+                X4D.Mail.Settings:Set("EnableAntiSpam", not X4D.Mail.Settings:Get("EnableAntiSpam")) 
             end,
         })
 
     LAM:RegisterOptionControls(
-        'X4D_MAIL_CPL',
+        "X4D_MAIL_CPL",
         panelControls
     )
 end
@@ -244,9 +244,9 @@ local function OnAddOnLoaded(event, addonName)
 	end	
 
 	X4D_Mail.Settings = X4D.Settings(
-		X4D_Mail.NAME .. '_SV',
+		X4D_Mail.NAME .. "_SV",
 		{
-            SettingsAre = 'Account-Wide',
+            SettingsAre = "Account-Wide",
 			AutoAcceptAttachments = true,
 			AutoDeleteMail = false,
 			EnableAntiSpam = false,
@@ -271,10 +271,10 @@ function MAIL_INBOX:RefreshMoneyControls()
     end
     if(mailData.attachedMoney > 0) then
         self.sentMoneyControl:SetHidden(false)
-        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.sentMoneyControl, "Currency"), CURRENCY_TYPE_MONEY, mailData.attachedMoney, MAIL_COD_ATTACHED_MONEY_OPTIONS)
+        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.sentMoneyControl, 'Currency'), CURRENCY_TYPE_MONEY, mailData.attachedMoney, MAIL_COD_ATTACHED_MONEY_OPTIONS)
     elseif(mailData.codAmount > 0) then
         self.codControl:SetHidden(false)
-        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.codControl, "Currency"), CURRENCY_TYPE_MONEY, mailData.codAmount, MAIL_COD_ATTACHED_MONEY_OPTIONS)
+        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.codControl, 'Currency'), CURRENCY_TYPE_MONEY, mailData.codAmount, MAIL_COD_ATTACHED_MONEY_OPTIONS)
     end
 end
 

@@ -1,36 +1,36 @@
-local X4D_Loot = LibStub:NewLibrary('X4D_Loot', 1008)
+local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1008)
 if (not X4D_Loot) then
 	return
 end
-local X4D = LibStub('X4D')
+local X4D = LibStub("X4D")
 X4D.Loot = X4D_Loot
 
-X4D_Loot.NAME = 'X4D_Loot'
-X4D_Loot.VERSION = '1.8'
+X4D_Loot.NAME = "X4D_Loot"
+X4D_Loot.VERSION = "1.8"
 
 X4D_Loot.Colors = {
-	Gold = '|cFFD700',
-	StackCount = '|cFFFFFF',
-	BagSpaceLow = '|cFFd00b',
-	BagSpaceFull = '|cAA0000',
-	Subtext = '|c5C5C5C',
+	Gold = "|cFFD700",
+	StackCount = "|cFFFFFF",
+	BagSpaceLow = "|cFFd00b",
+	BagSpaceFull = "|cAA0000",
+	Subtext = "|c5C5C5C",
 }
 
 X4D_Loot.MoneyUpdateReason = {
-	[0] = { 'Looted', 'Stored' },
-	[1] = { 'Earned', 'Spent' },
-	[2] = { 'Received', 'Sent' },
-	[4] = { 'Gained', 'Lost' },
-	[5] = { 'Earned', 'Spent' },
-	[19] = { 'Gained', 'Spent' },
-	[28] = { 'Gained', 'Spent' },
-	[29] = { 'Gained', 'Spent' },
-	[42] = { 'Withdrew', 'Deposited' },
-	[43] = { 'Withdrew', 'Deposited' },
+	[0] = { "Looted", "Stored" },
+	[1] = { "Earned", "Spent" },
+	[2] = { "Received", "Sent" },
+	[4] = { "Gained", "Lost" },
+	[5] = { "Earned", "Spent" },
+	[19] = { "Gained", "Spent" },
+	[28] = { "Gained", "Spent" },
+	[29] = { "Gained", "Spent" },
+	[42] = { "Withdrew", "Deposited" },
+	[43] = { "Withdrew", "Deposited" },
 }	
 
 local function GetMoneyReason(reasonId)
-	return X4D_Loot.MoneyUpdateReason[reasonId] or { 'Gained', 'Lost' }
+	return X4D_Loot.MoneyUpdateReason[reasonId] or { "Gained", "Lost" }
 end
 
 local function DefaultCallback(color, text)
@@ -56,10 +56,10 @@ end
 local function InvokeCallbackSafe(color, text)
 	local callback = X4D_Loot.Callback
 	if (color == nil) then
-		color = '|cFF0000'
+		color = "|cFF0000"
 	end
 	if (color:len() < 8) then
-		color = '|cFF0000'
+		color = "|cFF0000"
 	end
 	if (callback ~= nil) then	
 		callback(color, text)
@@ -67,7 +67,7 @@ local function InvokeCallbackSafe(color, text)
 end
 
 local function GetItemLinkInternal(bagId, slotId)
-	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS):gsub('(%[%l)', function (i) return i:upper() end):gsub('(%s%l)', function (i) return i:upper() end):gsub('%^[^%]]*', '')
+	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS):gsub("(%[%l)", function (i) return i:upper() end):gsub("(%s%l)", function (i) return i:upper() end):gsub("%^[^%]]*", "")
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
 	return itemLink, itemColor, itemQuality
 end
@@ -90,12 +90,12 @@ local function AddBagSlotInternal(bag, slotIndex)
 	local itemLink, itemColor = GetItemLinkInternal(bag.Id, slotIndex)	
 	local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotIndex)
 	if (iconFilename == nil or iconFilename:len() == 0) then
-		iconFilename = 'EsoUI/Art/Icons/icon_missing.dds'
+		iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 	end
 	local slot = {
 		Id = slotIndex,
 		ItemLink = itemLink,
-		ItemColor = itemColor or '|cFF0000',
+		ItemColor = itemColor or "|cFF0000",
 		ItemIcon = iconFilename,
 		ItemId = GetItemInstanceId(bag.Id, slotIndex) or 0,
 		Stack = stack,
@@ -110,7 +110,7 @@ local function AddBagInternal(bags, bagId)
 	local bagSlots = GetBagSize(bagId)
     local bagIcon = nil
 	if (bagIcon == nil or bagIcon:len() == 0) then
-		bagIcon = 'EsoUI/Art/Icons/icon_missing.dds' -- TODO: how to know which icon to use? also, choose better default icon for this case
+		bagIcon = "EsoUI/Art/Icons/icon_missing.dds" -- TODO: how to know which icon to use? also, choose better default icon for this case
 	end
 	local bag = {
 		Id = bagId,
@@ -142,7 +142,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 		if (bag.Id == 1) then
 			wasChangeDetected = true
 			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then
-				InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. slot.Stack)
+				InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack)
 			end
 		end
 	else	
@@ -162,21 +162,21 @@ local function UpdateBagSlotInternal(bag, slotId)
 				local itemLink, itemColor = GetItemLinkInternal(bag.Id, slotId)
 				local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotId)
 				if (iconFilename == nil or iconFilename:len() == 0) then
-					iconFilename = 'EsoUI/Art/Icons/icon_missing.dds'
+					iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 				end
 				slot.ItemLink = itemLink
 				slot.ItemColor = itemColor
 				slot.ItemIcon = iconFilename
 				if (bag.Id == 1) then
 					wasChangeDetected = true
-					InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. slot.Stack)
+					InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack)
 				end
 			end
 		elseif (itemId > 0) then
 			local stack, maxStack = GetSlotStackSize(bag.Id, slotId)
 			local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotId)
 			if (iconFilename == nil or iconFilename:len() == 0) then
-				iconFilename = 'EsoUI/Art/Icons/icon_missing.dds'
+				iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 			end
 			slot.ItemIcon = iconFilename
 			if (stack ~= slot.Stack) then
@@ -184,7 +184,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 				if (stackChange > 0) then
 					if (bag.Id == 1) then
 						wasChangeDetected = true
-						InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange)
+						InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange)
 					end
 				end
 				slot.Stack = stack
@@ -231,7 +231,7 @@ local function AddQuestStepConditionInternal(quest, step, conditionIndex)
 	local conditionText, current, max, isFailCondition, isComplete, isCreditShared = GetJournalQuestConditionInfo(quest.Id, step.Id, conditionIndex)
 	local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
 	if (iconFilename == nil or iconFilename:len() == 0) then
-		iconFilename = 'EsoUI/Art/Icons/icon_missing.dds'
+		iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 	end
 	if (itemName == nil or itemName:len() == 0) then
 		itemName = conditionText
@@ -239,8 +239,8 @@ local function AddQuestStepConditionInternal(quest, step, conditionIndex)
 	local condition = {
 		Id = conditionIndex,
 		ItemIcon = iconFilename,
-		ItemLink = '[' .. itemName .. ']', -- TODO: can we link to quest? implement custom link handler?
-		ItemColor = '|cFF6600', -- TODO: color by quest type?
+		ItemLink = "[" .. itemName .. "]", -- TODO: can we link to quest? implement custom link handler?
+		ItemColor = "|cFF6600", -- TODO: color by quest type?
 		Stack = stackCount,
 		Current = current,
 		Max = max,
@@ -270,7 +270,7 @@ end
 local function AddQuestToolInternal(quest, toolIndex)
 	local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
 	if (iconFilename == nil or iconFilename:len() == 0) then
-		iconFilename = 'EsoUI/Art/Icons/icon_missing.dds'
+		iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 	end
 	if (toolName == nil or toolName:len() == 0) then
 		toolName = quest.CurrentStepText
@@ -278,8 +278,8 @@ local function AddQuestToolInternal(quest, toolIndex)
 	local tool = {
 		Id = toolIndex,
 		ItemIcon = iconFilename,
-		ItemLink = '[' .. toolName .. ']', -- TODO: can we link to quest? implement custom link handler?
-		ItemColor = '|cFF6600', -- TODO: color by quest type?
+		ItemLink = "[" .. toolName .. "]", -- TODO: can we link to quest? implement custom link handler?
+		ItemColor = "|cFF6600", -- TODO: color by quest type?
 		Stack = stackCount,
 		Usable = isUsable,
 	}
@@ -331,19 +331,19 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 		condition = AddQuestStepConditionInternal(quest, step, conditionIndex)
 		wasChangeDetected = true
 		if (condition ~= nil and condition.Stack > 0) then
-			InvokeCallbackSafe(condition.ItemColor, X4D.Icons.Create(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. condition.Stack .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+			InvokeCallbackSafe(condition.ItemColor, X4D.Icons.Create(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. condition.Stack .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
 		end
 	else
 		local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
 		if (iconFilename == nil or iconFilename:len() == 0) then
-			iconFilename = 'EsoUI/Art/Icons/icon_missing.dds'
+			iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 		end
 		condition.ItemIcon = iconFilename
 		if (stackCount ~= condition.Stack) then
 			local stackChange = stackCount - condition.Stack
 			if (stackChange > 0) then
 				wasChangeDetected = true
-				InvokeCallbackSafe(condition.ItemColor, X4D.Icons.Create(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+				InvokeCallbackSafe(condition.ItemColor, X4D.Icons.Create(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
 			end
 			condition.Stack = stackCount
 		end
@@ -360,19 +360,19 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 		wasChangeDetected = true
 		if (tool ~= nil and tool.Stack > 0) then
 			wasChangeDetected = true
-			InvokeCallbackSafe(tool.ItemColor, X4D.Icons.Create(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. tool.Stack .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+			InvokeCallbackSafe(tool.ItemColor, X4D.Icons.Create(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. tool.Stack .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
 		end
 	else
 		local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
 		if (iconFilename == nil or iconFilename:len() == 0) then
-			iconFilename = 'EsoUI/Art/Icons/icon_missing.dds'
+			iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 		end
 		tool.ItemIcon = iconFilename
 		if (tool.Stack ~= stackCount) then
 			local stackChange = stackCount - tool.Stack
 			if (stackChange > 0) then
 				wasChangeDetected = true
-				InvokeCallbackSafe(tool.ItemColor, X4D.Icons.Create(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. ' x' .. stackChange .. X4D_Loot.Colors.Subtext .. ' (Quest Item)')
+				InvokeCallbackSafe(tool.ItemColor, X4D.Icons.Create(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
 			end
 			tool.Stack = stackCount
 		end
@@ -460,12 +460,12 @@ local function CheckInventorySpaceInternal()
 				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 20000
 				_wasLow = false
 				_wasFull = true
-				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceFull, 'Out of Bag Space')
+				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceFull, "Out of Bag Space")
 			end
 		else
 			if (_wasFull or _nextInventoryCheckTime <= GetGameTimeMilliseconds()) then
 				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 20000
-				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceLow, 'Low Bag Space')
+				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceLow, "Low Bag Space")
 				_wasLow = true
 				_wasFull = false
 			end
@@ -480,8 +480,8 @@ end
 function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, soundCategory, lootType, lootedBySelf)
     if (not lootedBySelf) then
         -- TODO: find a way to lookup item details without interrogating Bag API
-        if (X4D.Loot.Settings:Get('DisplayPartyLoot')) then
-		    InvokeCallbackSafe(slot.ItemColor, receivedBy .. ' received ' .. objectName .. X4D_Loot.Colors.StackCount .. ' x' .. stackCount)
+        if (X4D.Loot.Settings:Get("DisplayPartyLoot")) then
+		    InvokeCallbackSafe(slot.ItemColor, receivedBy .. " received " .. objectName .. X4D_Loot.Colors.StackCount .. " x" .. stackCount)
         end
     else
 	    if (lootType == LOOT_TYPE_ITEM) then
@@ -512,21 +512,21 @@ function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotId, isNewIte
 end
 
 local function formatnum(n)
-	local left, num, right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
-	return left .. (num:reverse():gsub('(%d%d%d)','%1,'):reverse()) .. right
+	local left, num, right = string.match(n,"^([^%d]*%d)(%d*)(.-)$")
+	return left .. (num:reverse():gsub("(%d%d%d)","%1,"):reverse()) .. right
 end
 
 function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
-    if (not X4D.Loot.Settings:Get('DisplayMoneyUpdates')) then
+    if (not X4D.Loot.Settings:Get("DisplayMoneyUpdates")) then
         return
     end
-	local icon = X4D.Icons.Create('EsoUI/Art/currency/currency_gold.dds')
+	local icon = X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
 	local reason = GetMoneyReason(reasonId)
 	local amount = newMoney - oldMoney
 	if (amount >= 0) then
-		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format('%s %s%s %s  (%s total)', reason[1], formatnum(amount), icon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
+		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s total)", reason[1], formatnum(amount), icon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
 	else
-		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format('%s %s%s %s  (%s remaining)', reason[2], formatnum(math.abs(amount)), icon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
+		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s remaining)", reason[2], formatnum(math.abs(amount)), icon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
 	end
 end
 
@@ -539,47 +539,47 @@ function X4D_Loot.OnQuestToolUpdated(journalIndex, questName)
 end
 
 local function InitializeSettingsUI()
-	local LAM = LibStub('LibAddonMenu-2.0')
-	local cplId = LAM:RegisterAddonPanel('X4D_LOOT_CPL', {
-        type = 'panel',
-        name = 'X4D |cFFAE19Loot',
+	local LAM = LibStub("LibAddonMenu-2.0")
+	local cplId = LAM:RegisterAddonPanel("X4D_LOOT_CPL", {
+        type = "panel",
+        name = "X4D |cFFAE19Loot",
     })
 
     local panelControls = { }
 
     table.insert(panelControls, {
-            type = 'checkbox',
-            name = 'Display Money Updates', 
-            tooltip = 'When enabled, money updates are displayed in the Chat Window.', 
+            type = "checkbox",
+            name = "Display Money Updates", 
+            tooltip = "When enabled, money updates are displayed in the Chat Window.", 
             getFunc = function() 
                 if (X4D.Bank ~= nil) then
-                    return X4D.Bank.Settings:Get('DisplayMoneyUpdates')
+                    return X4D.Bank.Settings:Get("DisplayMoneyUpdates")
                 else
-                    return X4D.Loot.Settings:Get('DisplayMoneyUpdates')
+                    return X4D.Loot.Settings:Get("DisplayMoneyUpdates")
                 end
             end,
             setFunc = function()
-                X4D.Loot.Settings:Set('DisplayMoneyUpdates', not X4D.Loot.Settings:Get('DisplayMoneyUpdates')) 
+                X4D.Loot.Settings:Set("DisplayMoneyUpdates", not X4D.Loot.Settings:Get("DisplayMoneyUpdates")) 
                 if (X4D.Bank ~= nil) then
-                    X4D.Bank.Settings:Set('DisplayMoneyUpdates', X4D.Loot.Settings:Get('DisplayMoneyUpdates')) 
+                    X4D.Bank.Settings:Set("DisplayMoneyUpdates", X4D.Loot.Settings:Get("DisplayMoneyUpdates")) 
                 end
             end,
         })
 
     table.insert(panelControls, {
-            type = 'checkbox',
-            name = '[BETA] Display Party Loot', 
-            tooltip = 'When enabled, loot received by others is displayed in the Chat Window.', 
+            type = "checkbox",
+            name = "[BETA] Display Party Loot", 
+            tooltip = "When enabled, loot received by others is displayed in the Chat Window.", 
             getFunc = function() 
-                return X4D.Loot.Settings:Get('DisplayPartyLoot')
+                return X4D.Loot.Settings:Get("DisplayPartyLoot")
             end,
             setFunc = function()
-                X4D.Loot.Settings:Set('DisplayPartyLoot', not X4D.Loot.Settings:Get('DisplayPartyLoot'))
+                X4D.Loot.Settings:Set("DisplayPartyLoot", not X4D.Loot.Settings:Get("DisplayPartyLoot"))
             end,
         })
 
     LAM:RegisterOptionControls(
-        'X4D_LOOT_CPL',
+        "X4D_LOOT_CPL",
         panelControls
     )
 end
@@ -591,9 +591,9 @@ function X4D_Loot.OnAddOnLoaded(event, addonName)
 	end	
 
 	X4D_Loot.Settings = X4D.Settings(
-		X4D_Loot.NAME .. '_SV',
+		X4D_Loot.NAME .. "_SV",
 		{
-            SettingsAre = 'Account-Wide',
+            SettingsAre = "Account-Wide",
             DisplayMoneyUpdates = true,
 			DisplayPartyLoot = false,
 		})

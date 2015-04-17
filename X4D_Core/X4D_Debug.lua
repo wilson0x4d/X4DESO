@@ -1,8 +1,8 @@
-local X4D_Debug = LibStub:NewLibrary('X4D_Debug', 1001)
+local X4D_Debug = LibStub:NewLibrary("X4D_Debug", 1001)
 if (not X4D_Debug) then
 	return
 end
-local X4D = LibStub('X4D')
+local X4D = LibStub("X4D")
 X4D.Debug = X4D_Debug
 
 X4D_Debug.TRACE_LEVELS = {
@@ -27,19 +27,19 @@ local TRACE_COLORS = {
 }
 
 local TRACE_FORMATS = {
-	[X4D_Debug.TRACE_LEVELS.VERBOSE] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. '] (%s) %s',	
-	[X4D_Debug.TRACE_LEVELS.INFORMATION] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. '] (%s) %s',	
-	[X4D_Debug.TRACE_LEVELS.WARNING] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. '] (%s) %s',	
-	[X4D_Debug.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. '] (%s) %s',	
-	[X4D_Debug.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. '] (%s) %s',	
+	[X4D_Debug.TRACE_LEVELS.VERBOSE] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. "] (%s) %s",	
+	[X4D_Debug.TRACE_LEVELS.INFORMATION] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. "] (%s) %s",	
+	[X4D_Debug.TRACE_LEVELS.WARNING] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. "] (%s) %s",	
+	[X4D_Debug.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. "] (%s) %s",	
+	[X4D_Debug.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. "] (%s) %s",	
 }
 
 local TRACE_FORMATS_NOSOURCE = {
-	[X4D_Debug.TRACE_LEVELS.VERBOSE] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. '] %s',	
-	[X4D_Debug.TRACE_LEVELS.INFORMATION] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. '] %s',	
-	[X4D_Debug.TRACE_LEVELS.WARNING] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. '] %s',	
-	[X4D_Debug.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. '] %s',	
-	[X4D_Debug.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. '[' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL+100] .. '%s' .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. '] %s',	
+	[X4D_Debug.TRACE_LEVELS.VERBOSE] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.VERBOSE] .. "] %s",	
+	[X4D_Debug.TRACE_LEVELS.INFORMATION] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.INFORMATION] .. "] %s",	
+	[X4D_Debug.TRACE_LEVELS.WARNING] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.WARNING] .. "] %s",	
+	[X4D_Debug.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.ERROR] .. "] %s",	
+	[X4D_Debug.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. "] %s",	
 }
 
 local _minTraceLevel = X4D_Debug.TRACE_LEVELS.WARNING
@@ -76,28 +76,28 @@ local function TableToString(table, recurse)
 			return tostring(table)
 		end
 	end
-	local str = ''
+	local str = ""
 	for k,v in pairs(table) do
 		if (str:len() > 0) then
-			str = str .. ', '
+			str = str .. ", "
 		end
-		if (type(k) == 'table') then
+		if (type(k) == "table") then
 			k = TableToString(k, recurse)
-		elseif (type(k) == 'string') then
-			k = '"' .. k .. '"'
+		elseif (type(k) == "string") then
+			k = "'" .. k .. "'"
 		else
-			k = tostring(k or 'nil')
+			k = tostring(k or "nil")
 		end
-		if (type(v) == 'table') then
+		if (type(v) == "table") then
 			v = TableToString(v, recurse)
-		elseif (type(v) == 'string') then
-			v = '"' .. v .. '"'
+		elseif (type(v) == "string") then
+			v = "'" .. v .. "'"
 		else
-			v = tostring(v or 'nil')
+			v = tostring(v or "nil")
 		end
-		str = str .. '[' .. k .. ']' .. '=' .. v
+		str = str .. "[" .. k .. "]" .. "=" .. v
 	end
-	return '{ ' .. str .. ' }'
+	return "{ " .. str .. " }"
 end
 
 function X4D_Debug:LogTable(source, level, table)
@@ -113,14 +113,14 @@ function X4D_Debug:Log(source, level, ...)
 	if (level < _minTraceLevel) then
 		return
 	end
-    for i = 1, select("#", ...) do
+    for i = 1, select('#', ...) do
         local message = select(i, ...)
         if (message ~= nil) then
-	        if(type(message) == 'table') then
+	        if(type(message) == "table") then
 	            self:LogTable(source, level, message)
 	        else
-				if (type(message) ~= 'string') then
-					pcall(function() message = tostring(message or '') end)
+				if (type(message) ~= "string") then
+					pcall(function() message = tostring(message or "") end)
 				end
 	            self:LogString(source, level, message)
 	        end
@@ -157,12 +157,12 @@ Example Usage:
 
 X4D.Debug:SetTraceLevel(X4D_DEBUG.TRACE_LEVELS.VERBOSE)
 
-X4D.Debug:Log('MyAddon', X4D_DEBUG.TRACE_LEVELS.INFO, 'This is a test.')
+X4D.Debug:Log("MyAddon", X4D_DEBUG.TRACE_LEVELS.INFO, "This is a test.")
 
-X4D.Debug:Verbose('This is a test.', 'MyAddon')
-X4D.Debug:Info('This is a test.', 'MyAddon')
-X4D.Debug:Warn('This is a test.', 'MyAddon')
-X4D.Debug:Error('This is a test.', 'MyAddon')
-X4D.Debug:Critical('This is a test.', 'MyAddon')
+X4D.Debug:Verbose("This is a test.", "MyAddon")
+X4D.Debug:Info("This is a test.", "MyAddon")
+X4D.Debug:Warn("This is a test.", "MyAddon")
+X4D.Debug:Error("This is a test.", "MyAddon")
+X4D.Debug:Critical("This is a test.", "MyAddon")
 
 ]]
