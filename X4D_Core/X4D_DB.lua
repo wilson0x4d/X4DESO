@@ -30,14 +30,13 @@ function X4D_DB:Open(database)
 	local proto = {
 		_table = database
 	}
-	setmetatable(proto, self)
-	self.__index = self
+	setmetatable(proto, { __index = self })
 	return proto
 end
 
 function X4D_DB:Where(predicate)
     local results = {}
-    for _,entity in self._table do
+    for key,entity in pairs(self._table) do
         -- TODO: pcall
         if (predicate(entity)) then
             table.insert(results, _, entity)
@@ -48,7 +47,7 @@ end
 
 function X4D_DB:Select(builder)
     local results = X4D_DB:Create()
-    for key,entity in self._table do
+    for key,entity in pairs(self._table) do
         -- TODO: pcall
         results:Add(builder(key, entity))
     end
@@ -56,7 +55,7 @@ function X4D_DB:Select(builder)
 end
 
 function X4D_DB:FirstOrDefault(predicate)
-    for _,entity in self._table do
+    for _,entity in pairs(self._table) do
         if ((predicate == nil) or predicate(entity)) then
             return entity
         end
@@ -65,13 +64,13 @@ function X4D_DB:FirstOrDefault(predicate)
 end
 
 function X4D_DB:ForEach(visitor)
-    for _,entity in self._table do
+    for _,entity in pairs(self._table) do
         visitor(entity)
     end
 end
 
 function X4D_DB:Add(key, value)
-    -- if single arg, assume "key" contains the value, and attempt to resolve the storage key using common conventions
+    -- if single arg, assume "key" contains the value (not a key): attempt to resolve the key using conventions
     if (value == nil) then
         value = key
         key = value.Id or value.Key or value.id or value.key or value.ID
