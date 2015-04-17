@@ -16,9 +16,9 @@ function X4D_DB:Open(database)
     end
     if (type(database) ~= 'table') then
         if (_databases == nil) then
-            local sv = X4D_Options:Create('X4D_CORE_SV')
+            local sv = X4D.Options:Create('X4D_CORE_SV')
             if (sv.Saved.X4DB == nil) then
-                sv.Saved.X4DB = {}
+                sv.Saved['X4DB'] = {}
             end
             _databases = sv.Saved.X4DB
         end
@@ -71,21 +71,12 @@ function X4D_DB:ForEach(visitor)
 end
 
 function X4D_DB:Add(key, value)
-    -- if single arg, assume key == value and attempt to resolve key via conventions
+    -- if single arg, assume 'key' contains the value, and attempt to resolve the storage key using common conventions
     if (value == nil) then
         value = key
-        key = value.id
-        if (key == nil) then
-            key = value.Id
-            if (key == nil) then
-                key = value.id
-                if (key == nil) then
-                    -- NOTE: error conventional members not found - call will throw error
-                end
-            end
-        end
+        key = value.Id or value.Key or value.id or value.key or value.ID
     end
-    self._table[key] = value;
+    self._table[key] = value
 end
 
 function X4D_DB:Remove(key)
