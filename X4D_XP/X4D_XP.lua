@@ -14,6 +14,12 @@ X4D_XP.Settings.Defaults = {
 	None = 'true',
 }
 
+local _pointType = 'XP'
+local _currentExp = 0
+local _currentVP = 0
+local _playerIsVeteran = false
+
+
 local _expReasons = { }
 _expReasons[PROGRESS_REASON_NONE] = '???' -- TODO: what is this, exactly?
 _expReasons[PROGRESS_REASON_KILL] = 'Kill'
@@ -23,7 +29,7 @@ _expReasons[PROGRESS_REASON_KILL] = 'Kill'
 _expReasons[PROGRESS_REASON_COMMAND] = 'Command'
 _expReasons[PROGRESS_REASON_KEEP_REWARD] = 'Keep'
 _expReasons[PROGRESS_REASON_BATTLEGROUND] = 'Battleground'
-_expReasons[PROGRESS_REASON_SCRIPTED_EVENT] = 'Narrative'
+_expReasons[PROGRESS_REASON_SCRIPTED_EVENT] = 'Event'
 _expReasons[PROGRESS_REASON_EVENT] = 'Event'
 _expReasons[PROGRESS_REASON_DARK_ANCHOR_CLOSED] = 'Anchor'
 _expReasons[PROGRESS_REASON_DARK_FISSURE_CLOSED] = 'Fissure'
@@ -50,7 +56,7 @@ _expReasons[PROGRESS_REASON_BOSS_KILL] = 'Boss'
 _expReasons[PROGRESS_REASON_OTHER] = 'Other'
 _expReasons[PROGRESS_REASON_GRANT_REPUTATION] = 'Reputation Granted'
 _expReasons[PROGRESS_REASON_ALLIANCE_POINTS] = 'Alliance Points'
-_expReasons[PROGRESS_REASON_PVP_EMPEROR] = 'PVP Emperor'
+_expReasons[PROGRESS_REASON_PVP_EMPEROR] = 'Emperor'
 _expReasons[PROGRESS_REASON_DUNGEON_CHALLENGE] = 'Dungeon Challenge'
 
 local function GetExpReason(reasonIndex)
@@ -91,16 +97,16 @@ local function InvokeCallbackSafe(color, text)
 	end
 end
 
-local _pointType = 'XP'
-
 local function OnQuestCompleteExperience(eventCode, questName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)	
     local xpGained = currentExperience - previousExperience
 	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. X4D.Colors.X4D .. questName)
+    _currentExp = _currentExp + xpGained
 end
 
 local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience
 	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for Discovery ' .. X4D.Colors.X4D .. areaName)
+    _currentExp = _currentExp + xpGained
 end
 
 local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
@@ -111,10 +117,9 @@ local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previ
 	else
 		InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for POI ')
 	end
+    _currentExp = _currentExp + xpGained
 end
 
-local _currentExp = 0
-local _currentVP = 0
 
 local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reasonIndex)    
 	if (unitTag ~= 'player') then
@@ -127,7 +132,7 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
 			InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for ' .. reason)
 		end
 	end
-	_currentExp = currentExp
+	_currentExp = _currentExp + xpGained
 end
 
 function X4D_XP.OnAddOnLoaded(event, addonName)
@@ -151,8 +156,8 @@ end
 
 function X4D_XP.OnPlayerActivated()
 	_currentExp = GetUnitXP('player')
-	if (IsUnitVeteran('player')) then
-		_currentVP = GetUnitVeteranPoints('player')
+    _playerIsVeteran = IsUnitVeteran('player')
+	if (_playerIsVeteran) then        
 		_pointType = 'VP'
 	else
 		_pointType = 'XP'
