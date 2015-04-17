@@ -11,7 +11,7 @@ local _oneTimeVersionReport = false
 EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
     function(event, name)
         if (name == 'X4D_Core') then
-            X4D.Options:Create(
+            X4D.Options(
                 'X4D_CORE_SV',
                 {
                     SettingsAre = 'Account-Wide',
@@ -56,7 +56,7 @@ event handler and also be easily extended/modified by multiple Add-Ons.
 
 ]]
 
-X4D.Test = function()
+function X4D:Test()
     d('Begin Test of X4D Framework..')
 
     X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.VERBOSE)
@@ -92,7 +92,7 @@ X4D.Test = function()
 
     -- SavedVars API
     -- DB API (indirectly also verifies 'Options API')
-    local nonPersistentDb = X4D.DB:Create()
+    local nonPersistentDb = X4D.DB()
     nonPersistentDb:Add({
         Id = ITEMTYPE_NONE,
         Canonical = 'ITEMTYPE_NONE',
@@ -119,7 +119,7 @@ X4D.Test = function()
     })
 
     -- NOTE: to verify, /reloadui or quit game and check file on disk
-    local persistentDb = X4D.DB:Open('.x4d')
+    local persistentDb = X4D.DB('.x4d')
     persistentDb:Add({
         Key = 'X4D_TEST_RESULT',
         Value = 'SUCCESS',
@@ -128,4 +128,6 @@ X4D.Test = function()
     -- Items API
     -- Guilds API
     -- Players API
+
+    return self
 end

@@ -709,7 +709,7 @@ local function OnAddOnLoaded(eventCode, addonName)
         return
     end
 
-    X4D_Bank.Options = X4D.Options:Create(
+    X4D_Bank.Options = X4D.Options(
         X4D_Bank.NAME .. '_SV',
         {
             SettingsAre = 'Account-Wide',

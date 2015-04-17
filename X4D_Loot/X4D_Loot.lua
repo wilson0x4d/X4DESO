@@ -590,7 +590,7 @@ function X4D_Loot.OnAddOnLoaded(event, addonName)
 		return
 	end	
 
-	X4D_Loot.Options = X4D.Options:Create(
+	X4D_Loot.Options = X4D.Options(
 		X4D_Loot.NAME .. '_SV',
 		{
             SettingsAre = 'Account-Wide',

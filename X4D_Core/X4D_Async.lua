@@ -22,8 +22,7 @@ function X4D_Timer:New(callback, interval, state)
 		_interval = interval or 1000,
 		_state = state or {},
 	}
-	setmetatable(proto, self)
-	self.__index = self
+	setmetatable(proto, { __index = self })
 	return proto
 end
 

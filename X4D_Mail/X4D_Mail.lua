@@ -83,6 +83,7 @@ function X4D_Mail:HandleMailAttachments(mailId)
 							local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
 							local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
 							InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. X4D.Icons.Create(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName)
+
 						end
 						TakeMailAttachedItems(mailId)
 					else
@@ -242,7 +243,7 @@ local function OnAddOnLoaded(event, addonName)
 		return
 	end	
 
-	X4D_Mail.Options = X4D.Options:Create(
+	X4D_Mail.Options = X4D.Options(
 		X4D_Mail.NAME .. '_SV',
 		{
             SettingsAre = 'Account-Wide',
@@ -265,15 +266,16 @@ function MAIL_INBOX:RefreshMoneyControls()
     local mailData = self:GetMailData(self.mailId)
     self.sentMoneyControl:SetHidden(true)
     self.codControl:SetHidden(true)
-    if (mailData ~= nil) then
-	    if(mailData.attachedMoney > 0) then
-	        self.sentMoneyControl:SetHidden(false)
-	        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.sentMoneyControl, "Currency"), CURRENCY_TYPE_MONEY, mailData.attachedMoney, MAIL_COD_ATTACHED_MONEY_OPTIONS)
-	    elseif(mailData.codAmount > 0) then
-	        self.codControl:SetHidden(false)
-	        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.codControl, "Currency"), CURRENCY_TYPE_MONEY, mailData.codAmount, MAIL_COD_ATTACHED_MONEY_OPTIONS)
-	    end
-	end
+    if (mailData == nil) then
+        return
+    end
+    if(mailData.attachedMoney > 0) then
+        self.sentMoneyControl:SetHidden(false)
+        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.sentMoneyControl, "Currency"), CURRENCY_TYPE_MONEY, mailData.attachedMoney, MAIL_COD_ATTACHED_MONEY_OPTIONS)
+    elseif(mailData.codAmount > 0) then
+        self.codControl:SetHidden(false)
+        ZO_CurrencyControl_SetSimpleCurrency(GetControl(self.codControl, "Currency"), CURRENCY_TYPE_MONEY, mailData.codAmount, MAIL_COD_ATTACHED_MONEY_OPTIONS)
+    end
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Mail.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)

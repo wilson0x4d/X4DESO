@@ -41,22 +41,24 @@ function X4D_Options:SetOption(name, value)
 	scoped[name] = value
 end
 
-function X4D_Options:Create(savedVarsName, defaults, version)
+function X4D_Options:Create(savedVarsName, defaults, versions)
     if (version == nil) then
         version = 1 -- changing this causes settings to wipe
     end	
     if (defaults == nil) then
         defaults = {}
     end
+    local saved = ZO_SavedVars:NewAccountWide(savedVarsName, version, nil, {})
     local proto = {
-		Saved = ZO_SavedVars:NewAccountWide(savedVarsName, version, nil, {}),
+		Saved = saved,
 		Default = defaults,
 	}
 
-    -- TODO: if Saved is missing members contained in Default, perform merge of missing members (e.g. apply new defaults)
-    -- TODO: if members of 'Default' are assigned the value of 'retired-variable' and it exists in 'Saved', then is is removed from 'Saved'
+    -- TODO: if 'Saved' is missing members that are present in 'Default', perform merge of missing members (e.g. apply missing defaults)
+    -- TODO: if members of 'Default' are assigned the value of 'retired-variable' and it exists in 'Saved', then is to be removed from 'Saved'
 
-	setmetatable(proto, self)
-	self.__index = self
+	setmetatable(proto, { __index = self })--{ __index = self })
 	return proto
 end
+
+setmetatable(X4D_Options, { __call = X4D_Options.Create })
