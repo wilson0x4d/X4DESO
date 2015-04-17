@@ -20,7 +20,8 @@ X4D_Async.lua
 
 X4D_Options.lua
 
+#X4D_DB.lua
+
 X4D_Items.lua
 X4D_Guilds.lua
 X4D_Players.lua
-
