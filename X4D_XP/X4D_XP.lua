@@ -99,7 +99,7 @@ local function OnQuestCompleteExperience(eventCode, questName, level, previousEx
 end
 
 local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
-    local xpGained = currentExperience - previousExperience;
+    local xpGained = currentExperience - previousExperience
 	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. ' ' .. _pointType .. ' for Discovery ' .. X4D.Colors.X4D .. areaName)
 end
 

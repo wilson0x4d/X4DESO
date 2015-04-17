@@ -64,10 +64,10 @@ end
 
 function X4D_Mail:HandleMailAttachments(mailId)
 	if (not X4D_Mail:IsMailReadable(mailId)) then
-		X4D.Debug:Error({ 'HandleMailAttachments', '!IsMailReadable', mailId }, 'X4D Mail');
+		X4D.Debug:Error({ 'HandleMailAttachments', '!IsMailReadable', mailId }, 'X4D Mail')
 		return
 	end
-	local mail = _readableMail[mailId];
+	local mail = _readableMail[mailId]
 	if (mail.IsReturnedMail and X4D_Mail.Options:GetOption('LeaveReturnedMailAlone')) then
 		return
 	end
@@ -82,12 +82,12 @@ function X4D_Mail:HandleMailAttachments(mailId)
 							local itemIcon, stackCount, creatorName = GetAttachedItemInfo(mailId, attachmentIndex)
 							local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
 							local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
-							InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. X4D.Icons.Create(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName);
+							InvokeEmitCallbackSafe(itemColor, 'Accepted ' .. X4D.Icons.Create(itemIcon) .. itemLink .. ' x' .. stackCount .. ' from ' .. mail.SenderDisplayName)
 						end
 						TakeMailAttachedItems(mailId)
 					else
 						shouldDelete = false
-						InvokeEmitCallbackSafe('|cFFFFFF', 'Could not accept Attachments from ' .. mail.SenderDisplayName .. ', not enough bag space.');
+						InvokeEmitCallbackSafe('|cFFFFFF', 'Could not accept Attachments from ' .. mail.SenderDisplayName .. ', not enough bag space.')
 					end
 				end
 				if (mail.AttachedMoney > 0) then
@@ -108,10 +108,10 @@ end
 
 function X4D_Mail:HandleSpam(mailId)
 	if (not X4D_Mail:IsMailReadable(mailId)) then
-		X4D.Debug:Error({ 'HandleSpam', '!IsMailReadable', mailId }, 'X4D Mail');
+		X4D.Debug:Error({ 'HandleSpam', '!IsMailReadable', mailId }, 'X4D Mail')
 		return
 	end
-	local mail = _readableMail[mailId];
+	local mail = _readableMail[mailId]
 	if (X4D_Mail.Options:GetOption('EnableAntiSpam')) then
 		if (not (mail.IsCustomerService or mail.IsFromSystem)) then
 			if (X4D.AntiSpam ~= nil) then
@@ -210,7 +210,7 @@ local function InitializeOptionsUI()
     table.insert(panelOptions, {
             type = 'checkbox',
             name = 'Auto-Delete System Messages', 
-            tooltip = 'When enabled, System Messages is automatically deleted after all attachments are received. |cFFFFFFThis option does NOT apply to mail from Customer Support.', 
+            tooltip = 'When enabled, System Messages are automatically deleted after all attachments are received, this includes messages from Crown Store, Guild Store and Hirelings. |cFFFFFFThis option does NOT apply to mail from Customer Support, nor mail from other users.', 
             getFunc = function() 
                 return X4D.Mail.Options:GetOption('AutoDeleteMail')
             end,
@@ -247,7 +247,7 @@ local function OnAddOnLoaded(event, addonName)
 		{
             SettingsAre = 'Account-Wide',
 			AutoAcceptAttachments = true,
-			AutoDeleteMail = true,
+			AutoDeleteMail = false,
 			EnableAntiSpam = false,
 			LeaveReturnedMailAlone = true,
 		})

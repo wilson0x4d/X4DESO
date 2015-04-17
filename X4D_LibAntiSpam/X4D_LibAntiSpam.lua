@@ -695,7 +695,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
                 getFunc = function() return GetOption('ShowNormalizations') end,
                 setFunc = function() SetOption('ShowNormalizations', not GetOption('ShowNormalizations')) end,
             },
-        });
+        })
 
 	X4D_LibAntiSpam.Register()
 end

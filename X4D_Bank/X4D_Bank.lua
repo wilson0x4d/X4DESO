@@ -344,9 +344,9 @@ local function FindTargetSlots(sourceSlot, targetBag)
             table.insert(empties, slot)
         elseif ((sourceSlot.Id ~= slot.Id) and(sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.ItemName == slot.ItemName) and(slot.StackCount < slot.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
             table.insert(partials, slot)
-            remaining = slot.StackMax - slot.StackCount;
+            remaining = slot.StackMax - slot.StackCount
             if (remaining <= 0) then
-                break;
+                break
             end
         end
     end

@@ -4,8 +4,9 @@ X4D Mail is LibStub-compatible Add-On that provides minor Mail enhancements.
 
 ## Features
 
-- Auto-Accept Mail Attachments
-- Integrated into **X4D LibAntiSpam** to Auto-Delete Gold Spammer Mail.
+* Auto-Accept Attachments from Mail
+* Auto-Delete 'System Generated' Mail after all attachments have been accepted, after all attachments are received, this includes message from Crown Store, Guild Store and Hirelings. (Does NOT affect messages from Customer Support, nor other users!)
+* Integrated into **X4D LibAntiSpam** to Auto-Delete Gold Seller Mail. (Disabled by default.)
 
 ## Installation
 

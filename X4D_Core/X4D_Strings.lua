@@ -1,5 +1,5 @@
 function string:Split(delimiter)
-    local input = '' .. self;
+    local input = '' .. self
     local result = {}
     for match in (input..delimiter):gmatch("(.-)"..delimiter) do
 		local s = tostring(match)
@@ -15,6 +15,6 @@ function string:StartsWith(v)
 end
 
 function string:EndsWith(v)
-    local input = '' .. self;
+    local input = '' .. self
     return v=='' or string.sub(input,-string.len(v))==v
 end
