@@ -1,6 +1,6 @@
  **X4D Bank** is licensed under the **MS-RL (Microsoft Reciprocal License)**, a copy of this license appears below.
 
-**Copyright Shaun Wilson, all rights reserved.**
+**Copyright © Shaun Wilson, all rights reserved.**
 
 # Reciprocal License (Ms-RL)
 

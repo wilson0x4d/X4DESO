@@ -13,9 +13,10 @@ function X4D_Settings:Get(name)
         return self.Saved.SettingsAre or self.Default.SettingsAre or "Account-Wide"
     else
 	    local scope = self.Saved.SettingsAre or "Account-Wide"
-	    if (scope ~= 'Account-Wide') then
-            scope = base58(sha1(GetUnitName("player")):FromHex())
+	    if (scope ~= "Account-Wide") then
+            scope = GetUnitName("player")
 	    end
+        scope = "$" .. base58(sha1(scope):FromHex())
 	    local scoped = self.Saved[scope]
 	    if (scoped == nil) then
 		    return self.Default[name]
@@ -34,9 +35,9 @@ function X4D_Settings:Set(name, value)
     else
 	    local scope = self.Saved.SettingsAre or self.Default.SettingsAre or "Account-Wide"
 	    if (scope ~= "Account-Wide") then
-            scope = base58(sha1(GetUnitName("player")):FromHex())
+            scope = GetUnitName("player")
 	    end
-        scope = "$" .. base58(sha1(GetUnitName("player")):FromHex())
+        scope = "$" .. base58(sha1(scope):FromHex())
 	    local scoped = self.Saved[scope]
 	    if (scoped == nil) then
 		    scoped = {}
