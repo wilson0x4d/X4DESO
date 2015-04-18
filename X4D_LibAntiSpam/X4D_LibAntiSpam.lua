@@ -280,8 +280,8 @@ local function CheckPatterns(player, normalized, patterns)
 		if (normalized:find(patterns[i])) then
 			player.Time = GetGameTimeMilliseconds()
 			if (not player.IsSpam) then
-				player.IsSpam = true
-				player.SpamMessage = normalized
+				player.IsSpam = true                
+				--OOM: player.SpamMessage = normalized
 				player.SpamPattern = patterns[i]
 			end
 		end
