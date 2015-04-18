@@ -719,8 +719,9 @@ local function OnAddOnLoaded(eventCode, addonName)
         })
 
     InitializeSettingsUI()
+
     EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_OPEN_BANK, OnOpenBank)
-    if (LibStub("X4D_Loot") == nil) then
+    if (X4D.Loot == nil) then
         EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_MONEY_UPDATE, OnMoneyUpdate)
     end
 end

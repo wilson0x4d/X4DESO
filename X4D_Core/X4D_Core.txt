@@ -8,6 +8,7 @@
 
 lib/LibStub/LibStub.lua
 lib/kikito/sha1.lua
+lib/badgerman/BigNum.lua
 
 X4D_Core.lua
 

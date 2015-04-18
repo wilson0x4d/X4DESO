@@ -21,7 +21,7 @@ X4D_LibAntiSpam.Settings.Default = {
 local function GetSetting(name)
 	local scope = "Account-Wide"
 	if (X4D_LibAntiSpam.Settings.Saved.SettingsAre and X4D_LibAntiSpam.Settings.Saved.SettingsAre ~= "Account-Wide") then
-		scope = GetUnitName('player')
+		scope = GetUnitName("player")
 	end
 	local scoped = X4D_LibAntiSpam.Settings.Saved[scope]
 	if (scoped == nil) then
@@ -37,7 +37,7 @@ end
 local function SetSetting(name, value)
 	local scope = "Account-Wide"
 	if (X4D_LibAntiSpam.Settings.Saved.SettingsAre and X4D_LibAntiSpam.Settings.Saved.SettingsAre ~= "Account-Wide") then
-		scope = GetUnitName('player')
+		scope = GetUnitName("player")
 	end
 	local scoped = X4D_LibAntiSpam.Settings.Saved[scope]
 	if (scoped == nil) then
