@@ -61,7 +61,8 @@ end
 
 function BigNum.new( num ) --{{{2
    local bignum = {
-      isBigNum = true
+      isBigNum = true,
+      len = 0
    }
    setmetatable( bignum , BigNum.mt ) ;
    BigNum.change( bignum , num ) ;
@@ -477,6 +478,14 @@ function BigNum.div( bnum1 , bnum2 , bnum3 , bnum4 )
    local temp2 = BigNum.new() ;
    local one = BigNum.new( "1" ) ;
    local zero = BigNum.new( "0" ) ;
+
+   if not _isBigNum(bnum1) then
+        bnum1 = BigNum.new(bnum1)
+   end
+   if not _isBigNum(bnum2) then
+        bnum2 = BigNum.new(bnum2)
+   end
+
    --Check division by zero
    if BigNum.compareAbs( bnum2 , zero ) == 0 then
       error( "Function BigNum.div: Division by zero" ) ;
@@ -732,7 +741,14 @@ end
 function BigNum.compareAbs( bnum1 , bnum2 )
    if bnum1 == nil or bnum2 == nil then
       error("Function compare: parameter nil") ;
-   elseif bnum1.len > bnum2.len then
+   end
+   if not _isBigNum(bnum1) then
+      bnum1 = BigNum.new(bnum1)
+   end
+   if not _isBigNum(bnum2) then
+      bnum2 = BigNum.new(bnum2)
+   end
+   if bnum1.len > bnum2.len then
       return 1 ;
    elseif bnum1.len < bnum2.len then
       return 2 ;
