@@ -1,4 +1,4 @@
-local sha1 = {
+sha1 = {
   _VERSION     = "sha.lua 0.5.0",
   _URL         = "https://github.com/kikito/sha1.lua",
   _DESCRIPTION = [[
