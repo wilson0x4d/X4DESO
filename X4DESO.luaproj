@@ -34,6 +34,7 @@
     <Folder Include="X4D_Core\lib\" />
     <Folder Include="X4D_Core\lib\LibStub\" />
     <Folder Include="X4D_Core\lib\kikito\" />
+    <Folder Include="X4D_Core\lib\badgerman\" />
     <Folder Include="X4D_LibAntiSpam\" />
     <Folder Include="X4D_LibAntiSpam\lib\" />
     <Folder Include="X4D_LibAntiSpam\lib\LibStub\" />
@@ -53,6 +54,7 @@
     <Compile Include="X4D_Bank\X4D_Bank.lua" />
     <Compile Include="X4D_Chat\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Chat\X4D_Chat.lua" />
+    <Compile Include="X4D_Core\lib\badgerman\BigNum.lua" />
     <Compile Include="X4D_Core\lib\kikito\sha1.lua" />
     <Compile Include="X4D_Core\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Core\X4D_Async.lua" />
