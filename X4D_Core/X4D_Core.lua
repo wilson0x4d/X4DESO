@@ -136,3 +136,9 @@ function X4D:Test()
 
     return self
 end
+
+EVENT_MANAGER:RegisterForEvent("X4D_Core_OOM", EVENT_LUA_LOW_MEMORY, function()
+    -- log to chat, including how much memory is in use
+    local message = GetString(SI_LUA_LOW_MEMORY) .. X4D.Colors.Subtext .. " (" .. (math.ceil(collectgarbage("count") / 1024)) .. "MB used)"
+    X4D.Debug:Warning(message)
+end)
