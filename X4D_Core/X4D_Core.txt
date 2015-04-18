@@ -7,6 +7,7 @@
 ## DependsOn: LibAddonMenu-2.0
 
 lib/LibStub/LibStub.lua
+lib/kikito/sha1.lua
 
 X4D_Core.lua
 

@@ -68,6 +68,7 @@ Including X4D_Core along with your add-on is **NOT** recommended, but it is poss
 ## OptionalDependsOn: X4D_Core
 lib/LibStub/LibStub.lua
 lib/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
+lib/kikito/sha1.lua
 lib/X4D_Core.lua
 lib/X4D_Strings.lua
 lib/X4D_Convert.lua
