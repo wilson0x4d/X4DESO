@@ -52,8 +52,17 @@ BigNum.mt = {} ;
 --
 --  %%%%%%%% --
 
+local function _isBigNum( num )
+    if (type( num ) == "table") and (num.isBigNum ~= nil) then
+        return true
+    end
+    return false
+end
+
 function BigNum.new( num ) --{{{2
-   local bignum = {} ;
+   local bignum = {
+      isBigNum = true
+   }
    setmetatable( bignum , BigNum.mt ) ;
    BigNum.change( bignum , num ) ;
    return bignum ;
@@ -390,7 +399,8 @@ end
 --BigNum.mul{{{2
 --can't be made in place
 function BigNum.mul( bnum1 , bnum2 , bnum3 )
-   local i = 0 ; j = 0 ;
+   local i = 0 ; 
+   local j = 0 ;
    local temp = BigNum.new( ) ;
    local temp2 = 0 ;
    local carry = 0 ;
@@ -829,13 +839,13 @@ function BigNum.change( bnum1 , num )
    local oldLen = 0 ;
    if bnum1 == nil then
       error( "BigNum.change: parameter nil" ) ;
-   elseif type( bnum1 ) ~= "table" then
-      error( "BigNum.change: parameter error, type unexpected" ) ;
+   elseif not _isBigNum( bnum1 ) then
+      error( "BigNum.change: parameter 'bnum1' error, expected 'bignum', found: '" .. type( bnum1 ) .. "'" ) ;
    elseif num == nil then
       bnum1.len = 1 ;
       bnum1[0] = 0 ;
       bnum1.signal = "+";
-   elseif type( num ) == "table" and num.len ~= nil then  --check if num is a big number
+   elseif _isBigNum( num ) then
       --copy given table to the new one
       for i = 0 , num.len do
          bnum1[i] = num[i] ;
@@ -914,7 +924,7 @@ function BigNum.change( bnum1 , num )
          bnum1.len = 1 ;
       end
    else
-      error( "Function BigNum.change: parameter error, type unexpected" ) ;
+      error( "BigNum.change: parameter 'num' error, expected 'bignum', 'string' or 'number', found: '" .. type( bnum1 ) .. "'" ) ;
    end
 
    --eliminates the deprecated higher order 'algarisms'
