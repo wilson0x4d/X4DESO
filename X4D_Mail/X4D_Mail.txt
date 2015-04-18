@@ -2,7 +2,7 @@
 ## Title: X4D |cFFAE19Mail
 ## Author: @wilson0x4d
 ## Description: Provides minor Mail enhancements, namely integrating 'LibAntiSpam', performing auto-accepting mail attachments and auto-deleting system-generated mail.
-## Version: 1.1
+## Version: 1.2
 ## SavedVariables: X4D_Mail_SV
 ## DependsOn: X4D_Core
 ## OptionalDependsOn: X4D_Loot

@@ -2,7 +2,7 @@
 ## Title: X4D |cFFAE19XP
 ## Author: @wilson0x4d
 ## Description: Shows XP Gains in the Chat Window
-## Version: 1.5
+## Version: 1.6
 ## SavedVariables: X4D_XP_SV
 ## DependsOn: X4D_Core
 

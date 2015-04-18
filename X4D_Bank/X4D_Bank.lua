@@ -1,4 +1,4 @@
-local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1013)
+local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1014)
 if (not X4D_Bank) then
     return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Bank = X4D_Bank
 
 X4D_Bank.NAME = "X4D_Bank"
-X4D_Bank.VERSION = "1.13"
+X4D_Bank.VERSION = "1.14"
 
 local constLeaveAlone = "Leave Alone"
 local constDeposit = X4D.Colors.Deposit .. "Deposit"
@@ -529,7 +529,7 @@ local function InitializeSettingsUI()
         {
             type = "checkbox",
             name = "Auto-Withdraw Reserve",
-            tooltip = "When enabled, if you are carrying less than your specified reserve the difference will be withdrawn from the bank.",
+            tooltip = "When enabled, if you are carrying less than the specified reserve amount the difference will be withdrawn from the bank.",
             getFunc = function() return X4D_Bank.Settings:Get("AutoWithdrawReserve") end,
             setFunc = function() X4D_Bank.Settings:Set("AutoWithdrawReserve", not X4D_Bank.Settings:Get("AutoWithdrawReserve")) end,
         },
@@ -716,7 +716,8 @@ local function OnAddOnLoaded(eventCode, addonName)
             {
                 "STOLEN",
             }
-        })
+        },
+        2)
 
     InitializeSettingsUI()
 

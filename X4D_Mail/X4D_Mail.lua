@@ -1,4 +1,4 @@
-local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1001)
+local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1002)
 if (not X4D_Mail) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Mail = X4D_Mail
 
 X4D_Mail.NAME = "X4D_Mail"
-X4D_Mail.VERSION = "1.1"
+X4D_Mail.VERSION = "1.2"
 
 -- 1.0
 -- X4D_Mail:IsMailReadable(mailId)
@@ -251,7 +251,8 @@ local function OnAddOnLoaded(event, addonName)
 			AutoDeleteMail = false,
 			EnableAntiSpam = false,
 			LeaveReturnedMailAlone = true,
-		})
+        }, 
+        2)
 
     InitializeSettingsUI()
 

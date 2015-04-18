@@ -2,25 +2,31 @@
 
 ## Features
 
-* Optionally Modifies Guild Chat so that Character Names are displayed instead of Account Names.
-* Optional Chat Timestamps
-* Optional Color Stripping
-* Optional Guild Abbreviations
+* Modifies Guild Chat so that Character Names are displayed instead of Account Names.
+* Optional Chat Timestamps, 12-Hour and 24-Hour formats, and both HH:MM and HH:MM:SS formats.
+* Optional Color Stripping, no more rainbow text.
+* Optional Auto-Generated Guild Abbreviations, as well as User Overrides
 * Optional Guild Numbers
-* Optional Excess Text Stripping
-* Option to Disable Chat Window Fading
-* Resize Chat Window Larger than Standard Default
-* Configurable Guild Abbreviations (overrides Inferred abbreviations.)
+* Optional Efficient Text Format, e.g. remove "says", "yells", etc
+* Option to Disable Chat Text Fade-Out
+* Allows Resize of Chat Window to fill window
+* Option to disable online/offline status updates.
+
+## Planned
+
+* Localization for 'Efficient Text'
 
 ## Installation
-
-*If you are upgrading from v1.2 or earlier you must first delete any prior version of the Add-On.*
 
 Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
 
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.25
+
+- Misc updates due to Core changes.
+
 v1.24
 
 - ESO Update 6

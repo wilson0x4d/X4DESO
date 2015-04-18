@@ -1,4 +1,4 @@
-local X4D_Chat = LibStub:NewLibrary("X4D_Chat", 1024)
+local X4D_Chat = LibStub:NewLibrary("X4D_Chat", 1025)
 if (not X4D_Chat) then
 	return
 end
@@ -12,7 +12,7 @@ local X4D_Bank = nil
 local X4D_Mail = nil
 
 X4D_Chat.NAME = "X4D_Chat"
-X4D_Chat.VERSION = "1.24"
+X4D_Chat.VERSION = "1.25"
 
 X4D_Chat.ChannelCategory = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,

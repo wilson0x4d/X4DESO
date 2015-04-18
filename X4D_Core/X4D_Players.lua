@@ -9,7 +9,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Players.DB", EVENT_ADD_ON_LOADED, function(e
     if (name == "X4D_Core") then
         X4D_Players.DB = X4D.DB("X4D_Players.DB")
     end
-end )
+end)
 
 function X4D_Players:GetPlayerByName(self, name)
     return self.DB

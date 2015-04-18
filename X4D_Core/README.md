@@ -9,6 +9,7 @@ All X4D Add-Ons depend on this Framework.
 
 * String Helpers
     * string:Split, string:StartsWith, string:EndsWith, etc.
+    * base58() and sha1() helpers
 * Conversion API
     * Various conversion/mapping helpers necessary in X4D Addons.
 * Color API
@@ -84,6 +85,10 @@ lib/X4D_Guilds.lua
 </pre>
 
 ## Versions
+v1.2
+
+-- Added SHA
+
 v1.1
 
 - ESO Update 6

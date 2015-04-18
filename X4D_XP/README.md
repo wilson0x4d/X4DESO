@@ -19,6 +19,10 @@ Open the Archive and copy the **X4D_XP** folder into **%USERPROFILE%\Documents\E
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.6
+
+- Fixed bug where sometimes XP would be reported incorrectly.
+
 v1.5
 
 - ESO Update 6

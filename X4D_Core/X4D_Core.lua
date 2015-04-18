@@ -1,28 +1,33 @@
-local X4D = LibStub:NewLibrary("X4D", 1001)
+local X4D = LibStub:NewLibrary("X4D", 1002)
 if (not X4D) then
     return
 end
 
 X4D.NAME = "X4D"
-X4D.VERSION = "1.1"
+X4D.VERSION = "1.2"
+
+EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)
+    if (name == "X4D_Core") then
+        X4D.Settings(
+            "X4D_CORE_SV",
+            {
+                SettingsAre = "Account-Wide",
+                X4DB = { },
+            }, 
+            2)
+    end
+end)
 
 local _oneTimeVersionReport = false
 
 EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
     function(event, name)
         if (name == "X4D_Core") then
-            X4D.Settings(
-                "X4D_CORE_SV",
-                {
-                    SettingsAre = "Account-Wide",
-                    X4DB = { },
-                })
             if (_oneTimeVersionReport) then
                 return
             end
             _oneTimeVersionReport = true
-            X4D.Async.CreateTimer(
-            function(timer, state)
+            X4D.Async.CreateTimer(function(timer, state)
                 timer:Stop()
                 local versions = "Core/" .. X4D.VERSION .. " "
                 if (X4D.Bank ~= nil) then

@@ -15,6 +15,11 @@ Open the Archive and copy the **X4D_Mail** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.2
+
+- A few bug-fixes related to API changes.
+- Misc changes due to Core refactors.
+
 v1.1
 
 - ESO Update 6

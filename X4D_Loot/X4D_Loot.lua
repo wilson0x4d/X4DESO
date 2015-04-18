@@ -1,4 +1,4 @@
-local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1008)
+local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1009)
 if (not X4D_Loot) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Loot = X4D_Loot
 
 X4D_Loot.NAME = "X4D_Loot"
-X4D_Loot.VERSION = "1.8"
+X4D_Loot.VERSION = "1.9"
 
 X4D_Loot.Colors = {
 	Gold = "|cFFD700",
@@ -596,7 +596,8 @@ function X4D_Loot.OnAddOnLoaded(event, addonName)
             SettingsAre = "Account-Wide",
             DisplayMoneyUpdates = true,
 			DisplayPartyLoot = false,
-		})
+        }, 
+        2)
 
     InitializeSettingsUI()
 

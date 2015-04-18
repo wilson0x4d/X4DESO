@@ -2,7 +2,7 @@
 ## Title: X4D |cFFAE19Loot
 ## Author: @wilson0x4d
 ## Description: Displays Loot Items in Chat Window
-## Version: 1.8
+## Version: 1.9
 ## SavedVariables: X4D_Loot_SV
 ## DependsOn: X4D_Core
 ## OptionalDependsOn: X4D_Loot

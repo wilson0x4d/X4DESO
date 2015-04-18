@@ -6,17 +6,17 @@ Can also be used as a Stand-Alone Chat Mod to filter 'spammers' and 'flooders'.
 
 ## Features
 
+- Can be used as a stand-alone Add-On to auto-filter Spammers from Chat.
 - Does not clog up your in-game ignore list.
-- Detects Flooders
-- Detects Spammer Domains
-- Detects Spammer Words/Phrases
-- Spam Dictionary is User Editable
-- Can be used from other Add-Ons, such as **X4D Chat**, hopefully others (requires author support.)
-- Can be used as a stand-alone Add-On to auto-filter Spammers and Flooders from Chat.
+- Does not your block guild members, group members, nor friends.
+- Optional. Detects Flooders (people who repeat the same thing, over and over, and do nothing but clutter chat.)
+- Optional. Detects Spammer Domains, Words/Phrases and ASCII ART using and internal set of patterns.
+- User can add/edit their own patterns.
+- Addon authors can use via LibStub to implement spam/flood detection, without having to write the code to do it (such as other chat mods, like **X4D Chat**, or mail mods, like **X4D Mail**.
 
 ## Planned Features
 
-* Spam Dictionary Sync (share your spam dictionary your Guild, your Friends, etc)
+* Ignore List Editor, and persistence via X4D_DB Module.
 
 ## Installation
 
@@ -43,6 +43,11 @@ Normalization is the process of taking otherwise codified text and translating i
 
 
 ## Versions
+v1.60
+
+- Moved 'Aggressive' patterns into separate setting.
+- Reworked defaults.
+
 v1.59
 
 - ESO Update 6

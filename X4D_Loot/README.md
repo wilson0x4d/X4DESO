@@ -2,17 +2,17 @@
 
 ## Features
 
-- Outputs 'Loot Items' to Chat Window, with correct Tier Color and Count.
+- Outputs 'Loot Items' to Chat Window, with correct Item Quality and Count.
 - Outputs 'Quest Items' to Chat Window, with Count.
-- Outputs monetary changes (gold spends/gains) and remaining balance.
+- Optional 'Party Loot' to Chat Window.
+- Optional 'Money Updates' to Chat Window (gold spends/gains, with remaining balance)
 - When Bag is Full or Almost Full (less than 10 slots free), you are notified.
-- Items can be clicked for Item Info.
 - Can be integrated with via LibStub, and a callback can be set via **X4D_Loot:RegisterCallback(color, text)**
 - Integrated into **X4D Chat** Add-On which provides timestamp support for **X4D Loot** output.
 
-## Known Issues
+## Planned
 
-- Loot from deconstructing items is not shown.
+- Option to display loot from deconstructed items.
 
 ## Installation
 
@@ -21,6 +21,11 @@ Open the Archive and copy the **X4D_Loot** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.9
+
+- Added 'beta' option to display party loot, needs more work.
+- Many bug fixes related to API changes.
+
 v1.8
 
 - ESO Update 6
