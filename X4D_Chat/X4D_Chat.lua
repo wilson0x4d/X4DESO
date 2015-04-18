@@ -14,29 +14,6 @@ local X4D_Mail = nil
 X4D_Chat.NAME = "X4D_Chat"
 X4D_Chat.VERSION = "1.24"
 
-X4D_Chat.Settings = {}
-X4D_Chat.Settings.SavedVars = {}
-X4D_Chat.Settings.Defaults = {
-	GuildCharNames = true,
-	GuildPlayerNames = false,
-	UseGuildAbbr = true,
-	GuildAbbr = {
-		[1] = "",
-		[2] = "",
-		[3] = "",
-		[4] = "",
-		[5] = "",
-	},
-	UseGuildNum = false,
-	TimestampOption = "24 Hour Format",
-	RemoveSeconds = false,
-	StripColors = false,
-	StripExcess = true,
-	PreventChatFade = true,
-	DisableFriendStatus = false,
-    UseLighterMessageColor = true,
-}
-
 X4D_Chat.ChannelCategory = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,
 	[CHAT_CHANNEL_GUILD_1] = CHAT_CATEGORY_GUILD_1,
@@ -93,22 +70,21 @@ X4D_Chat.Colors = {
 }
 
 local function GetTimestampPrefix(color)
-	if (X4D_Chat.Settings.SavedVars.TimestampOption == nil) then
-		X4D_Chat.Settings.SavedVars.TimestampOption = X4D_Chat.Settings.Defaults.TimestampOption
-	elseif (X4D_Chat.Settings.SavedVars.TimestampOption == "Disabled") then
+    local timestampOption = X4D_Chat.Settings:Get('TimestampOption')
+	if (timestampOption == "Disabled") then
 		return color
 	end
 
 	local timeString = GetTimeString()
 
-	if (X4D_Chat.Settings.SavedVars.TimestampOption == "12 Hour Format") then
+	if (timestampOption == "12 Hour Format") then
 		local hour = timeString:gmatch("(%d%d).%d%d.%d%d")()
 		if (tonumber(hour) > 12) then
 			hour = tostring(tonumber(hour) - 12)
 			if (hour:len() == 1) then
 				hour = "0" .. hour
 			end
-			if (X4D_Chat.Settings.SavedVars.RemoveSeconds) then
+			if (X4D_Chat.Settings:Get('RemoveSeconds')) then
 				timeString = timeString:gsub("%d%d.(%d%d).%d%d", hour .. ":%1 PM")
 			else
 				timeString = timeString:gsub("%d%d.(%d%d).(%d%d)", hour .. ":%1:%2 PM")
@@ -117,13 +93,13 @@ local function GetTimestampPrefix(color)
 			if (hour == '00') then
 				hour = '12'
 			end
-			if (X4D_Chat.Settings.SavedVars.RemoveSeconds) then
+			if (X4D_Chat.Settings:Get('RemoveSeconds')) then
 				timeString = timeString:gsub("%d%d.(%d%d).%d%d", hour .. ":%1 AM")
 			else
 				timeString = timeString:gsub("%d%d.(%d%d).(%d%d)", hour .. ":%1:%2 AM")
 			end
 		end
-	elseif (X4D_Chat.Settings.SavedVars.RemoveSeconds) then
+    elseif (X4D_Chat.Settings:Get('RemoveSeconds')) then
 		timeString = timeString:gsub("(%d%d).(%d%d).%d%d", "%1:%2")
 	end
 
@@ -155,14 +131,14 @@ function X4D_Chat.OnChatMessageReceived(messageType, fromName, text)
         local channelLink = X4D_Chat.CreateChannelLink(channelInfo, category)
         local fromLink = X4D_Chat.CreateCharacterLink(fromName, channelInfo)
         local textColor = categoryColor
-        if (X4D_Chat.Settings.SavedVars.UseLighterMessageColor) then
+        if (X4D_Chat.Settings:Get('UseLighterMessageColor')) then
             textColor = X4D.Colors:Lerp(textColor, "|cFFFFFF", 33)
         end
         if (channelLink) then
             result = zo_strformat(channelInfo.format, channelLink, fromLink, textColor .. text)
         else
 			result = zo_strformat(channelInfo.format, fromLink, textColor .. text)
-			if (X4D_Chat.Settings.SavedVars.StripExcess) then
+			if (X4D_Chat.Settings:Get('UseEfficientFormat')) then
 				result = result:gsub("%]%|h%s?.-%:", "]|h:", 1)
 			end
 		end
@@ -231,10 +207,11 @@ function X4D_Chat.CreateChannelLink(channelInfo, category)
 			guild = X4D_Chat.Guilds[category]
 		end
 		if (guild) then
-			if (X4D_Chat.Settings.SavedVars.UseGuildAbbr) then
+			if (X4D_Chat.Settings:Get('UseGuildAbbr')) then
 				if (not guild.Abbr) then
-					if (X4D_Chat.Settings.SavedVars.GuildAbbr[guild.Num] and X4D_Chat.Settings.SavedVars.GuildAbbr[guild.Num]:len() > 0) then
-						guild.Abbr = X4D_Chat.Settings.SavedVars.GuildAbbr[guild.Num]
+                    local guildAbbreviation = X4D_Chat.Settings:Get('GuildAbbr')[guild.Num]
+					if (guildAbbreviation and guildAbbreviation:len() > 0) then
+						guild.Abbr = guildAbbreviation
 					else
 						if (not guild.Description) then
 							guild.Description = GetGuildDescription(guild.Id)
@@ -255,17 +232,17 @@ function X4D_Chat.CreateChannelLink(channelInfo, category)
 					end
 				end
 			end
-			if (X4D_Chat.Settings.SavedVars.UseGuildNum) then
+			if (X4D_Chat.Settings:Get('UseGuildNum')) then
 				if (not guild.Num) then
 					guild.Num = guildNum
 				end
 			end
 			channelName = channelName:gsub("([^%a%d%s])", "%%%1")
-			if (X4D_Chat.Settings.SavedVars.UseGuildNum and guild.Abbr and guild.Abbr:len() > 0 and guild.Num) then
+			if (X4D_Chat.Settings:Get('UseGuildNum') and guild.Abbr and guild.Abbr:len() > 0 and guild.Num) then
 				result = result:gsub(channelName, guild.Num .. "/" .. guild.Abbr)
 			elseif (guild.Abbr and guild.Abbr:len() > 0) then
 				result = result:gsub(channelName, guild.Abbr)
-			elseif (X4D_Chat.Settings.SavedVars.UseGuildNum and guild.Num) then
+			elseif (X4D_Chat.Settings:Get('UseGuildNum') and guild.Num) then
 				result = result:gsub(channelName, guild.Num)
 			end
 		end
@@ -313,7 +290,7 @@ end
 
 function X4D_Chat.CreateCharacterLink(fromName, channelInfo)
 	local result = fromName
-	if (X4D_Chat.Settings.SavedVars.GuildCharNames) then
+	if (X4D_Chat.Settings:Get('GuildCharNames')) then
 		local player = GetPlayer(fromName)
 		if (not (player and player.CharacterName and player.Time >= (GetGameTimeMilliseconds() - 15000))) then
 			player = AddPlayer(fromName)
@@ -331,7 +308,7 @@ function X4D_Chat.CreateCharacterLink(fromName, channelInfo)
 			local rep = fromName:gsub("([^%a%d%s])", "%%%1")
 			local linkName = ZO_LinkHandler_CreatePlayerLink(fromName)
 			if (linkName) then
-				if (X4D_Chat.Settings.SavedVars.GuildPlayerNames) then
+				if (X4D_Chat.Settings:Get('GuildPlayerNames')) then
 					result = linkName:gsub(rep, result .. fromName)
 				else
 					result = linkName:gsub(rep, result)
@@ -345,7 +322,7 @@ function X4D_Chat.CreateCharacterLink(fromName, channelInfo)
 end
 
 function X4D_Chat.StripColors(text)
-	if (X4D_Chat.Settings.SavedVars.StripColors) then
+	if (X4D_Chat.Settings:Get('StripColors')) then
 		return text:gsub("%|c%x%x%x%x%x%x", "")
 	end
 	return text
@@ -375,7 +352,7 @@ local function OnUpdate(...)
 	end
 	_nextUpdateTime = timeNow + 5000	
 	X4D_Chat.Register()
-	if (X4D_Chat.Settings.SavedVars.PreventChatFade) then
+	if (X4D_Chat.Settings:Get('PreventChatFade')) then
 		if (ZO_ChatWindow.container and ZO_ChatWindow.container.currentBuffer) then
 			ZO_ChatWindow.container.currentBuffer:ShowFadedLines()
 		end
@@ -419,8 +396,32 @@ local function OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Chat.NAME) then
 		return
 	end	
-	X4D_Chat.Settings.SavedVars = ZO_SavedVars:NewAccountWide(X4D_Chat.NAME .. "_SV", 1.12, nil, X4D_Chat.Settings.Defaults)
-	local LAM = LibStub("LibAddonMenu-2.0")
+
+    X4D_Chat.Settings = X4D.Settings(
+        X4D_Chat.NAME .. "_SV",
+        {
+	        GuildCharNames = true,
+	        GuildPlayerNames = false,
+	        UseGuildAbbr = true,
+	        GuildAbbr = {
+		        [1] = "",
+		        [2] = "",
+		        [3] = "",
+		        [4] = "",
+		        [5] = "",
+	        },
+	        UseGuildNum = false,
+	        TimestampOption = "24 Hour Format",
+	        RemoveSeconds = false,
+	        StripColors = false,
+	        UseEfficientFormat = true,
+	        PreventChatFade = true,
+	        DisableFriendStatus = false,
+            UseLighterMessageColor = true,
+        },
+        2)
+    
+    local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel(
         "X4D_Chat_CPL", 
         {
@@ -437,40 +438,41 @@ local function OnAddOnLoaded(event, addonName)
                 tooltip = "Timestamp Option",
                 choices = {"Disabled", "24 Hour Format", "12 Hour Format"},
                 getFunc = function() 
-                    return X4D_Chat.Settings.SavedVars.TimestampOption or "24 Hour Format" 
+                    return X4D_Chat.Settings:Get("TimestampOption") or "24 Hour Format" 
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings.SavedVars.TimestampOption = v
+                    X4D_Chat.Settings:Set("TimestampOption", v)
                 end,
             },
             [2] = {
                 type = "checkbox",
                 name = "Remove 'Seconds' Component", 
                 tooltip = "When enabled, the 'Seconds' component is removed from timestamps.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.RemoveSeconds end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.RemoveSeconds = not X4D_Chat.Settings.SavedVars.RemoveSeconds end,
+                getFunc = function() return X4D_Chat.Settings:Get("RemoveSeconds") end,
+                setFunc = function() X4D_Chat.Settings:Set("RemoveSeconds", not X4D_Chat.Settings:Get("RemoveSeconds")) end,
             },
             [3] = {
                 type = "checkbox",
                 name = "Show Character Names in Guild Chat", 
                 tooltip = "When enabled, Player Names are replaced with Character Names in Guild Chat.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.GuildCharNames end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.GuildCharNames = not X4D_Chat.Settings.SavedVars.GuildCharNames end,
+                getFunc = function() return X4D_Chat.Settings:Get("GuildCharNames") end,
+                setFunc = function() X4D_Chat.Settings:Set("GuildCharNames", not X4D_Chat.Settings:Get("GuildCharNames")) end,
+
             },
             [4] = {
                 type = "checkbox",
                 name = "Show Player Names in Guild Chat",
                 tooltip = "When enabled, Player Names are appended to Character Names in Guild Chat.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.GuildPlayerNames = not X4D_Chat.Settings.SavedVars.GuildPlayerNames end,
+                getFunc = function() return X4D_Chat.Settings:Get("GuildPlayerNames") end,
+                setFunc = function() X4D_Chat.Settings:Set("GuildPlayerNames", not X4D_Chat.Settings:Get("GuildPlayerNames")) end,
             },
             [5] = {
                 type = "checkbox",
                 name = "Use Guild Abbrevations", 
                 tooltip = "When enabled, Guild Names are replaced with an Abbreviation. Abbrevations are set in the Guild Description e.g. [FOO], or inferred as the capital letters of the guild.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.UseGuildAbbr end,
+                getFunc = function() return X4D_Chat.Settings:Get("UseGuildAbbr") end,
                 setFunc = function() 
-                    X4D_Chat.Settings.SavedVars.UseGuildAbbr = not X4D_Chat.Settings.SavedVars.UseGuildAbbr
+                    X4D_Chat.Settings:Set("UseGuildAbbr", not X4D_Chat.Settings:Get("UseGuildAbbr"))
                     X4D_Chat.Guilds = {}
                 end,
             },
@@ -478,9 +480,9 @@ local function OnAddOnLoaded(event, addonName)
                 type = "checkbox",
             	name = "Use Guild Number", 
                 tooltip = "When enabled, Guild Names are replaced with their corresponding Number.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.UseGuildNum end,
+                getFunc = function() return X4D_Chat.Settings:Get("UseGuildNum") end,
                 setFunc = function() 
-                    X4D_Chat.Settings.SavedVars.UseGuildNum = not X4D_Chat.Settings.SavedVars.UseGuildNum
+                    X4D_Chat.Settings:Set("UseGuildNum", not X4D_Chat.Settings:Get("UseGuildNum"))
                     X4D_Chat.Guilds = {}
                 end,
             },
@@ -488,36 +490,38 @@ local function OnAddOnLoaded(event, addonName)
                 type = "checkbox",
             	name = "Strip Colors", 
                 tooltip = "When enabled, color codes are stripped from chat messages.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.StripColors end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.StripColors = not X4D_Chat.Settings.SavedVars.StripColors end,
+                getFunc = function() return X4D_Chat.Settings:Get("StripColors") end,
+                setFunc = function() X4D_Chat.Settings:Set("StripColors", not X4D_Chat.Settings:Get("StripColors")) end,
+
             },
             [8] = {
                 type = "checkbox",
                 name = "Use Lighter Color for Message Text",
                 tooltip = "When enabled, message text appears with a slightly lighter color to improve readability.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.UseLighterMessageColor end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.UseLighterMessageColor = not X4D_Chat.Settings.SavedVars.UseLighterMessageColor end,
+                getFunc = function() return X4D_Chat.Settings:Get("UseLighterMessageColor") end,
+                setFunc = function() X4D_Chat.Settings:Set("UseLighterMessageColor", not X4D_Chat.Settings:Get("UseLighterMessageColor")) end,
+
             },
             [9] = {
                 type = "checkbox",
-                name = "Strip Excess Text", 
-                tooltip = "When enabled, excess text is stripped from chat messages.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.StripExcess end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.StripExcess = not X4D_Chat.Settings.SavedVars.StripExcess end,
+                name = "Use Efficient Format", 
+                tooltip = "When enabled, a more efficient chat format is applied, removing 'says', 'yells', etc", 
+                getFunc = function() return X4D_Chat.Settings:Get("UseEfficientFormat") end,
+                setFunc = function() X4D_Chat.Settings:Set("UseEfficientFormat", not X4D_Chat.Settings:Get("UseEfficientFormat")) end,
             },
             [10] = {
                 type = "checkbox",
                 name = "Prevent Chat Fade", 
                 tooltip = "When enabled, Chat Text will not Fade.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.PreventChatFade end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.PreventChatFade = not X4D_Chat.Settings.SavedVars.PreventChatFade end,
+                getFunc = function() return X4D_Chat.Settings:Get("PreventChatFade") end,
+                setFunc = function() X4D_Chat.Settings:Set("PreventChatFade", not X4D_Chat.Settings:Get("PreventChatFade")) end,
             },
             [11] = {
                 type = "checkbox",
                 name = "Disable Friend Status Messages", 
                 tooltip = "When enabled, Friend Online/Offline Status Messages are not displayed.", 
-                getFunc = function() return X4D_Chat.Settings.SavedVars.DisableFriendStatus end,
-                setFunc = function() X4D_Chat.Settings.SavedVars.DisableFriendStatus = not X4D_Chat.Settings.SavedVars.DisableFriendStatus end,
+                getFunc = function() return X4D_Chat.Settings:Get("DisableFriendStatus") end,
+                setFunc = function() X4D_Chat.Settings:Set("DisableFriendStatus", not X4D_Chat.Settings:Get("DisableFriendStatus")) end,
             },
             [12] = {
                 type = "editbox",
@@ -525,12 +529,11 @@ local function OnAddOnLoaded(event, addonName)
                 tooltip = "An Abbreviation for Guild #1, do not include brackets.", 
                 isMultiline = false,
                 getFunc = function()
-                    return X4D_Chat.Settings.SavedVars.GuildAbbr[1]
+                    return X4D_Chat.Settings:Get("GuildAbbr")[1]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings.SavedVars.GuildAbbr[1] = v --_G["X4D_CHAT_EDIT_GUILD1"]["edit"]:GetText()
+                    X4D_Chat.Settings:Get("GuildAbbr")[1] = v
                 end,
-                default = X4D_Chat.Settings.SavedVars.GuildAbbr[1],
                 width = "half",      
             },
             [13] = {
@@ -539,12 +542,11 @@ local function OnAddOnLoaded(event, addonName)
                 tooltip = "An Abbreviation for Guild #2, do not include brackets.", 
                 isMultiline = false,
                 getFunc = function()
-                    return X4D_Chat.Settings.SavedVars.GuildAbbr[2]
+                    return X4D_Chat.Settings:Get("GuildAbbr")[2]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings.SavedVars.GuildAbbr[2] = v --_G["X4D_CHAT_EDIT_GUILD2"]["edit"]:GetText()
+                    X4D_Chat.Settings:Get("GuildAbbr")[2] = v
                 end,
-                default = X4D_Chat.Settings.SavedVars.GuildAbbr[2],
                 width = "half",                
             },
             [14] = {
@@ -553,12 +555,11 @@ local function OnAddOnLoaded(event, addonName)
                 tooltip = "An Abbreviation for Guild #3, do not include brackets.", 
                 isMultiline = false,
                 getFunc = function()
-                    return X4D_Chat.Settings.SavedVars.GuildAbbr[3]
+                    return X4D_Chat.Settings:Get("GuildAbbr")[3]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings.SavedVars.GuildAbbr[3] = v --_G["X4D_CHAT_EDIT_GUILD3"]["edit"]:GetText()
+                    X4D_Chat.Settings:Get("GuildAbbr")[3] = v
                 end,
-                default = X4D_Chat.Settings.SavedVars.GuildAbbr[3],
                 width = "half",                
             },
             [15] = {
@@ -567,12 +568,11 @@ local function OnAddOnLoaded(event, addonName)
                 tooltip = "An Abbreviation for Guild #4, do not include brackets.", 
                 isMultiline = false,
                 getFunc = function()
-                    return X4D_Chat.Settings.SavedVars.GuildAbbr[4]
+                    return X4D_Chat.Settings:Get("GuildAbbr")[4]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings.SavedVars.GuildAbbr[4] = v --_G["X4D_CHAT_EDIT_GUILD4"]["edit"]:GetText()
+                    X4D_Chat.Settings:Get("GuildAbbr")[4] = v
                 end,
-                default = X4D_Chat.Settings.SavedVars.GuildAbbr[4],
                 width = "half",                
             },
             [16] = {
@@ -581,12 +581,11 @@ local function OnAddOnLoaded(event, addonName)
                 tooltip = "An Abbreviation for Guild #5, do not include brackets.", 
                 isMultiline = false,
                 getFunc = function()
-                    return X4D_Chat.Settings.SavedVars.GuildAbbr[5]
+                    return X4D_Chat.Settings:Get("GuildAbbr")[5]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings.SavedVars.GuildAbbr[5] = v --_G["X4D_CHAT_EDIT_GUILD5"]["edit"]:GetText()
+                    X4D_Chat.Settings:Get("GuildAbbr")[5] = v
                 end,
-                default = X4D_Chat.Settings.SavedVars.GuildAbbr[5],
                 width = "half",                
             },
         })
@@ -650,7 +649,7 @@ local function OnFriendPlayerStatusChanged(displayName, oldStatus, newStatus)
 	if (oldStatus == newStatus) then
 		return
 	end
-	if (X4D_Chat.Settings.SavedVars.DisableFriendStatus) then
+	if (X4D_Chat.Settings:Get('DisableFriendStatus')) then
 		return
 	end
     local characterLink = X4D_Chat.CreateCharacterLink(displayName)
