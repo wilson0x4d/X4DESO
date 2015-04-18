@@ -14,7 +14,7 @@ function X4D_Settings:Get(name)
     else
 	    local scope = self.Saved.SettingsAre or "Account-Wide"
 	    if (scope ~= 'Account-Wide') then
-		    scope = GetUnitName("player")
+            scope = base58(sha1(GetUnitName("player")):FromHex())
 	    end
 	    local scoped = self.Saved[scope]
 	    if (scoped == nil) then
@@ -34,8 +34,9 @@ function X4D_Settings:Set(name, value)
     else
 	    local scope = self.Saved.SettingsAre or self.Default.SettingsAre or "Account-Wide"
 	    if (scope ~= "Account-Wide") then
-		    scope = GetUnitName("player")
+            scope = base58(sha1(GetUnitName("player")):FromHex())
 	    end
+        scope = "$" .. base58(sha1(GetUnitName("player")):FromHex())
 	    local scoped = self.Saved[scope]
 	    if (scoped == nil) then
 		    scoped = {}
@@ -55,13 +56,19 @@ function X4D_Settings:GetOrSet(name, value)
     end
 end
 
-function X4D_Settings:Create(savedVarsName, defaults, versions)
-    if (version == nil) then
-        version = 1 -- changing this causes settings to wipe
+function X4D_Settings:Create(savedVarsName, defaults, version)
+    if (version == nil or type(version) ~= "number") then
+        version = 1 -- if you don't understand how to version configs, do NOT specify a version
     end	
     if (defaults == nil) then
         defaults = {}
+    elseif (type(defaults) == "number") then
+        if (version == nil) then
+            version = defaults
+        end
+        defaults = {}
     end
+    version = math.floor(version)
     local saved = ZO_SavedVars:NewAccountWide(savedVarsName, version, nil, {})
     local proto = {
 		Saved = saved,
