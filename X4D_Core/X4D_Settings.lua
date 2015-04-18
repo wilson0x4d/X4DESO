@@ -5,40 +5,44 @@ end
 local X4D = LibStub("X4D")
 X4D.Settings = X4D_Settings
 
-
 function X4D_Settings:Get(name)
 	if (self.Saved == nil) then
 		return nil
 	end
-	local scope = "Account-Wide"
-	if (self.Saved.SettingsAre and self.Saved.SettingsAre ~= "Account-Wide") then
-		scope = GetUnitName('player')
-	end
-	local scoped = self.Saved[scope]
-	if (scoped == nil) then
-		return self.Default[name]
-	end
-	local value = scoped[name]
-	if (value == nil) then
-		value = self.Default[name]
-	end
-	return value
+    if (name == "SettingsAre") then
+        return self.Saved.SettingsAre or self.Default.SettingsAre or "Account-Wide"
+    else
+	    local scope = self.Saved.SettingsAre or "Account-Wide"
+	    if (scope ~= 'Account-Wide') then
+		    scope = GetUnitName("player")
+	    end
+	    local scoped = self.Saved[scope]
+	    if (scoped == nil) then
+		    return self.Default[name]
+	    end
+	    local value = scoped[name]
+	    return value or self.Default[name]
+    end
 end
 
 function X4D_Settings:Set(name, value)
 	if (self.Saved == nil) then
 		return nil
 	end
-	local scope = "Account-Wide"
-	if (self.Saved.SettingsAre and self.Saved.SettingsAre ~= "Account-Wide") then
-		scope = GetUnitName('player')
-	end
-	local scoped = self.Saved[scope]
-	if (scoped == nil) then
-		scoped = {}
-		self.Saved[scope] = scoped
-	end
-	scoped[name] = value
+    if (name == 'SettingsAre') then
+	    self.Saved.SettingsAre = value
+    else
+	    local scope = self.Saved.SettingsAre or self.Default.SettingsAre or "Account-Wide"
+	    if (scope ~= "Account-Wide") then
+		    scope = GetUnitName("player")
+	    end
+	    local scoped = self.Saved[scope]
+	    if (scoped == nil) then
+		    scoped = {}
+		    self.Saved[scope] = scoped
+	    end
+	    scoped[name] = value
+    end
     return value
 end
 
