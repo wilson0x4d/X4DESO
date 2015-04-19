@@ -15,8 +15,7 @@ X4D_XP.Settings.Defaults = {
 }
 
 local _pointType = "XP"
-local _currentExp = 0
-local _currentVP = 0
+local _currentXP = 0
 local _playerIsVeteran = false
 
 
@@ -100,13 +99,13 @@ end
 local function OnQuestCompleteExperience(eventCode, questName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)	
     local xpGained = currentExperience - previousExperience
 	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. X4D.Colors.X4D .. questName)
-    _currentExp = _currentExp + xpGained
+    _currentXP = _currentXP + xpGained
 end
 
 local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience
 	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for Discovery " .. X4D.Colors.X4D .. areaName)
-    _currentExp = _currentExp + xpGained
+    _currentXP = _currentXP + xpGained
 end
 
 local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
@@ -117,7 +116,7 @@ local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previ
 	else
 		InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for POI ")
 	end
-    _currentExp = _currentExp + xpGained
+    _currentXP = _currentXP + xpGained
 end
 
 
@@ -125,14 +124,14 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
 	if (unitTag ~= "player") then
 		return
 	end
-	local xpGained = currentExp - _currentExp
+	local xpGained = currentExp - _currentXP
 	if (xpGained > 0) then
 		local reason = GetExpReason(reasonIndex)
 		if (reason ~= nil) then            
 			InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. reason)
 		end
 	end
-	_currentExp = _currentExp + xpGained
+	_currentXP = _currentXP + xpGained
 end
 
 function X4D_XP.OnAddOnLoaded(event, addonName)
@@ -155,12 +154,13 @@ function X4D_XP.Unregister()
 end
 
 function X4D_XP.OnPlayerActivated()
-	_currentExp = GetUnitXP("player")
     _playerIsVeteran = IsUnitVeteran("player")
-	if (_playerIsVeteran) then        
+	if (_playerIsVeteran) then
 		_pointType = "VP"
+    	_currentXP = GetUnitVeteranPoints("player")
 	else
 		_pointType = "XP"
+    	_currentXP = GetUnitXP("player")        
 	end
 end
 
