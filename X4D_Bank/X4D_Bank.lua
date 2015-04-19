@@ -666,6 +666,43 @@ local function InitializeSettingsUI()
         end
     end
 
+    table.insert(panelControls, {
+        type = "header",
+        name = 'Reset',
+    })
+    table.insert(panelControls, {
+        type = "dropdown",
+        name = "Item Type Settings",
+        tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
+        choices = _itemTypeChoices,
+        getFunc = function() 
+            local v = 0
+            if (v == 1) then
+                return constDeposit
+            elseif (v == 2) then
+                return constWithdraw
+            else
+                return constLeaveAlone
+            end
+        end,
+        setFunc = function(v)
+            if (v == constDeposit) then
+                v = 1
+            elseif (v == constWithdraw) then
+                v = 2
+            else
+                v = 0
+            end
+            for _,itemType in pairs(X4D.Items.ItemTypes) do
+                local dropdownName = CreateSettingsName(itemType)
+                X4D_Bank.Settings:Set(dropdownName, v)
+            end
+            ReloadUI() -- only necessary because i have no way to force LibAddonMenu to re-get/refresh all options
+        end,
+        width = "half",
+    })
+
+
     LAM:RegisterOptionControls(
         "X4D_BANK_CPL",
         panelControls
