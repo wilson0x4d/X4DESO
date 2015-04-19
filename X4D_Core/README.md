@@ -87,6 +87,7 @@ lib/X4D_Guilds.lua
 v1.4
 
 - Added 'LibAddonMenu-2.0' to /lib/ folder, marked it as an optional dependency.
+- Fix bug where false setting would yield true when default setting was true.
 
 v1.3
 

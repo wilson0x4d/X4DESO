@@ -26,7 +26,10 @@ function X4D_Settings:Get(name)
 		    return self.Default[name]
 	    end
 	    local value = scoped[name]
-	    return value or self.Default[name]
+        if (value == nil) then
+            return self.Default[name]
+        end
+	    return value
     end
 end
 
@@ -34,7 +37,7 @@ function X4D_Settings:Set(name, value)
 	if (self.Saved == nil) then
 		return nil
 	end
-    if (name == 'SettingsAre') then
+    if (name == "SettingsAre") then
 	    self.Saved.SettingsAre = value
     else
 	    local scope = self.Saved.SettingsAre or "Account-Wide"
