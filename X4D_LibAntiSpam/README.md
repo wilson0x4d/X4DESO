@@ -43,6 +43,10 @@ Normalization is the process of taking otherwise codified text and translating i
 
 
 ## Versions
+v1.61
+
+- Memory optimizations.
+
 v1.60
 
 - Moved 'Aggressive' patterns into separate setting.

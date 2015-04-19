@@ -85,9 +85,14 @@ lib/X4D_Guilds.lua
 </pre>
 
 ## Versions
+v1.3
+
+-- Fixed bug in settings save/restore for per-character
+-- Added 'Low Addon Memory' event handler that reports amount of memory in-use at the time
+
 v1.2
 
--- Added SHA
+-- Added sha1, base58 and bignum functions/libraries
 
 v1.1
 

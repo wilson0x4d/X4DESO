@@ -22,9 +22,14 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.15
+
+- Optimized how Item Type Deposit Settings are stored/used.
+
 v1.14
 
-- 
+- Added 'Ignored Items List'
+- Expanded Item Type Deposit Settings
 
 v1.13
 
