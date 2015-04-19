@@ -8,16 +8,10 @@ X4D.XP = X4D_XP
 X4D_XP.NAME = "X4D_XP"
 X4D_XP.VERSION = "1.6"
 
-X4D_XP.Settings = {}
-X4D_XP.Settings.SavedVars = {}
-X4D_XP.Settings.Defaults = {
-	None = "true",
-}
-
 local _pointType = "XP"
 local _currentXP = 0
 local _playerIsVeteran = false
-
+local _eta = nil
 
 local _expReasons = { }
 _expReasons[PROGRESS_REASON_NONE] = "???" -- TODO: what is this, exactly?
@@ -98,18 +92,21 @@ end
 
 local function OnQuestCompleteExperience(eventCode, questName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)	
     local xpGained = currentExperience - previousExperience
+    _eta:Increment(xpGained)
 	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. X4D.Colors.X4D .. questName)
     _currentXP = _currentXP + xpGained
 end
 
 local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience
+    _eta:Increment(xpGained)
 	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for Discovery " .. X4D.Colors.X4D .. areaName)
     _currentXP = _currentXP + xpGained
 end
 
 local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience
+    _eta:Increment(xpGained)
 	local objectiveName, objectiveLevel, startDescription, finishedDescription = GetPOIInfo(zoneIndex, poiIndex)
 	if (objectiveName ~= nil and objectiveName:len() > 0) then
 		InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. X4D.Colors.X4D .. objectiveName)
@@ -124,21 +121,105 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
 	if (unitTag ~= "player") then
 		return
 	end
+    if (maxExp ~= _eta.TargetCount) then
+        -- TODO: need a 'leveled' event to reset this from (and should also reset anything else set on 'player activation'
+        _eta:Reset(maxExp)
+    end
 	local xpGained = currentExp - _currentXP
 	if (xpGained > 0) then
+        _eta:Increment(xpGained)
+        local message = xpGained .. " " .. _pointType
 		local reason = GetExpReason(reasonIndex)
 		if (reason ~= nil) then            
-			InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. reason)
+            message = message .. " for " .. reason
 		end
+        local xpMinute = _eta:GetSessionAverage(60000)
+        message = message .. X4D.Colors.Subtext .. " (" .. math.ceil(xpMinute) .. " " .. _pointType .. "/minute" 
+        local tnl = (_eta.TargetCount - _eta.AllTimeCount)
+        if (X4D_XP.Settings:Get("ShowTTL")) then
+            local ttl = (tnl / _eta:GetSessionAverage())
+            local ttlDays = math.floor(ttl / 86400)
+            local shave = (ttlDays * 86400)
+            local ttlHours = math.floor((ttl - shave) / 3600)
+            shave = shave + (ttlHours * 3600)
+            local ttlMinutes = math.floor((ttl - shave) / 60)
+            shave = shave + (ttlMinutes * 60)
+            local ttlSeconds = math.floor(ttl - shave)
+            local ttlString = ""
+            if (ttlDays > 0) then
+                ttlString = string.format("%d:%02d:%02d:%02d", ttlDays, ttlHours, ttlMinutes, ttlSeconds)
+            elseif (ttlHours > 0) then
+                ttlString = string.format("%02d:%02d:%02d", ttlHours, ttlMinutes, ttlSeconds)
+            else
+                ttlString = string.format("%02d:%02d", ttlMinutes, ttlSeconds)
+            end
+            message = message .. ", " .. ttlString
+        end
+        if (X4D_XP.Settings:Get("ShowTNL")) then
+            message = message .. ", " .. tnl .. " tnl"
+        end
+        message = message .. ")"
+		InvokeCallbackSafe(X4D.Colors.XP, message)
 	end
 	_currentXP = _currentXP + xpGained
 end
+
+local function InitializeSettingsUI()
+	local LAM = LibStub("LibAddonMenu-2.0")
+	local cplId = LAM:RegisterAddonPanel("X4D_XP_CPL", {
+        type = "panel",
+        name = "X4D |cFFAE19XP",
+    })
+
+    local panelControls = { }
+
+    table.insert(panelControls, {
+        type = "checkbox",
+        name = "Show time-to-level (TTL)", 
+        tooltip = "When enabled, XP/min and time-to-level (ttl) are displayed with each kill.", 
+        getFunc = function() 
+            return X4D.XP.Settings:Get("ShowTTL")
+        end,
+        setFunc = function()
+            X4D.XP.Settings:Set("ShowTTL", not X4D.XP.Settings:Get("ShowTTL")) 
+        end,
+    })
+
+    table.insert(panelControls, {
+        type = "checkbox",
+        name = "Show XP `til-next-level (TNL)", 
+        tooltip = "When enabled, XP remaining until next level are displayed.", 
+        getFunc = function() 
+            return X4D.XP.Settings:Get("ShowTNL")
+        end,
+        setFunc = function()
+            X4D.XP.Settings:Set("ShowTNL", not X4D.XP.Settings:Get("ShowTNL")) 
+        end,
+    })
+
+    LAM:RegisterOptionControls(
+        "X4D_XP_CPL",
+        panelControls
+    )
+end
+
 
 function X4D_XP.OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_XP.NAME) then
 		return
 	end	
-	X4D_XP.Settings.SavedVars = ZO_SavedVars:NewAccountWide(X4D_XP.NAME .. "_SV", 1.0, nil, X4D_XP.Settings.Defaults)
+
+    _eta = X4D.ETA('X4D_XP')
+
+	X4D_XP.Settings = X4D.Settings(
+        X4D_XP.NAME .. "_SV", 
+        {
+            ShowTNL = true, -- show XP til-next-level (tnl)
+            ShowTTL = true, -- show XP/min and time-to-level (ttl)
+        })
+
+    InitializeSettingsUI()
+
 	X4D_XP.Register()
 end
 
@@ -162,6 +243,7 @@ function X4D_XP.OnPlayerActivated()
 		_pointType = "XP"
     	_currentXP = GetUnitXP("player")        
 	end
+    _eta.AllTimeCount = _currentXP
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, X4D_XP.OnAddOnLoaded)

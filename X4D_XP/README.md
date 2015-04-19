@@ -19,6 +19,12 @@ Open the Archive and copy the **X4D_XP** folder into **%USERPROFILE%\Documents\E
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.7
+
+- Modified gains displayed for veteran ranked players.
+- Added Settings UI, with two new feature options "Show TNL" and "Show TTL"
+- Added new TTL/TNL outputs to chat with standard XP gains (not reported for Quest, Objective nor POI since it is less relevant.)
+
 v1.6
 
 - Fixed bug where sometimes XP would be reported incorrectly.
