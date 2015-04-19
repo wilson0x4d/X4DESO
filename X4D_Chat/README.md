@@ -14,7 +14,8 @@
 
 ## Planned
 
-* Localization for 'Efficient Text'
+* Options to specify/override the Chat Tab for each message type
+* Localization support for 'Efficient Text Format'
 
 ## Installation
 

@@ -13,6 +13,7 @@
 ## Planned
 
 - Option to display loot from deconstructed items.
+- Option to show/hide AP (Alliance Point) gains
 
 ## Installation
 
