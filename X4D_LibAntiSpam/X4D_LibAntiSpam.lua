@@ -127,14 +127,6 @@ local function InvokeEmitCallbackSafe(color, text)
 	end
 end
 
-local function StringSplit(s, delimiter)
-    return s:Split(delimiter)
-end
-
-local function StringEndsWith(s,v)
-    return s:EndsWith(v)
-end
-
 local function StringPivot(s, delimiter, sk)
 	if (delimiter == nil) then
 		delimiter = " "
@@ -142,7 +134,7 @@ local function StringPivot(s, delimiter, sk)
 	if (sk == nil) then
 		sk = 0
 	end
-	local t = StringSplit(s, delimiter)
+	local t = s:Split(delimiter)
 	local r = ""
 	for j=1,1000 do
 		local b = false
@@ -162,83 +154,49 @@ local function StringPivot(s, delimiter, sk)
 	return r
 end
 
-local function IsSelf(fromName)
-	return (fromName == GetUnitName("player"))
-end
+X4D_LibAntiSpam.TransientPlayerState = X4D.DB:Create() -- for storing player-specific settings that do not need to be persisted. such as normalized strings, we use this database
 
-local function IsInGroup(fromName)
-	return IsPlayerInGroup(fromName)
-end
-
-local function IsInFriends(fromName)
-	return IsFriend(fromName)
-end
-
-local function IsInGuild(fromName)
-	fromName = fromName:gsub("%^.*", "")
-	for guildIndex = 1,GetNumGuilds() do
-		local guildId = GetGuildId(guildIndex)
-		if (guildId ~= nil) then
-			for memberIndex = 1,GetNumGuildMembers(guildId) do
-				local name, note, rankIndex, playerStatus, secsSinceLogoff = GetGuildMemberInfo(guildId, memberIndex)				
-				if (name == fromName) then
-					return true
-				end
-				local hasCharacter, characterName, zoneName, classType, alliance, level, veteranRank = GetGuildMemberCharacterInfo(guildId, memberIndex)
-				characterName = characterName:gsub("%^.*", "")
-				if (characterName == fromName) then
-					return true
-				end
-			end
-		end			
-	end
-	return false
-end
-
-local function ShouldWhitelistPlayer(fromName)
-	return IsSelf(fromName) or IsInGroup(fromName) or IsInFriends(fromName) or IsInGuild(fromName)
-end
-
-X4D_LibAntiSpam.Players = {}
-
-local function GetPlayer(fromName)
-	fromName = fromName:gsub("%^.*", "")
-	return X4D_LibAntiSpam.Players[fromName]
-end
-
-local function AddPlayer(fromName)
-	fromName = fromName:gsub("%^.*", "")
-	X4D_LibAntiSpam.Players[fromName] = {
-		Time = GetGameTimeMilliseconds(),
-		From = fromName,
-		IsWhitelist = ShouldWhitelistPlayer(fromName),
-		IsSpam = false,
-		IsFlood = false,
-		TextTable = { },
-		TextCount = 0,		
-		TextLatest = "",
-		GetTextAggregate = function(self)
-			local r = ""
-			for _,v in pairs(self.TextTable) do
-				r = r .. " " .. v
-			end			
-			return r .. StringPivot(r, " ", 0)
-		end,
-		AddText = function(self, normalized)
-			self.TextLatest = normalized
-			table.insert(self.TextTable, normalized)
-			self.TextCount = self.TextCount + 1
-			if (self.TextCount > 5) then
-				table.remove(self.TextTable, 1)
-				self.TextCount = self.TextCount - 1
-			end
-		end,
-	}
-	return GetPlayer(fromName)
+local function GetPlayerState(tag)
+    local player = X4D.Players:GetPlayer(tag)
+    local playerState = X4D_LibAntiSpam.TransientPlayerState:Find(player)
+    if (playerState == nil) then
+        playerState = {
+            Key = player, -- use 'persistent' player object (runtime reference) as a Key
+            Player = player, -- a formal reference to the associated player object, use this instead of 'Key' if you need access to X4D's Player object
+            --region 
+		    Time = player.LastSeen,
+		    From = player.Name,
+		    IsWhitelist = player.IsWhitelisted,
+		    IsFlood = player.IsFlooder,
+            FloodCount = 0,
+            --endregion
+		    TextTable = { },
+		    TextCount = 0,		
+		    LastMessage = "",
+		    GetTextAggregate = function(self)
+			    local r = ""
+			    for _,v in pairs(self.TextTable) do
+				    r = r .. " " .. v
+			    end			
+			    return r .. StringPivot(r, " ", 0)
+		    end,
+		    AddText = function(self, normalized)
+			    self.LastMessage = normalized
+			    table.insert(self.TextTable, normalized)
+			    self.TextCount = self.TextCount + 1
+			    if (self.TextCount > 5) then
+				    table.remove(self.TextTable, 1)
+				    self.TextCount = self.TextCount - 1
+			    end
+		    end,
+	    }
+        X4D_LibAntiSpam.TransientPlayerState:Add(playerState)
+    end
+	return playerState
 end
 
 local function GetEightyPercent(input)
-	local len80 = input:len() * 0.8
+	local len80 = math.ceil(input:len() * 0.8)
 	if (len80 == 0) then
 		return ""
 	else
@@ -246,43 +204,43 @@ local function GetEightyPercent(input)
 	end
 end
 
-local function UpdateFloodState(player, normalized, reason)
-	if (player.IsWhitelist or (X4D.AntiSpam.Settings:Get("FloodTimeSeconds") == 0)) then
-		player.IsFlood = false
+local function UpdateFloodState(playerState, normalized, reason)
+	if (playerState.Player.IsWhitelisted or (X4D.AntiSpam.Settings:Get("FloodTimeSeconds") == 0)) then
+		playerState.Player.IsFlooder = false
 		return false
 	end
-	if (normalized ~= nil and normalized:len() and GetEightyPercent(player.TextLatest) == GetEightyPercent(normalized)) then
-		player.Time = GetGameTimeMilliseconds()
-		if (not player.IsFlood) then
-			player.IsFlood = true
-            player.FloodCount = 1
-			if (X4D.AntiSpam.Settings:Get("NotifyWhenDetected") and (not player.IsSpam)) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Flood from: |cFFAE19" .. player.From)
+	if (normalized ~= nil and normalized:len() and GetEightyPercent(playerState.LastMessage) == GetEightyPercent(normalized)) then
+		playerState.Time = GetGameTimeMilliseconds()
+		if (not playerState.Player.IsFlooder) then
+			playerState.Player.IsFlooder = true
+            playerState.FloodCount = 1
+			if (X4D.AntiSpam.Settings:Get("NotifyWhenDetected") and (not playerState.Player.IsSpammer)) then
+				InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Flood from: |cFFAE19" .. playerState.Player.Name)
 			end
 			return true
 		end
-	elseif (player.Time <= (GetGameTimeMilliseconds() - (X4D.AntiSpam.Settings:Get("FloodTimeSeconds") * 1000))) then
-		player.IsFlood = false
-        player.FloodCount = 0
+	elseif (playerState.Time <= (GetGameTimeMilliseconds() - (X4D.AntiSpam.Settings:Get("FloodTimeSeconds") * 1000))) then
+		playerState.Player.IsFlooder = false
+        playerState.FloodCount = 0
 	end
-    if (player.IsFlood) then
-        player.FloodCount = player.FloodCount + 1
+    if (playerState.IsFlood) then
+        playerState.FloodCount = playerState.FloodCount + 1
     end
 	return false
 end
 
-local function CheckPatterns(player, normalized, patterns)
+local function CheckPatterns(playerState, normalized, patterns)
 	for i = 1, #patterns do
-		if (player.IsSpam) then
+		if (playerState.Player.IsSpammer) then
 			break
 		end
 		if (not pcall(function() 
 		if (normalized:find(patterns[i])) then
-			player.Time = GetGameTimeMilliseconds()
-			if (not player.IsSpam) then
-				player.IsSpam = true                
+			playerState.Time = GetGameTimeMilliseconds()
+			if (not playerState.Player.IsSpammer) then
+				playerState.Player.IsSpammer = true                
 				--OOM: player.SpamMessage = normalized
-				player.SpamPattern = patterns[i]
+				playerState.SpamPattern = patterns[i]
 			end
 		end
 		end)) then
@@ -291,20 +249,20 @@ local function CheckPatterns(player, normalized, patterns)
 	end
 end
 
-local function UpdateSpamState(player, normalized)
-	if (player.IsWhitelist) then
-		player.IsSpam = false
+local function UpdateSpamState(playerState, normalized)
+	if (playerState.Player.IsWhitelisted) then
+		playerState.Player.IsSpammer = false
 		return
 	end
-	if (not player.IsSpam) then
+	if (not playerState.Player.IsSpammer) then
 		if (X4D.AntiSpam.Settings:Get("UseInternalPatterns")) then
-			CheckPatterns(player, normalized, X4D_LibAntiSpam.InternalPatterns)
+			CheckPatterns(playerState, normalized, X4D_LibAntiSpam.InternalPatterns)
 		    if (X4D.AntiSpam.Settings:Get("UseAggressivePatterns")) then
-			    CheckPatterns(player, normalized, X4D_LibAntiSpam.AggressivePatterns)
+			    CheckPatterns(playerState, normalized, X4D_LibAntiSpam.AggressivePatterns)
 		    end		
 		end		
-		CheckPatterns(player, normalized, X4D.AntiSpam.Settings:Get("Patterns"))
-		return player.IsSpam -- new spammer detected
+		CheckPatterns(playerState, normalized, X4D.AntiSpam.Settings:Get("Patterns"))
+		return playerState.Player.IsSpammer -- if true, "new" spammer was detected
 	end
 	return false -- may or may not be a spammer, but definitely not a "new" spammer
 end
@@ -312,7 +270,7 @@ end
 function X4D_LibAntiSpam.OnChatMessageReceived(messageType, fromName, text)
     local ChannelInfo = ZO_ChatSystem_GetChannelInfo()	
     local channelInfo = ChannelInfo[messageType]
-	local isSpam, isFlood, player = X4D_LibAntiSpam:Check(text, fromName)
+	local isSpam, isFlood, pattern, floodCount = X4D_LibAntiSpam:Check(text, fromName)
 	if (isSpam or isFlood) then
 		return
 	end
@@ -515,40 +473,38 @@ function X4D_LibAntiSpam:Check(text, fromName, reason)
 		reason = "Chat" -- Guild Invite, Mail, etc, this is the text displayed to users later
 	end
 	local normalized, pivot = Normalize(text, fromName)
-	local player = GetPlayer(fromName)
-	if (not player) then
-		player = AddPlayer(fromName)
-		player:AddText(normalized)
-	else
-		if (not noFlood) then
-			local wasFlood = player.IsFlood
-			if (UpdateFloodState(player, normalized, reason) and not (player.IsSpam or wasFlood)) then
-				if (X4D.AntiSpam.Settings:Get("ShowNormalizations")) then
-					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. normalized .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
-				end	
-			end
-		end
-		player:AddText(normalized)
-		normalized = player:GetTextAggregate()
-	end	
-	if (not noSpam) then		
-		normalized = normalized .. pivot
-		if (UpdateSpamState(player, normalized)) then
-			if (X4D.AntiSpam.Settings:Get("NotifyWhenDetected")) then
-				local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
-				if (X4D.AntiSpam.Settings:Get("ShowNormalizations")) then
-					local highlighted = normalized:gsub("(" .. player.SpamPattern .. ")", X4D_LibAntiSpam.Colors.X4D .. "%1" .. "|c993333")
-					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. highlighted .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
-				end	
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Spam from |cFFAE19" .. (fromLink or fromName or "") .. "|c5C5C5C [" .. player.SpamPattern .. "]")
-			end	
-		else
-			if (X4D.AntiSpam.Settings:Get("ShowNormalizations") and not (player.IsSpam or player.IsFlood)) then
+	local playerState = GetPlayerState(fromName)
+
+	if (not noFlood) then
+		local p2 = playerState.Player
+        local wasFlood = p2.IsFlooder
+		if (UpdateFloodState(playerState, normalized, reason) and not (wasFlood or playerState.Player.IsSpammer)) then
+			if (X4D.AntiSpam.Settings:Get("ShowNormalizations")) then
 				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. normalized .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
 			end	
 		end
 	end
-	return player.IsSpam, player.IsFlood, player.IsSpam and player.SpamPattern
+	playerState:AddText(normalized)
+	normalized = playerState:GetTextAggregate()
+
+	if (not noSpam) then		
+		normalized = normalized .. pivot
+		if (UpdateSpamState(playerState, normalized)) then
+			if (X4D.AntiSpam.Settings:Get("NotifyWhenDetected")) then
+				local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
+				if (X4D.AntiSpam.Settings:Get("ShowNormalizations")) then
+					local highlighted = normalized:gsub("(" .. playerState.SpamPattern .. ")", X4D_LibAntiSpam.Colors.X4D .. "%1" .. "|c993333")
+					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. highlighted .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
+				end	
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Spam from |cFFAE19" .. (fromLink or fromName or "") .. "|c5C5C5C [" .. playerState.SpamPattern .. "]")
+			end	
+		else
+			if (X4D.AntiSpam.Settings:Get("ShowNormalizations") and not (playerState.Player.IsSpammer or playerState.Player.IsFlooder)) then
+				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. normalized .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
+			end	
+		end
+	end
+	return playerState.Player.IsSpammer, playerState.Player.IsFlooder, playerState.Player.IsSpammer and playerState.SpamPattern, playerState.Player.IsFlooder and playerState.FloodCount
 end	
 
 local function RejectSpammerGuildInvites()    
@@ -665,10 +621,10 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
                 end,
                 setFunc = function(v)
                     --local v = _G["X4D_LIBANTISPAM_EDIT_PATTERNS"]["edit"]:GetText()
-                    local result = StringSplit(v, "\n")
+                    local result = s:Split("\n")
                     -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
                     for _,x in pairs(result) do
-                        if (StringEndsWith(x, "]")) then
+                        if (x:EndsWith("]")) then
                             result[_] = x .. "+"
                         end
                     end
@@ -754,3 +710,5 @@ end
 EVENT_MANAGER:RegisterForEvent(X4D_LibAntiSpam.NAME, EVENT_ADD_ON_LOADED, X4D_LibAntiSpam.OnAddOnLoaded)
 EVENT_MANAGER:RegisterForEvent(X4D_LibAntiSpam.NAME, EVENT_GUILD_INVITE_ADDED, X4D_LibAntiSpam.OnGuildInviteAdded)
 EVENT_MANAGER:RegisterForEvent(X4D_LibAntiSpam.NAME, EVENT_PLAYER_ACTIVATED, X4D_LibAntiSpam.OnPlayerActivated)
+
+-- TODO: add OOM hook and free up any playerState records older than X hours
