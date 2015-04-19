@@ -4,26 +4,37 @@
 ## Description: X4D Core Library and Shared APIs which all X4D Add-Ons depend on.
 ## Version: 1.3
 ## SavedVariables: X4D_CORE_SV
-## DependsOn: LibAddonMenu-2.0
+## OptionalDependsOn: LibAddonMenu-2.0
 
+## third-party
 lib/LibStub/LibStub.lua
 lib/kikito/sha1.lua
 lib/badgerman/BigNum.lua
+## LAM2
+lib/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
+lib/LibAddonMenu-2.0/controls/panel.lua
+lib/LibAddonMenu-2.0/controls/submenu.lua
+lib/LibAddonMenu-2.0/controls/button.lua
+lib/LibAddonMenu-2.0/controls/checkbox.lua
+lib/LibAddonMenu-2.0/controls/colorpicker.lua
+lib/LibAddonMenu-2.0/controls/custom.lua
+lib/LibAddonMenu-2.0/controls/description.lua
+lib/LibAddonMenu-2.0/controls/dropdown.lua
+lib/LibAddonMenu-2.0/controls/editbox.lua
+lib/LibAddonMenu-2.0/controls/header.lua
+lib/LibAddonMenu-2.0/controls/slider.lua
+lib/LibAddonMenu-2.0/controls/texture.lua
 
+## X4D 
 X4D_Core.lua
-
 X4D_Strings.lua
 X4D_Convert.lua
 X4D_Colors.lua
 X4D_Icons.lua
 X4D_Debug.lua
-
 X4D_Async.lua
-
 X4D_Settings.lua
-
 X4D_DB.lua
-
 X4D_Items.lua
 X4D_Players.lua
 X4D_Guilds.lua

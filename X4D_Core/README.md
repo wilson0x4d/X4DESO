@@ -59,17 +59,16 @@ end
 In your manifest, if you are NOT including the library with your Add-On:
 <pre>
 ## DependsOn: X4D_Core
-## DependsOn: LibAddonMenu-2.0
 lib/LibStub/LibStub.lua
 </pre>
 
 Including X4D_Core along with your add-on is **NOT** recommended, but it is possible to do so. Contact me if you require assistance to avoid breaking other people's Add-Ons due to an incorrect set-up.
 <pre>
-## OptionalDependsOn: LibAddonMenu-2.0
+## DependsOn: LibAddonMenu-2.0
 ## OptionalDependsOn: X4D_Core
 lib/LibStub/LibStub.lua
-lib/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
 lib/kikito/sha1.lua
+lib/badgerman/BigNum.lua
 lib/X4D_Core.lua
 lib/X4D_Strings.lua
 lib/X4D_Convert.lua
@@ -85,14 +84,18 @@ lib/X4D_Guilds.lua
 </pre>
 
 ## Versions
+v1.4
+
+- Added 'LibAddonMenu-2.0' to /lib/ folder, marked it as an optional dependency.
+
 v1.3
 
--- Fixed bug in settings save/restore for per-character
--- Added 'Low Addon Memory' event handler that reports amount of memory in-use at the time
+- Fixed bug in settings save/restore for per-character
+- Added 'Low Addon Memory' event handler that reports amount of memory in-use at the time
 
 v1.2
 
--- Added sha1, base58 and bignum functions/libraries
+- Added sha1, base58 and bignum functions/libraries
 
 v1.1
 
