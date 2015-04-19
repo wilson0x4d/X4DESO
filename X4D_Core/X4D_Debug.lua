@@ -42,7 +42,7 @@ local TRACE_FORMATS_NOSOURCE = {
 	[X4D_Debug.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. "[" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL+100] .. "%s" .. TRACE_COLORS[X4D_Debug.TRACE_LEVELS.CRITICAL] .. "] %s",	
 }
 
-local _minTraceLevel = X4D_Debug.TRACE_LEVELS.WARNING
+local _minTraceLevel = X4D_Debug.TRACE_LEVELS.INFORMATION
 
 function X4D_Debug:SetTraceLevel(level)
 	_minTraceLevel = level
