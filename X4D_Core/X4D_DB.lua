@@ -30,8 +30,12 @@ function X4D_DB:Open(database)
 	local proto = {
 		_table = database
 	}
-	setmetatable(proto, { __index = self })
+	setmetatable(proto, { __index = X4D_DB })
 	return proto
+end
+
+function X4D_DB:Find(key) -- most efficient way to look up an item is if you already have its key
+    return self._table[key]
 end
 
 function X4D_DB:Where(predicate)
@@ -39,7 +43,7 @@ function X4D_DB:Where(predicate)
     for key,entity in pairs(self._table) do
         -- TODO: pcall
         if (predicate(entity)) then
-            table.insert(results, _, entity)
+            results[key] = entity
         end
     end
     return X4D_DB:Create(results)
@@ -84,4 +88,4 @@ end
 
 setmetatable(X4D_DB, { __call = X4D_DB.Open })
 
-X4D_DB.Create = X4D_DB
+X4D_DB.Create = X4D_DB.Open
