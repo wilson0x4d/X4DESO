@@ -8,9 +8,9 @@ X4D.Bank = X4D_Bank
 X4D_Bank.NAME = "X4D_Bank"
 X4D_Bank.VERSION = "1.14"
 
-local constLeaveAlone = "Leave Alone"
-local constDeposit = X4D.Colors.Deposit .. "Deposit"
-local constWithdraw = X4D.Colors.Withdraw .. "Withdraw"
+local constLeaveAlone = "Leave Alone" -- 0
+local constDeposit = X4D.Colors.Deposit .. "Deposit" -- 1
+local constWithdraw = X4D.Colors.Withdraw .. "Withdraw" -- 2
 
 local _itemTypeChoices = {
     constLeaveAlone,
@@ -259,15 +259,15 @@ local function TryWithdrawReserveAmount()
 end
 
 local function ShouldDepositItem(slot, itemTypeDirections)
-    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith("Deposit")
+    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.ItemType.Id] == 1)
 end
 
 local function ShouldWithdrawItem(slot, itemTypeDirections)
-    return(not IsSlotIgnoredItem(slot)) and(itemTypeDirections[slot.ItemType.Id] or constLeaveAlone):EndsWith("Withdraw")
+    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.ItemType.Id] == 2)
 end
 
-local function CreateDropdownName(itemType)
-    return ("X4D_BANK_" .. itemType.Canonical):upper()
+local function CreateSettingsName(itemType)
+    return itemType.Id
 end
 
 local function GetItemTypeDirectionalities()
@@ -275,8 +275,8 @@ local function GetItemTypeDirectionalities()
     for _,groupName in pairs(X4D.Items.ItemGroups) do
         for _,itemType in pairs(X4D.Items.ItemTypes) do
             if (itemType.Group == groupName) then
-                local dropdownName = CreateDropdownName(itemType)
-                local direction = X4D_Bank.Settings:Get(dropdownName) or constLeaveAlone
+                local dropdownName = CreateSettingsName(itemType)
+                local direction = X4D_Bank.Settings:Get(dropdownName) or 0
                 itemTypeDirections[itemType.Id] = direction
             end
         end
@@ -505,8 +505,9 @@ local function InitializeSettingsUI()
             choices = { "Account-Wide", "Per-Character" },
             getFunc = function() return X4D_Bank.Settings:Get("SettingsAre") or "Account-Wide" end,
             setFunc = function(v)
-                X4D_Bank.Settings:Set("SettingsAre", v)
-                ReloadUI()
+                if (X4D_Bank.Settings:Get("SettingsAre") ~= v) then
+                    X4D_Bank.Settings:Set("SettingsAre", v)
+                end
             end,
         },
         [2] =
@@ -633,16 +634,30 @@ local function InitializeSettingsUI()
         })
         for _,itemType in pairs(X4D.Items.ItemTypes) do
             if (itemType.Group == groupName) then
-                local dropdownName = CreateDropdownName(itemType)
+                local dropdownName = CreateSettingsName(itemType)
                 table.insert(panelControls, {
                     type = "dropdown",
                     name = itemType.Name,
                     tooltip = itemType.Tooltip or itemType.Canonical,
                     choices = _itemTypeChoices,
-                    getFunc = function() return 
-                        X4D_Bank.Settings:Get(dropdownName) or "Leave Alone" 
+                    getFunc = function() 
+                        local v = X4D_Bank.Settings:Get(dropdownName) or 0
+                        if (v == 1) then
+                            return constDeposit
+                        elseif (v == 2) then
+                            return constWithdraw
+                        else
+                            return constLeaveAlone
+                        end
                     end,
                     setFunc = function(v)
+                        if (v == constDeposit) then
+                            v = 1
+                        elseif (v == constWithdraw) then
+                            v = 2
+                        else
+                            v = 0
+                        end
                         X4D_Bank.Settings:Set(dropdownName, v)
                     end,
                     width = "half",
