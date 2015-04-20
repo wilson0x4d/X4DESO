@@ -86,8 +86,9 @@ lib/X4D_Guilds.lua
 ## Versions
 v1.4
 
+- Fixed several bugs in Async, DB, and Settings modules.
+- Implemented persistence and scavenging for Players module, moved data out of AntiSpam.
 - Added 'LibAddonMenu-2.0' to /lib/ folder, marked it as an optional dependency.
-- Fix bug where false setting would yield true when default setting was true.
 - Added new 'X4D_ETA' module
 
 v1.3

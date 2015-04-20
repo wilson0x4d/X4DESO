@@ -43,6 +43,10 @@ Normalization is the process of taking otherwise codified text and translating i
 
 
 ## Versions
+v1.62
+
+- Relocation of player data out of AntiSpam and into Core.
+
 v1.61
 
 - Memory optimizations.
