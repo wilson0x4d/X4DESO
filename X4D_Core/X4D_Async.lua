@@ -18,11 +18,11 @@ local X4D_Timer = {}
 function X4D_Timer:New(callback, interval, state)
 	local proto = {
 		_enabled = false,
-		_callback = callback or (function() self:Stop() end),
+		_callback = callback or (function(L_timer) self:Stop() end),
 		_interval = interval or 1000,
 		_state = state or {},
 	}
-	setmetatable(proto, { __index = self })
+	setmetatable(proto, { __index = X4D_Timer })
 	return proto
 end
 
@@ -38,32 +38,42 @@ function X4D_Timer:Elapsed()
 	end
 	local success, err = pcall(self._callback, self, self._state)
 	if (not success) then
-		X4D_Debug:Error(err)
+		X4D.Debug:Error(err)
 		return
 	end
 	if (self._enabled) then
-		local spent = GetGameTimeMilliseconds() - start
-		local interval = self._interval - spent
-		if (interval <= 0) then
-			interval = 1
-		end
+		--local spent = GetGameTimeMilliseconds() - start
+		local interval = self._interval -- -spent
+
+		--if (interval <= 0) then
+		--	interval = 1
+		--end
+        --d(type(interval)
+        --d(interval)
 		zo_callLater(function() self:Elapsed() end, interval)
 	end
 end
 
 -- "state" is passed into timer callback
 -- "interval" is optional, and can be used to change the timer interval during execution
-function X4D_Timer:Start(state, interval)
-	if (state) then
+function X4D_Timer:Start(interval, state)
+	if (state ~= nil) then
 		self._state = state
 	end
-	if (interval) then
+	if (interval ~= nil) then
 		self._interval = interval
 	end
 	if (self._enabled) then
 		return
 	end
 	self._enabled = true
+
+--    if (self._interval ~= nil) then
+--        X4D.Debug:Warning("Timer interval: " .. type(self._interval) .. " " .. tostring(self._interval))
+--    else
+--        X4D.Debug:Warning("Timer Interval: nil")
+--    end
+
 	zo_callLater(function() self:Elapsed() end, self._interval)
     return self
 end
@@ -75,4 +85,6 @@ end
 
 setmetatable(X4D_Timer, { __call = X4D_Timer.New })
 
-X4D_Async.CreateTimer = X4D_Timer
+function X4D_Async:CreateTimer(callback, interval, state)
+    return X4D_Timer:New(callback, interval, state)
+end
