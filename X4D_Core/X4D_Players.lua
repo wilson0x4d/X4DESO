@@ -59,15 +59,15 @@ function X4D_Players:IsInGuild(player)
 	return false
 end
 
-local _playerDbScavenger = nil
+local _playerScavenger = nil
 local _playerScavengerFrequency = 300 * 1000 -- default, 5 minutes between player db maintenance intervals
 local _playerScavengerTimePeriod = 3 * 300 * 1000 -- default, 15 minutes before players are purged
 
 local function StartDbScavenger()
-    if (_playerDbScavenger ~= nil) then
+    if (_playerScavenger ~= nil) then
         return 
     end
-    _playerDbScavenger = X4D.Async:CreateTimer(function (timer, state)
+    _playerScavenger = X4D.Async:CreateTimer(function (timer, state)
         local memory = collectgarbage("count")
         local now = GetGameTimeMilliseconds()
         local scavenged = X4D_Players.DB
@@ -82,7 +82,7 @@ local function StartDbScavenger()
         memory = (memory - collectgarbage("count"))
         X4D.Debug:Verbose("X4D Player DB Memory Delta: " .. memory)
     end, _playerScavengerFrequency, {})
-    _playerDbScavenger:Start()
+    _playerScavenger:Start()
 end
 
 EVENT_MANAGER:RegisterForEvent("X4D_Players.DB", EVENT_ADD_ON_LOADED, function(event, name)
