@@ -73,7 +73,7 @@ local function StartDbScavenger()
         local scavenged = X4D_Players.DB
             :Where(function(player) 
                 return
-                    not (player.Whitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
+                    not (player.IsWhitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
                     and ((now - player.LastSeen) >= _playerScavengerTimePeriod) -- only purge 'old' players from database
             end)
         scavenged:ForEach(function (player) 

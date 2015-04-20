@@ -7,10 +7,11 @@ X4D XP is LibStub-compatible Add-On that reports XP gains.
 - Outputs Experience Gains
 - Can be integrated with via LibStub, and a callback can be set via **X4D_XP:RegisterCallback(color, text)**
 - Integrated into **X4D Chat** Add-On which provides timestamp support for **X4D XP** output.
+- Shows XP/min, optionally shows Time-To-Level (ttl) and XP til-next-level (tnl)
 
 ## Planned
 
-- Banking Option for 'Stolen' goods, regardless of item type.
+- If user is idle for 5 minutes or more, reset session start time and session count.
 
 ## Installation
 

@@ -9,11 +9,11 @@ X4D Bank is LibStub-compatible Add-On that performs regular Bank deposits.
 * Specify Deposit Down-Time, such as depositing only once an hour.
 * Auto-Deposit Items (fill incomplete stacks, start new stacks)
 * Deposit and Withdraw Items based on Item Type
+* Pattern-based Item Ignore List - by default, ignore STOLEN items.
 
 ## Planned Features
 
 * Display own output, currently relies on X4D Loot for displaying Balance Changes.
-* Do not attempt to bank stolen goods.
 
 ## Installation
 
