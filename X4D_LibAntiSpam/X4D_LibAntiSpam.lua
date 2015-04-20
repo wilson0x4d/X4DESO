@@ -474,6 +474,7 @@ function X4D_LibAntiSpam:Check(text, fromName, reason)
 	end
 	local normalized, pivot = Normalize(text, fromName)
 	local playerState = GetPlayerState(fromName)
+    playerState.Player.LastSeen = GetGameTimeMilliseconds()
 
 	if (not noFlood) then
 		local p2 = playerState.Player
@@ -711,4 +712,6 @@ EVENT_MANAGER:RegisterForEvent(X4D_LibAntiSpam.NAME, EVENT_ADD_ON_LOADED, X4D_Li
 EVENT_MANAGER:RegisterForEvent(X4D_LibAntiSpam.NAME, EVENT_GUILD_INVITE_ADDED, X4D_LibAntiSpam.OnGuildInviteAdded)
 EVENT_MANAGER:RegisterForEvent(X4D_LibAntiSpam.NAME, EVENT_PLAYER_ACTIVATED, X4D_LibAntiSpam.OnPlayerActivated)
 
--- TODO: add OOM hook and free up any playerState records older than X hours
+EVENT_MANAGER:RegisterForEvent("X4D_AntiSpam_OOM", EVENT_LUA_LOW_MEMORY, function()
+    -- TODO: add OOM hook and free up any playerState records older than X hours
+end)
