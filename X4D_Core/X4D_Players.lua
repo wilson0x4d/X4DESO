@@ -59,10 +59,40 @@ function X4D_Players:IsInGuild(player)
 	return false
 end
 
+local _playerDbScavenger = nil
+local _playerScavengerFrequency = 300 * 1000 -- default, 5 minutes between player db maintenance intervals
+local _playerScavengerTimePeriod = 3 * 300 * 1000 -- default, 15 minutes before players are purged
+
+local function StartDbScavenger()
+    if (_playerDbScavenger ~= nil) then
+        return 
+    end
+    _playerDbScavenger = X4D.Async:CreateTimer(function (timer, state)
+        local memory = collectgarbage("count")
+        local now = GetGameTimeMilliseconds()
+        local scavenged = X4D_Players.DB
+            :Where(function(player) 
+                return
+                    not (player.Whitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
+                    and ((now - player.LastSeen) >= _playerScavengerTimePeriod) -- only purge 'old' players from database
+            end)
+        scavenged:ForEach(function (player) 
+            X4D_Players.DB:Remove(player.Key)
+        end)
+        memory = (memory - collectgarbage("count"))
+        X4D.Debug:Verbose("X4D Player DB Memory Delta: " .. memory)
+    end, _playerScavengerFrequency, {})
+    _playerDbScavenger:Start()
+end
+
 EVENT_MANAGER:RegisterForEvent("X4D_Players.DB", EVENT_ADD_ON_LOADED, function(event, name)
     if (name == "X4D_Core") then
         X4D_Players.DB = X4D.DB("X4D_Players.DB")
     end
+end)
+
+EVENT_MANAGER:RegisterForEvent("X4D_Players_SCAVENGER", EVENT_PLAYER_ACTIVATED, function()
+    StartDbScavenger()
 end)
 
 function X4D_Players:GetPlayer(tag)
@@ -88,3 +118,4 @@ end
 setmetatable(X4D_Player, { __call = X4D_Player.New })
 
 -- TODO: add OOM hook and free up any player records older than X time, discriminate and keep any records belonging to flooders, spammers, whitelisted and blacklisted users
+
