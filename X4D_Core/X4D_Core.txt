@@ -39,3 +39,4 @@ X4D_DB.lua
 X4D_Items.lua
 X4D_Players.lua
 X4D_Guilds.lua
+X4D_Bags.lua

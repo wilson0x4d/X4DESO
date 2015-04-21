@@ -91,70 +91,7 @@ local function IsSlotIgnoredItem(slot)
 end
 
 local function TryGetBagState(bagId)
-    local numSlots = GetBagSize(bagId)
-    local bagIcon = nil
-    if (bagIcon == nil or bagIcon:len() == 0) then
-        bagIcon = "EsoUI/Art/Icons/icon_missing.dds"
-        -- TODO: how to know which icon to use? also, choose better default icon for this case
-    end
-    local bagState = {
-        Id = bagId,
-        BagIcon = X4D.Icons.Create(bagIcon),
-        SlotCount = numSlots,
-        Slots = { },
-        FreeSlotCount = 0,
-        FreeSlots = { },
-        PartialSlotCount = 0,
-        PartialSlots = { },
-    }
-    for slotIndex = 0,(bagState.SlotCount - 1) do
-        local itemName = GetItemName(bagId, slotIndex)
-        local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, itemQuality = GetItemInfo(bagId, slotIndex)
-        if (itemName ~= nil and itemName:len() > 0) then
-            local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex)
-            local itemLink, itemColor, itemQuality = GetItemLinkInternal(bagId, slotIndex)
-            local itemQualityString = X4D.Items.ToQualityString(itemQuality)
-            local itemType = X4D.Items.ItemTypes[GetItemType(bagId, slotIndex)] or X4D.Items.ItemTypes[ITEMTYPE_NONE]
-            local itemLevel = GetItemLevel(bagId, slotIndex)
-            local isStolen = IsItemStolen(bagId, slotIndex)
-
-            local normalizedItemData = (" L" .. itemLevel .. " " .. itemQualityString .. " T" .. itemType.Id .. " " .. itemType.Canonical .. " " .. itemName:lower() .. " " .. itemLink)
-            if (isStolen) then
-                normalizedItemData = " STOLEN" .. normalizedItemData
-                -- TODO: handler for when "stolen" state of an item changes
-            end
-            local slot = {
-                Id = slotIndex,
-                IsEmpty = false,
-                ItemIcon = X4D.Icons.Create(iconFilename),
-                ItemName = itemName,
-                ItemLink = itemLink,
-                ItemColor = itemColor,
-                ItemQuality = itemQuality,
-                ItemLevel = itemLevel,
-                ItemType = itemType,
-                StackCount = stackCount,
-                StackMax = stackMax,
-                IsStolen = isStolen,
-                Normalized = normalizedItemData
-            }
-            bagState.Slots[slotIndex] = slot
-            if ((stackMax > 0) and(stackCount < stackMax) and(not isStolen)) then
-                bagState.PartialSlotCount = bagState.PartialSlotCount + 1
-                table.insert(bagState.PartialSlots, slot)
-            end
-        else
-            bagState.FreeSlotCount = bagState.FreeSlotCount + 1
-            local slot = {
-                Id = slotIndex,
-                IsEmpty = true,
-                Normalized = "~ISEMPTY"
-            }
-            bagState.Slots[slotIndex] = slot
-            table.insert(bagState.FreeSlots, slot)
-        end
-    end
-    return bagState
+    return X4D.Bags:GetBag(bagId, true)
 end
 
 local function TryFillPartialStacks()
@@ -186,6 +123,7 @@ local function TryFillPartialStacks()
                                     table.insert(inventoryState.FreeSlots, inventorySlotInfo)
                                     inventoryState.FreeSlotCount = inventoryState.FreeSlotCount + 1
                                     inventorySlotInfo.IsEmpty = true
+                                    inventorySlotInfo.Normalized = "~ISEMPTY"
                                 end
                             end
                         end
@@ -360,6 +298,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         sourceSlot.StackCount = sourceSlot.StackCount - countToMove
         if (sourceSlot.StackCount <= 0) then
             sourceSlot.IsEmpty = true
+            sourceSlot.Normalized = "~ISEMPTY"
             break
         end
     end
@@ -373,6 +312,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 sourceSlot.StackCount = sourceSlot.StackCount - countToMove
                 if (sourceSlot.StackCount <= 0) then
                     sourceSlot.IsEmpty = true
+                    sourceSlot.Normalized = "~ISEMPTY"
                     targetSlot.IsEmpty = false
                     break
                 end

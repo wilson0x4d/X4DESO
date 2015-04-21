@@ -17,15 +17,19 @@ X4D_Colors.TRACE_WARNING = "|cCC6600"
 X4D_Colors.TRACE_ERROR = "|c990000"
 X4D_Colors.TRACE_CRITICAL = "|cFF0033"
 
-X4D_Colors.AP = "|cAA33FF"
 X4D_Colors.BagSpaceLow = "|cFFd00b"
 X4D_Colors.BagSpaceFull = "|cAA0000"
-X4D_Colors.Gray = "|cC5C5C5"
-X4D_Colors.Gold = "|cFFD700"
 X4D_Colors.StackCount = "|cFFFFFF"
+
 X4D_Colors.Subtext = "|c5C5C5C"
+
 X4D_Colors.VP = "|cAA33FF"
 X4D_Colors.XP = "|cAA33FF"
+X4D_Colors.AP = "|cAA33FF"
+
+X4D_Colors.Red = "|cFF3333"
+X4D_Colors.Gray = "|cC5C5C5"
+X4D_Colors.Gold = "|cFFD700"
 
 function X4D_Colors:Create(r, g, b, a)
 	return "|c" .. X4D.Convert.DEC2HEX(r * 255) .. X4D.Convert.DEC2HEX(g * 255) .. X4D.Convert.DEC2HEX(b * 255)
