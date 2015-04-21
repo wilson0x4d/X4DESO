@@ -1,6 +1,6 @@
-# X4D **Vendor**
+# X4D **Vendors**
 
-X4D Vendor is LibStub-compatible Add-On that interacts with Vendors.
+A LibStub-compatible Add-on that interacts with Vendors and Fences, performing Laundering and Sales on your behald.
 
 ## Features
 
@@ -25,4 +25,4 @@ v1.0
 - Initial release.
 - Options to Auto-Sell/Launder Items by Pattern Matching (pattern matching is identical to 'Bank Ignore List')
 - Tracks Money In, Money Out, and reports results of Auto-Sell/Launder (if any)
-- Added Persistent Vendor.DB
+- Added Persistent Vendors DB

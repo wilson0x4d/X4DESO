@@ -45,6 +45,9 @@ EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
                 if (X4D.Mail ~= nil) then
                     versions = versions .. "Mail/" .. X4D.Mail.VERSION .. " "
                 end
+                if (X4D.Vendors ~= nil) then
+                    versions = versions .. "Vendors/" .. X4D.Vendors.VERSION .. " "
+                end
                 if (X4D.XP ~= nil) then
                     versions = versions .. "XP/" .. X4D.XP.VERSION .. " "
                 end
@@ -133,6 +136,8 @@ function X4D:Test()
     -- Items API
     -- Guilds API
     -- Players API
+
+    -- Vendors API
 
     return self
 end

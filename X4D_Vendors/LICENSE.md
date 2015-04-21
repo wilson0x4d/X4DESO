@@ -1,4 +1,4 @@
- **X4D Vendor** is licensed under the **MS-RL (Microsoft Reciprocal License)**, a copy of this license appears below.
+ **X4D Vendors** is licensed under the **MS-RL (Microsoft Reciprocal License)**, a copy of this license appears below.
 
 **Copyright © Shaun Wilson, all rights reserved.**
 

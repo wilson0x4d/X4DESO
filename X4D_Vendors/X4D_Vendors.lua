@@ -349,14 +349,14 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
                 "LEGENDARY",
                 "ARTIFACT",
                 "ARCANE",
-                "MAGIC",
+                "STOLEN",
             },
             ForSaleItemPatterns =
             {
                 -- items matching a "for sale" pattern WILL BE SOLD without confirmation, this includes STOLEN items while at a vendor
                 -- laundering (or "for keeps") takes precedence over "for sale"
                 "TRASH",
-                "STOLEN.*ITEMTYPE_NONE",
+                "ITEMTYPE_NONE",
             },
         })
 

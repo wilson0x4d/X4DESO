@@ -24,6 +24,10 @@ Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.26
+
+- add support for **X4D Vendors** Addon
+
 v1.25
 
 - Misc updates due to Core changes.

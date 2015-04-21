@@ -69,24 +69,29 @@ Including X4D_Core along with your add-on is **NOT** recommended, but it is poss
 lib/LibStub/LibStub.lua
 lib/kikito/sha1.lua
 lib/badgerman/BigNum.lua
-lib/X4D_Core.lua
-lib/X4D_Strings.lua
-lib/X4D_Convert.lua
-lib/X4D_Colors.lua
-lib/X4D_Icons.lua
-lib/X4D_Debug.lua
-lib/X4D_Async.lua
-lib/X4D_Settings.lua
-lib/X4D_DB.lua
-lib/X4D_Items.lua
-lib/X4D_Players.lua
-lib/X4D_Guilds.lua
+lib/X4D_Core/X4D_Core.lua
+lib/X4D_Core/X4D_Strings.lua
+lib/X4D_Core/X4D_Convert.lua
+lib/X4D_Core/X4D_Colors.lua
+lib/X4D_Core/X4D_Icons.lua
+lib/X4D_Core/X4D_Debug.lua
+lib/X4D_Core/X4D_Async.lua
+lib/X4D_Core/X4D_ETA.lua
+lib/X4D_Core/X4D_Settings.lua
+lib/X4D_Core/X4D_DB.lua
+lib/X4D_Core/X4D_Items.lua
+lib/X4D_Core/X4D_Players.lua
+lib/X4D_Core/X4D_Guilds.lua
+lib/X4D_Core/X4D_Bags.lua
 </pre>
 
 ## Versions
 v1.6
 
-- base58 encode player object keys, and optimize player db to lookup by key instead of iterating the set looking for names, looking by name is considered "last resort", and requires full match
+- Added new X4D_Bags module, which will help consolidate code/requirements that exist for Vendor, Bank and Loot Addons.
+- X4D_DB now returns keys in addition to values from :Find() and most callbacks (predicates, builders, visitors) are now sent the key as a second parameter. This allows more efficient code to be written (knowing which key allows for direct lookups.)
+- Default 'trace level' is now "INFORMATION" (instead of WARNING), developers should use X4D.Debug:Verbose(...) for debug output, and X4D.Debug:Information(...) for user-friendly information messages. Eventually the end-user will be able to change trace level, developers need to ensure "Information" level is not used for dev-only feedback.
+- X4D_Players base58 encodes keys, it does not duplicate the key as a conventional property (shaving memory for something we don't actually need to look-up.), and optimized player lookups.
 
 v1.5
 
