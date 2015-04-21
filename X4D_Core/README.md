@@ -84,6 +84,10 @@ lib/X4D_Guilds.lua
 </pre>
 
 ## Versions
+v1.6
+
+- base58 encode player object keys, and optimize player db to lookup by key instead of iterating the set looking for names, looking by name is considered "last resort", and requires full match
+
 v1.5
 
 - Fixed a bug which only affects X4D_Bank by preventing you from changing "Settings Are.." from "Account-Wide" to "Per-Character"

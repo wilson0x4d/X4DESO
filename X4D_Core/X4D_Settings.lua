@@ -1,10 +1,10 @@
-local X4D_Settings = LibStub:NewLibrary("X4D_Settings", 1001)
+local X4D_Settings = LibStub:NewLibrary("X4D_Settings", 1005)
 if (not X4D_Settings) then
 	return
 end
 local X4D = LibStub("X4D")
 X4D.Settings = X4D_Settings
-X4D_SETTINGS_IMPLEMENTATION_VERSION = 0 -- this must be incremented whenever implementation is changed
+local X4D_SETTINGS_IMPLEMENTATION_VERSION = 0 -- this must be incremented whenever implementation is changed
 
 function X4D_Settings:Get(name)
 	if (self.Saved == nil) then

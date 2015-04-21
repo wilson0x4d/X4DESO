@@ -19,7 +19,7 @@ end )
 local _sessionStartTime = GetGameTimeMilliseconds()
 
 function X4D_ETA:GetOrCreate(name)
-    local key = base58(sha1(GetRawUnitName("player"):gsub("%^.*", "") .. "_" .. name):FromHex())
+    local key = base58(sha1(GetRawUnitName("player") .. "_" .. name):FromHex())
     local eta = X4D.ETA.DB:Find(key);
     if (eta == nil) then
         local currentTime = GetGameTimeMilliseconds()

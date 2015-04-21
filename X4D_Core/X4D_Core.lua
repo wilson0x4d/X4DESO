@@ -1,10 +1,10 @@
-local X4D = LibStub:NewLibrary("X4D", 1005)
+local X4D = LibStub:NewLibrary("X4D", 1006)
 if (not X4D) then
     return
 end
 
 X4D.NAME = "X4D"
-X4D.VERSION = "1.5"
+X4D.VERSION = "1.6"
 
 EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)
     if (name == "X4D_Core") then
@@ -14,7 +14,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, 
                 SettingsAre = "Account-Wide",
                 X4DB = { },
             }, 
-            2)
+            3)
     end
 end)
 

@@ -1,4 +1,4 @@
-local X4D_Players = LibStub:NewLibrary("X4D_Players", 1001)
+local X4D_Players = LibStub:NewLibrary("X4D_Players", 1006)
 if (not X4D_Players) then
     return
 end
@@ -7,15 +7,20 @@ X4D.Players = X4D_Players
 
 local X4D_Player = {}
 
+---
+-- X4D_Player:New(tag)
+---
+-- 'tag' := <target-unit|player-name|character-name>::string
+--
 function X4D_Player:New(tag)
-    local playerName = GetRawUnitName(tag)
-    if (playerName == nil or playerName:len() == 0) then
-        playerName = tag
+    local unitName = GetRawUnitName(tag)
+    if (unitName == nil or unitName:len() == 0) then
+        unitName = tag
     end
+    local normalizedName = unitName:gsub("%^.*", "")
+    local key = "$" .. base58(sha1(normalizedName):FromHex())
     local proto = {
-        Key = playerName,
-        Name = playerName:gsub("%^.*", ""),
-        AccountId = '', -- can we get the account id somehow?
+        Name = normalizedName,
         IsWhitelisted = false,
         IsBlacklisted = false,
         IsFlooder = false,
@@ -27,7 +32,8 @@ function X4D_Player:New(tag)
 end
 
 function X4D_Players:IsSelf(player)
-	return (player.Name == GetUnitName("player"))
+    local normalizedName = GetRawUnitName("player"):gsub("%^.*", "") -- TODO: optimize
+	return (player.Name == normalizedName)
 end
 
 function X4D_Players:IsInGroup(player)
@@ -39,20 +45,22 @@ function X4D_Players:IsInFriends(player)
 end
 
 function X4D_Players:IsInGuild(player)
-	local fromName = player.Name
 	for guildIndex = 1,GetNumGuilds() do
 		local guildId = GetGuildId(guildIndex)
 		if (guildId ~= nil) then
 			for memberIndex = 1,GetNumGuildMembers(guildId) do
 				local name, note, rankIndex, playerStatus, secsSinceLogoff = GetGuildMemberInfo(guildId, memberIndex)				
-				if (name == fromName) then
+				local normalizedName = name:gsub("%^.*", "")
+				if (name == player.Name) then
 					return true
 				end
-				local hasCharacter, characterName, zoneName, classType, alliance, level, veteranRank = GetGuildMemberCharacterInfo(guildId, memberIndex)
-				characterName = characterName:gsub("%^.*", "")
-				if (characterName == fromName) then
-					return true
-				end
+				local hasCharacter, name, zoneName, classType, alliance, level, veteranRank = GetGuildMemberCharacterInfo(guildId, memberIndex)
+                if (hasCharacter) then
+				    normalizedName = name:gsub("%^.*", "")
+				    if (normalizedName == player.Name) then
+					    return true
+				    end
+                end
 			end
 		end			
 	end
@@ -63,7 +71,7 @@ local _playerScavenger = nil
 local _playerScavengerFrequency = 300 * 1000 -- default, 5 minutes between player db maintenance intervals
 local _playerScavengerTimePeriod = 3 * 300 * 1000 -- default, 15 minutes before players are purged
 
-local function StartDbScavenger()
+local function StartDbScavenger() 
     if (_playerScavenger ~= nil) then
         return 
     end
@@ -76,8 +84,8 @@ local function StartDbScavenger()
                     not (player.IsWhitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
                     and ((now - player.LastSeen) >= _playerScavengerTimePeriod) -- only purge 'old' players from database
             end)
-        scavenged:ForEach(function (player) 
-            X4D_Players.DB:Remove(player.Key)
+        scavenged:ForEach(function (player,key) 
+            X4D_Players.DB:Remove(key)
         end)
         memory = (memory - collectgarbage("count"))
         X4D.Debug:Verbose("X4D Player DB Memory Delta: " .. memory)
@@ -96,23 +104,30 @@ EVENT_MANAGER:RegisterForEvent("X4D_Players_SCAVENGER", EVENT_PLAYER_ACTIVATED, 
 end)
 
 function X4D_Players:GetPlayer(tag)
-    local playerName = GetRawUnitName(tag)
-    if (playerName == nil or playerName:len() == 0) then
-        playerName = tag
+    local unitName = GetRawUnitName(tag)
+    if (unitName == nil or unitName:len() == 0) then
+        unitName = tag
     end
-    local player = self.DB
-        :Where(function(player) return (player.Key:match(playerName) or player.Name:match(playerName)) ~= nil end)
-        :FirstOrDefault()
+    -- attempt to lookup by key
+    local normalizedName = unitName:gsub("%^.*", "")
+    local key = "$" .. base58(sha1(normalizedName):FromHex())
+    local player = self.DB:Find(key)
     if (player == nil) then
-        player = X4D_Player(tag)
-        self.DB:Add(player)
+        -- lookup by key failed, perhaps this user is known by name (e.g. cross-channel chat where player-names are not discoverable, but we know this player through some other means such as friends list or guild where their account name is in the clear.)
+        player = self.DB
+            :Where(function(player) return player.Name == normalizedName end)
+            :FirstOrDefault()
+        if (player == nil) then
+            player = X4D_Player(tag)
+            self.DB:Add(key, player)
+        end
     end
     -- TODO: this needs to be re-updated when (1) join or leave a group (2) add/remove from friends (3) you/other join/part a guild
     -- EVENT_FRIEND_ADDED
     -- EVENT_FRIEND_REMOVED
-    -- for now, we update whitelist every single time we fetch the player from the db - it's inefficient
+    -- for now, we update whitelist every single time we fetch the player from the db - it's inefficient, but assures consistency with game state for the caller
     player.IsWhitelisted = self:IsSelf(player) or self:IsInGroup(player) or self:IsInFriends(player) or self:IsInGuild(player)
-    return player
+    return player, key
 end
 
 --setmetatable(X4D_Players, { __call = X4D_Players.GetPlayer })

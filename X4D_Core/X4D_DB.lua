@@ -42,8 +42,9 @@ function X4D_DB:Where(predicate)
     local results = {}
     for key,entity in pairs(self._table) do
         -- TODO: pcall
-        if (predicate(entity)) then
-            results[key] = entity
+        if (predicate(entity, key)) then
+            local L_key = value.Id or value.Key or value.id or value.key or value.ID or key        
+            results[L_key] = entity
         end
     end
     return X4D_DB:Create(results)
@@ -53,23 +54,25 @@ function X4D_DB:Select(builder)
     local results = X4D_DB:Create()
     for key,entity in pairs(self._table) do
         -- TODO: pcall
-        results:Add(builder(key, entity))
+        local value = builder(entity, key)
+        local L_key = value.Id or value.Key or value.id or value.key or value.ID or key        
+        results:Add(L_key, value)
     end
     return results
 end
 
 function X4D_DB:FirstOrDefault(predicate)
-    for _,entity in pairs(self._table) do
-        if ((predicate == nil) or predicate(entity)) then
-            return entity
+    for key,entity in pairs(self._table) do
+        if ((predicate == nil) or predicate(entity, key)) then
+            return entity, key
         end
     end
     return nil
 end
 
 function X4D_DB:ForEach(visitor)
-    for _,entity in pairs(self._table) do
-        visitor(entity)
+    for key,entity in pairs(self._table) do
+        visitor(entity, key)
     end
 end
 
@@ -80,6 +83,7 @@ function X4D_DB:Add(key, value)
         key = value.Id or value.Key or value.id or value.key or value.ID
     end
     self._table[key] = value
+    return value, key
 end
 
 function X4D_DB:Remove(key)
