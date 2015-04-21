@@ -1,4 +1,4 @@
-local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1002)
+local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1003)
 if (not X4D_Mail) then
 	return
 end
@@ -6,14 +6,13 @@ local X4D = LibStub("X4D")
 X4D.Mail = X4D_Mail
 
 X4D_Mail.NAME = "X4D_Mail"
-X4D_Mail.VERSION = "1.2"
+X4D_Mail.VERSION = "1.3"
 
 -- 1.0
 -- X4D_Mail:IsMailReadable(mailId)
 -- X4D_Mail:HandleMailAttachments(mailId)
 -- X4D_Mail:HandleSpam(mailId)
 
-local X4D_Loot = LibStub("X4D_Loot")
 if (X4D.AntiSpam == nil) then
 	X4D.Debug:Warning("No usable AntiSpam Library was detected.", "X4D Mail")
 end
