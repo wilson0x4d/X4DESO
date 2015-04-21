@@ -6,6 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Chat = X4D_Chat
 
 local X4D_LibAntiSpam = nil
+local X4D_Vendors = nil
 local X4D_Loot = nil
 local X4D_XP = nil
 local X4D_Bank = nil
@@ -385,13 +386,6 @@ local function SetSliderValue(controlName, value, minValue, maxValue)
 	slidervalue:SetText(tostring(value))
 end
 
---local function SetEditBoxValue(controlName, value, maxInputChars)
---	if (maxInputChars and maxInputChars > 0) then
---		_G[controlName]["edit"]:SetMaxInputChars(maxInputChars)
---	end
---	_G[controlName]["edit"]:SetText(value)
---end
-
 local function OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Chat.NAME) then
 		return
@@ -597,6 +591,18 @@ local function OnAddOnLoaded(event, addonName)
 	EVENT_MANAGER:RegisterForUpdate("X4D_Chat_Update", 1000, OnUpdate)
 end
 
+function X4D_Chat.VendorsEmitCallback(color, text)
+	if (color == nil or color:len() < 8) then
+		d("VendorsEmitCallback.. bad color received")
+		color = "|cFFFFFF"
+	end
+	if (text == nil or text:len() == 0) then
+		d("VendorsEmitCallback.. bad text received")
+		text = "item?"
+	end
+	d(GetTimestampPrefix(color) .. text)
+end
+
 function X4D_Chat.LootCallback(color, text)
 	if (color == nil or color:len() < 8) then
 		d("LootCallback.. bad color received")
@@ -706,6 +712,12 @@ function X4D_Chat.Register()
 		X4D_LibAntiSpam = LibStub("LibAntiSpam", true)
 		if (X4D_LibAntiSpam and X4D_LibAntiSpam.RegisterEmitCallback) then
 			X4D_LibAntiSpam:RegisterEmitCallback(X4D_Chat.AntiSpamEmitCallback)
+		end
+	end
+	if (not X4D_Vendors) then
+		X4D_Vendors = LibStub("X4D_Vendors", true)
+		if (X4D_Vendors and X4D_Vendors.RegisterCallback ~= nil) then
+			X4D_Vendors:RegisterCallback(X4D_Chat.VendorsEmitCallback)
 		end
 	end
 	if (not X4D_Loot) then

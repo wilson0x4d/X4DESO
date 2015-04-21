@@ -22,6 +22,12 @@ Open the Archive and copy the **X4D_Loot** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+
+v1.10
+
+- Allowing X4D_Vendors to take over responsibility of reporting vendor income/expenses.
+- Added option to report loot worth, enabled by default.
+
 v1.9
 
 - Added 'beta' option to display party loot, needs more work.

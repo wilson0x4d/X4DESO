@@ -24,6 +24,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="X4D_Vendors\" />
     <Folder Include="X4D_Bank\" />
     <Folder Include="X4D_Bank\lib\" />
     <Folder Include="X4D_Bank\lib\LibStub\" />
@@ -73,6 +74,7 @@
     <Compile Include="X4D_Core\lib\LibAddonMenu-2.0\LibAddonMenu-2.0.lua" />
     <Compile Include="X4D_Core\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Core\X4D_Async.lua" />
+    <Compile Include="X4D_Core\X4D_Bags.lua" />
     <Compile Include="X4D_Core\X4D_Colors.lua" />
     <Compile Include="X4D_Core\X4D_Convert.lua" />
     <Compile Include="X4D_Core\X4D_Core.lua" />
@@ -94,6 +96,7 @@
     <Compile Include="X4D_Loot\X4D_Loot.lua" />
     <Compile Include="X4D_Mail\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Mail\X4D_Mail.lua" />
+    <Compile Include="X4D_Vendors\X4D_Vendors.lua" />
     <Compile Include="X4D_XP\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_XP\X4D_XP.lua" />
   </ItemGroup>
@@ -123,6 +126,10 @@
     <Content Include="X4D_Mail\README.md" />
     <Content Include="X4D_Mail\X4D_Mail.txt" />
     <Content Include="X4D_Mail\X4D_Mail.xml" />
+    <Content Include="X4D_Vendors\LICENSE.md" />
+    <Content Include="X4D_Vendors\README.md" />
+    <Content Include="X4D_Vendors\X4D_Vendors.txt" />
+    <Content Include="X4D_Vendors\X4D_Vendors.xml" />
     <Content Include="X4D_XP\LICENSE.md" />
     <Content Include="X4D_XP\README.md" />
     <Content Include="X4D_XP\X4D_XP.txt" />

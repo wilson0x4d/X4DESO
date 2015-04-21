@@ -1,4 +1,4 @@
-local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1009)
+local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1010)
 if (not X4D_Loot) then
 	return
 end
@@ -6,7 +6,9 @@ local X4D = LibStub("X4D")
 X4D.Loot = X4D_Loot
 
 X4D_Loot.NAME = "X4D_Loot"
-X4D_Loot.VERSION = "1.9"
+X4D_Loot.VERSION = "1.10"
+
+local _goldIcon = X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
 
 X4D_Loot.Colors = {
 	Gold = "|cFFD700",
@@ -100,6 +102,7 @@ local function AddBagSlotInternal(bag, slotIndex)
 		ItemId = GetItemInstanceId(bag.Id, slotIndex) or 0,
 		Stack = stack,
 		MaxStack = maxStack,
+        SellPrice = sellPrice,
 	}
 	slot.IsEmpty = slot.ItemId == 0
 	bag.Slots[slot.Id] = slot
@@ -134,6 +137,16 @@ end
 
 --== Update Bags ==--
 
+local function GetWorthString(slot)
+    local worth = ""
+    if (slot.SellPrice ~= nil and slot.SellPrice > 0) then 
+        if (X4D.Loot.Settings:Get("DisplayLootWorth")) then
+            worth = X4D.Colors.Subtext .. " worth " .. X4D.Colors.Gold .. slot.SellPrice .. _goldIcon
+        end
+    end
+    return worth
+end
+
 local function UpdateBagSlotInternal(bag, slotId)
 	local wasChangeDetected = false
 	local slot = bag.Slots[slotId]
@@ -141,8 +154,8 @@ local function UpdateBagSlotInternal(bag, slotId)
 		slot = AddBagSlotInternal(bag, slotId)
 		if (bag.Id == 1) then
 			wasChangeDetected = true
-			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then
-				InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack)
+			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then                
+				InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot))
 			end
 		end
 	else	
@@ -167,9 +180,10 @@ local function UpdateBagSlotInternal(bag, slotId)
 				slot.ItemLink = itemLink
 				slot.ItemColor = itemColor
 				slot.ItemIcon = iconFilename
+                slot.SellPrice = sellPrice
 				if (bag.Id == 1) then
 					wasChangeDetected = true
-					InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack)
+					InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot))
 				end
 			end
 		elseif (itemId > 0) then
@@ -178,13 +192,14 @@ local function UpdateBagSlotInternal(bag, slotId)
 			if (iconFilename == nil or iconFilename:len() == 0) then
 				iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 			end
+            slot.SellPrice = sellprice
 			slot.ItemIcon = iconFilename
 			if (stack ~= slot.Stack) then
 				local stackChange = stack - slot.Stack
 				if (stackChange > 0) then
 					if (bag.Id == 1) then
 						wasChangeDetected = true
-						InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange)
+						InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. GetWorthString(slot))
 					end
 				end
 				slot.Stack = stack
@@ -517,6 +532,11 @@ local function formatnum(n)
 end
 
 function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
+    --d({eventId, newMoney, oldMoney, reasonId})
+    if ((reasonId == 1 or reasonId == 60) and (X4D.Vendors ~= nil)) then
+        -- leave display of income/expenses to Vendors Addon when present
+        return
+    end
     if (not X4D.Loot.Settings:Get("DisplayMoneyUpdates")) then
         return
     end
@@ -568,6 +588,18 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
             type = "checkbox",
+            name = "Display Loot Worth", 
+            tooltip = "When enabled, and when available, loot worth is displayed.", 
+            getFunc = function() 
+                return X4D.Loot.Settings:Get("DisplayLootWorth")
+            end,
+            setFunc = function()
+                X4D.Loot.Settings:Set("DisplayLootWorth", not X4D.Loot.Settings:Get("DisplayLootWorth"))
+            end,
+        })
+
+    table.insert(panelControls, {
+            type = "checkbox",
             name = "[BETA] Display Party Loot", 
             tooltip = "When enabled, loot received by others is displayed in the Chat Window.", 
             getFunc = function() 
@@ -584,7 +616,6 @@ local function InitializeSettingsUI()
     )
 end
 
-
 function X4D_Loot.OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Loot.NAME) then
 		return
@@ -596,6 +627,7 @@ function X4D_Loot.OnAddOnLoaded(event, addonName)
             SettingsAre = "Account-Wide",
             DisplayMoneyUpdates = true,
 			DisplayPartyLoot = false,
+			DisplayLootWorth = true,
         }, 
         2)
 
@@ -608,7 +640,8 @@ local function OnCraftCompleted(...)
 	PopulateBagsInternal()	
 end
 
-function X4D_Loot.Register()		
+function X4D_Loot.Register()
+    -- TODO: EVENT_ALLIANCE_POINT_UPDATE
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_LOOT_RECEIVED, X4D_Loot.OnLootReceived)
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, X4D_Loot.OnInventorySingleSlotUpdate)
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_MONEY_UPDATE, X4D_Loot.OnMoneyUpdate)
