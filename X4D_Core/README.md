@@ -84,6 +84,10 @@ lib/X4D_Guilds.lua
 </pre>
 
 ## Versions
+v1.5
+
+- Fixed a bug which only affects X4D_Bank by preventing you from changing "Settings Are.." from "Account-Wide" to "Per-Character"
+
 v1.4
 
 - Fixed several bugs in Async, DB, and Settings modules.

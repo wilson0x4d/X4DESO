@@ -81,7 +81,7 @@ function X4D_Settings:Create(savedVarsName, defaults, version)
     end
     version = math.floor(version) + X4D_SETTINGS_IMPLEMENTATION_VERSION -- TODO: whenever X4D_Settings implementation changes how data is stored we increment this to accomodate - it wipes settings - that's why it is done
     local saved = ZO_SavedVars:NewAccountWide(savedVarsName, version, nil, {})
-    saved.SettingsAre = defaults.SettingsAre or "Account-Wide"
+    saved.SettingsAre = saved.SettingsAre or defaults.SettingsAre or "Account-Wide"
 
 	local scope = saved.SettingsAre
 	if (scope ~= "Account-Wide") then

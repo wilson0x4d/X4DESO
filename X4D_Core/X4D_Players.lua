@@ -108,6 +108,8 @@ function X4D_Players:GetPlayer(tag)
         self.DB:Add(player)
     end
     -- TODO: this needs to be re-updated when (1) join or leave a group (2) add/remove from friends (3) you/other join/part a guild
+    -- EVENT_FRIEND_ADDED
+    -- EVENT_FRIEND_REMOVED
     -- for now, we update whitelist every single time we fetch the player from the db - it's inefficient
     player.IsWhitelisted = self:IsSelf(player) or self:IsInGroup(player) or self:IsInFriends(player) or self:IsInGuild(player)
     return player
@@ -116,6 +118,3 @@ end
 --setmetatable(X4D_Players, { __call = X4D_Players.GetPlayer })
 
 setmetatable(X4D_Player, { __call = X4D_Player.New })
-
--- TODO: add OOM hook and free up any player records older than X time, discriminate and keep any records belonging to flooders, spammers, whitelisted and blacklisted users
-
