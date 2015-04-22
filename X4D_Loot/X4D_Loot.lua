@@ -8,7 +8,7 @@ X4D.Loot = X4D_Loot
 X4D_Loot.NAME = "X4D_Loot"
 X4D_Loot.VERSION = "1.10"
 
-local _goldIcon = X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
+local _goldIcon = " " .. X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
 
 X4D_Loot.Colors = {
 	Gold = "|cFFD700",

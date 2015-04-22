@@ -135,7 +135,7 @@ end
 
 local _debits = 0
 local _credits = 0
-local _goldIcon = X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
+local _goldIcon = " " .. X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
 
 local function ConductTransactions(vendor)
     local bag = X4D.Bags:GetInventoryBag(true)

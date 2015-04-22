@@ -68,8 +68,8 @@ function X4D_Players:IsInGuild(player)
 end
 
 local _playerScavenger = nil
-local _playerScavengerFrequency = 300 * 1000 -- default, 5 minutes between player db maintenance intervals
-local _playerScavengerTimePeriod = 3 * 300 * 1000 -- default, 15 minutes before players are purged
+local _playerScavengerFrequency = 1000 * 60 * 2 -- default, 2 minutes between player db maintenance intervals
+local _playerScavengerTimePeriod = 3000 * 60 * 10 -- default, 10 minutes before players are scavenged
 
 local function StartDbScavenger() 
     if (_playerScavenger ~= nil) then
@@ -81,8 +81,9 @@ local function StartDbScavenger()
         local scavenged = X4D_Players.DB
             :Where(function(player) 
                 return
-                    not (player.IsWhitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
-                    and ((now - player.LastSeen) >= _playerScavengerTimePeriod) -- only purge 'old' players from database
+                    player == nil
+                    or (not (player.IsWhitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
+                    and ((now - player.LastSeen) >= _playerScavengerTimePeriod)) -- only purge 'old' players from database
             end)
         scavenged:ForEach(function (player,key) 
             X4D_Players.DB:Remove(key)

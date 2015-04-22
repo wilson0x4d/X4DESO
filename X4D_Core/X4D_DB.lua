@@ -43,7 +43,7 @@ function X4D_DB:Where(predicate)
     for key,entity in pairs(self._table) do
         -- TODO: pcall
         if (predicate(entity, key)) then
-            local L_key = value.Id or value.Key or value.id or value.key or value.ID or key        
+            local L_key = entity.Id or entity.Key or entity.id or entity.key or entity.ID or key        
             results[L_key] = entity
         end
     end

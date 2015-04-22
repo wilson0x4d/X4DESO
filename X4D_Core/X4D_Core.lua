@@ -23,7 +23,7 @@ local _oneTimeVersionReport = false
 EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
     function(event, name)
         if (name == "X4D_Core") then
-            if (_oneTimeVersionReport) then
+            if ( _oneTimeVersionReport) then
                 return
             end
             _oneTimeVersionReport = true

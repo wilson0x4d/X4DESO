@@ -1,6 +1,6 @@
 # X4D **Vendors**
 
-A LibStub-compatible Add-on that interacts with Vendors and Fences, performing Laundering and Sales on your behald.
+A LibStub-compatible Add-on that interacts with Vendors and Fences, performing Laundering and Sales on your behalf.
 
 ## Features
 
