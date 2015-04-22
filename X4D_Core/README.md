@@ -86,6 +86,10 @@ lib/X4D_Core/X4D_Bags.lua
 </pre>
 
 ## Versions
+v1.7-hotfix
+
+- fix null reference error in X4D_DB module
+
 v1.6
 
 - Added new X4D_Bags module, which will help consolidate code/requirements that exist for Vendor, Bank and Loot Addons.
