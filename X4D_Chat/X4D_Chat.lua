@@ -526,7 +526,9 @@ local function OnAddOnLoaded(event, addonName)
                     return X4D_Chat.Settings:Get("GuildAbbr")[1]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings:Get("GuildAbbr")[1] = v
+                    local guildAbbreviations = X4D_Chat.Settings:Get("GuildAbbr")
+                    guildAbbreviations[1] = v
+                    X4D_Chat.Settings:Set("GuildAbbr", guildAbbreviations)
                 end,
                 width = "half",      
             },
@@ -539,7 +541,9 @@ local function OnAddOnLoaded(event, addonName)
                     return X4D_Chat.Settings:Get("GuildAbbr")[2]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings:Get("GuildAbbr")[2] = v
+                    local guildAbbreviations = X4D_Chat.Settings:Get("GuildAbbr")
+                    guildAbbreviations[2] = v
+                    X4D_Chat.Settings:Set("GuildAbbr", guildAbbreviations)
                 end,
                 width = "half",                
             },
@@ -552,7 +556,9 @@ local function OnAddOnLoaded(event, addonName)
                     return X4D_Chat.Settings:Get("GuildAbbr")[3]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings:Get("GuildAbbr")[3] = v
+                    local guildAbbreviations = X4D_Chat.Settings:Get("GuildAbbr")
+                    guildAbbreviations[3] = v
+                    X4D_Chat.Settings:Set("GuildAbbr", guildAbbreviations)
                 end,
                 width = "half",                
             },
@@ -565,7 +571,9 @@ local function OnAddOnLoaded(event, addonName)
                     return X4D_Chat.Settings:Get("GuildAbbr")[4]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings:Get("GuildAbbr")[4] = v
+                    local guildAbbreviations = X4D_Chat.Settings:Get("GuildAbbr")
+                    guildAbbreviations[4] = v
+                    X4D_Chat.Settings:Set("GuildAbbr", guildAbbreviations)
                 end,
                 width = "half",                
             },
@@ -578,7 +586,9 @@ local function OnAddOnLoaded(event, addonName)
                     return X4D_Chat.Settings:Get("GuildAbbr")[5]
                 end,
                 setFunc = function(v)
-                    X4D_Chat.Settings:Get("GuildAbbr")[5] = v
+                    local guildAbbreviations = X4D_Chat.Settings:Get("GuildAbbr")
+                    guildAbbreviations[5] = v
+                    X4D_Chat.Settings:Set("GuildAbbr", guildAbbreviations)
                 end,
                 width = "half",                
             },
