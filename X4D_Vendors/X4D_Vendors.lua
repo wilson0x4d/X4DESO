@@ -98,17 +98,17 @@ X4D_VENDORACTION_NONE = 0
 X4D_VENDORACTION_KEEP = 1
 X4D_VENDORACTION_SELL = 2
 
-local function GetVendorAction(slot)
+local function GetPatternAction(slot)
     local vendorAction = X4D_VENDORACTION_NONE
     if (not slot.IsEmpty) then
         local forKeepsPatterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
         for i = 1, #forKeepsPatterns do
             local pattern = forKeepsPatterns[i]
             if (not pcall( function()
-                    if (slot.Normalized:find(pattern)) then
-                        vendorAction = X4D_VENDORACTION_KEEP
-                    end
-                end )) then
+                if (slot.Normalized:find(pattern)) then
+                    vendorAction = X4D_VENDORACTION_KEEP
+                end
+            end)) then
                 InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Item Pattern: |cFF7777" .. pattern)
             end
             if (vendorAction ~= X4D_VENDORACTION_NONE) then
@@ -143,7 +143,7 @@ local function ConductTransactions(vendor)
         for _,slot in pairs(bag.Slots) do
             if (slot ~= nil and not slot.IsEmpty) then
                 -- pattern match item names for sales
-                local vendorAction = GetVendorAction(slot)
+                local vendorAction = GetPatternAction(slot)
                 if (vendorAction == X4D_VENDORACTION_KEEP) then
                     if (vendor.IsFence and slot.IsStolen) then
                         local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
@@ -160,14 +160,11 @@ local function ConductTransactions(vendor)
 	                    InvokeCallbackSafe(slot.ItemColor, "Laundered " .. slot.ItemIcon .. slot.ItemLink .. X4D.Colors.StackCount .. " x" .. slot.StackCount .. statement)
                     end
                 elseif (vendorAction == X4D_VENDORACTION_SELL) then
-                    if ((not (vendor.IsFence and slot.IsStolen)) or (vendor.IsFence and slot.IsStolen)) then
+                    if (vendor.IsFence == slot.IsStolen) then
                         if (vendor.IsFence) then
-                            if (slot.IsStolen) then
-                                local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
-                                if (sellsUsed < sellsMax) then
-                                    CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
-                                    CallSecureProtected("PlaceInStoreWindow")
-                                end
+                            local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
+                            if (sellsUsed > sellsMax) then
+                                return
                             end
                         else
                             CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
