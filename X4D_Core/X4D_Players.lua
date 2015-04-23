@@ -69,7 +69,7 @@ end
 
 local _playerScavenger = nil
 local _playerScavengerFrequency = 1000 * 60 * 2 -- default, 2 minutes between player db maintenance intervals
-local _playerScavengerTimePeriod = 3000 * 60 * 10 -- default, 10 minutes before players are scavenged
+local _playerScavengerTimePeriod = 1000 * 60 * 10 -- default, 10 minutes before players are scavenged
 
 local function StartDbScavenger() 
     if (_playerScavenger ~= nil) then
