@@ -94,73 +94,6 @@ local function TryGetBagState(bagId)
     return X4D.Bags:GetBag(bagId, true)
 end
 
-local function TryFillPartialStacks()
-    if (not X4D_Bank.Settings:Get("AutoDepositItems")) then
-        return
-    end
-
-    ClearCursor()
-
-    local inventoryState = TryGetBagState(1)
-    local bankState = TryGetBagState(2)
-
-    for _, bankSlotInfo in pairs(bankState.Slots) do
-        if (not(bankSlotInfo.IsEmpty or IsSlotIgnoredItem(bankSlotInfo))) then
-            for _, inventorySlotInfo in pairs(inventoryState.Slots) do
-                if (not(inventorySlotInfo.IsEmpty or IsSlotIgnoredItem(inventorySlotInfo))) then
-                    if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName and bankSlotInfo.ItemLevel == inventorySlotInfo.ItemLevel and bankSlotInfo.ItemQuality == inventorySlotInfo.ItemQuality and bankSlotInfo.IsStolen == inventorySlotInfo.IsStolen) then
-                        local stackRemaining = bankSlotInfo.StackMax - bankSlotInfo.StackCount
-                        if (inventorySlotInfo.StackCount < stackRemaining) then
-                            stackRemaining = inventorySlotInfo.StackCount
-                        end
-                        if (stackRemaining > 0) then
-                            CallSecureProtected("PickupInventoryItem", inventoryState.Id, inventorySlotInfo.Id, stackRemaining)
-                            CallSecureProtected("PlaceInInventory", bankState.Id, bankSlotInfo.Id)
-                            InvokeCallbackSafe(bankSlotInfo.ItemColor, "Deposited " .. bankSlotInfo.ItemIcon .. bankSlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. stackRemaining)
-                            inventorySlotInfo.StackCount = inventorySlotInfo.StackCount - stackRemaining
-                            if (inventorySlotInfo.StackCount <= 0) then
-                                if (not inventorySlotInfo.IsEmpty) then
-                                    table.insert(inventoryState.FreeSlots, inventorySlotInfo)
-                                    inventoryState.FreeSlotCount = inventoryState.FreeSlotCount + 1
-                                    inventorySlotInfo.IsEmpty = true
-                                    inventorySlotInfo.Normalized = "~ISEMPTY"
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    if ((not X4D_Bank.Settings:Get("StartNewStacks")) or(bankState.FreeSlotCount == 0)) then
-        return
-    end
-
-    for _, bankSlotInfo in pairs(bankState.Slots) do
-        if (not(bankSlotInfo.IsEmpty or IsSlotIgnoredItem(bankSlotInfo))) then
-            for _, inventorySlotInfo in pairs(inventoryState.Slots) do
-                if (bankState.FreeSlotCount > 0) then
-                    if (not inventorySlotInfo.IsEmpty) then
-                        if (bankSlotInfo.ItemName == inventorySlotInfo.ItemName) then
-                            local stackRemaining = inventorySlotInfo.StackCount
-                            if (stackRemaining > 0) then
-                                local emptyBankSlot = table.remove(bankState.FreeSlots)
-                                bankState.FreeSlotCount = bankState.FreeSlotCount - 1
-                                if (emptyBankSlot ~= nil) then
-                                    CallSecureProtected("PickupInventoryItem", inventoryState.Id, inventorySlotInfo.Id, stackRemaining)
-                                    CallSecureProtected("PlaceInInventory", bankState.Id, emptyBankSlot.Id)
-                                    InvokeCallbackSafe(inventorySlotInfo.ItemColor, "Deposited " .. inventorySlotInfo.ItemIcon .. inventorySlotInfo.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. stackRemaining)
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 local function TryDepositFixedAmount()
     local availableAmount = GetCurrentMoney() - X4D_Bank.Settings:Get("AutoDepositReserve")
     local depositAmount = X4D_Bank.Settings:Get("AutoDepositFixedAmount")
@@ -208,7 +141,7 @@ local function CreateSettingsName(itemType)
     return itemType.Id
 end
 
-local function GetItemTypeDirectionalities()
+local function GetItemTypeActions()
     local itemTypeDirections = { }
     for _,groupName in pairs(X4D.Items.ItemGroups) do
         for _,itemType in pairs(X4D.Items.ItemTypes) do
@@ -328,7 +261,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
 end
 
 local function TryDepositsAndWithdrawals()
-    local itemTypeDirections = GetItemTypeDirectionalities()
+    local itemTypeDirections = GetItemTypeActions()
     local inventoryState = TryGetBagState(1)
     local bankState = TryGetBagState(2)
     local pendingDeposits = { }
@@ -395,7 +328,6 @@ local function OnOpenBank(eventCode)
     end
     TryWithdrawReserveAmount()
     TryDepositsAndWithdrawals()
-    zo_callLater(TryFillPartialStacks, 1000)
 end
 
 local function SetComboboxValue(controlName, value)
@@ -526,14 +458,6 @@ local function InitializeSettingsUI()
         {
             type = "header",
             name = "Item Deposits and Withdrawals",
-        },
-        [10] =
-        {
-            type = "checkbox",
-            name = "Fill Partial Stacks?",
-            tooltip = "When enabled, partial stacks in the bank will be filled from your inventory, overriding any 'item type' settings you may have.",
-            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositItems") end,
-            setFunc = function() X4D_Bank.Settings:Set("AutoDepositItems", not X4D_Bank.Settings:Get("AutoDepositItems")) end,
         },
     }
 
@@ -700,7 +624,6 @@ local function OnAddOnLoaded(eventCode, addonName)
             AutoDepositReserve = 500,
             AutoDepositFixedAmount = 100,
             AutoDepositPercentage = 1,
-            AutoDepositItems = false,
             StartNewStacks = true,
             AutoWithdrawReserve = true,
             DisplayMoneyUpdates = true,
