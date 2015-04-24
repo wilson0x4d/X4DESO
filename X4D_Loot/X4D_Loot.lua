@@ -137,11 +137,11 @@ end
 
 --== Update Bags ==--
 
-local function GetWorthString(slot)
+local function GetWorthString(slot, stackCount)
     local worth = ""
     if (slot.SellPrice ~= nil and slot.SellPrice > 0) then 
         if (X4D.Loot.Settings:Get("DisplayLootWorth")) then
-            worth = X4D.Colors.Subtext .. " worth " .. X4D.Colors.Gold .. slot.SellPrice .. _goldIcon
+            worth = X4D.Colors.Subtext .. " worth " .. X4D.Colors.Gold .. (slot.SellPrice * stackCount) .. _goldIcon
         end
     end
     return worth
@@ -155,7 +155,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 		if (bag.Id == 1) then
 			wasChangeDetected = true
 			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then                
-				InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot))
+				InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot, slot.Stack))
 			end
 		end
 	else	
@@ -183,7 +183,7 @@ local function UpdateBagSlotInternal(bag, slotId)
                 slot.SellPrice = sellPrice
 				if (bag.Id == 1) then
 					wasChangeDetected = true
-					InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot))
+					InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot, slot.Stack))
 				end
 			end
 		elseif (itemId > 0) then
@@ -199,7 +199,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 				if (stackChange > 0) then
 					if (bag.Id == 1) then
 						wasChangeDetected = true
-						InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. GetWorthString(slot))
+						InvokeCallbackSafe(slot.ItemColor, X4D.Icons.Create(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. GetWorthString(slot, stackChange))
 					end
 				end
 				slot.Stack = stack
