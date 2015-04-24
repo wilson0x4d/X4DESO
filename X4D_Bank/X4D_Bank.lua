@@ -31,7 +31,7 @@ X4D_Bank.Colors = {
 local _nextAutoDepositTime = 0
 
 local function GetItemLinkInternal(bagId, slotIndex)
-    local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS):gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
+    local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS) --:gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
     return itemLink, itemColor, itemQuality
     --TODO: return X4D.Items:FromBagSlot(bagId, slotIndex)

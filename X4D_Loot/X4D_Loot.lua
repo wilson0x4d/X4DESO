@@ -69,10 +69,10 @@ local function InvokeCallbackSafe(color, text)
 end
 
 local function GetItemLinkInternal(bagId, slotId)
-	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS):gsub("(%[%l)", function (i) return i:upper() end):gsub("(%s%l)", function (i) return i:upper() end):gsub("%^[^%]]*", "")
+	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS) --:gsub("(%[%l)", function (i) return i:upper() end):gsub("(%s%l)", function (i) return i:upper() end):gsub("%^[^%]]*", "")
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
 	return itemLink, itemColor, itemQuality
-    --TODO: return X4D.Items:FromBagSlot(bagId, slotId)
+    --return X4D.Items:FromBagSlot(bagId, slotId)
 end
 
 X4D_Loot.Bags = {}
