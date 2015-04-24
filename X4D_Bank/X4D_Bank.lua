@@ -605,7 +605,7 @@ local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     if (not X4D.Bank.Settings:Get("DisplayMoneyUpdates")) then
         return
     end
-    local icon = X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
+    local icon = X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
     local reason = GetMoneyReason(reasonId)
     local amount = newMoney - oldMoney
     if (amount >= 0) then

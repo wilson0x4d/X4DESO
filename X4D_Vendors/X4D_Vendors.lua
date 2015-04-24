@@ -145,7 +145,7 @@ end
 
 local _debits = 0
 local _credits = 0
-local _goldIcon = " " .. X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
+local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 
 local function GetItemTypeActions()
     local itemTypeActions = { }
