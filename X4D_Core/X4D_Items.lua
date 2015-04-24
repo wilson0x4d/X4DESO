@@ -16,10 +16,10 @@ function X4D_Item:New(name, options)
         Options = options,
         -- remainder of props are values we cannot obtain from 'options' and thus track separate
         ItemType = nil,
-        Icon = nil,
         SellPrice = 0, -- TODO: sell prices per-level
         LaunderPrice = 0, -- TODO: sell prices by level
         MarketPrice = 0, -- TODO: sell prices by level
+        Icon58 = nil,
     }
     return item, normalizedName
 end

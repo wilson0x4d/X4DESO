@@ -17,10 +17,10 @@ function X4D_DB:Open(database)
     if (type(database) ~= "table") then
         if (_databases == nil) then
             local sv = X4D.Settings("X4D_CORE_SV", nil, 2)
-            if (sv.Saved.X4DB == nil) then
-                sv.Saved["X4DB"] = {}
+            if (sv:Get("X4DB") == nil) then
+                sv:Set("X4DB", {})
             end
-            _databases = sv.Saved.X4DB
+            _databases = sv:Get("X4DB")
         end
         if (_databases[database] == nil) then
             _databases[database] = {}

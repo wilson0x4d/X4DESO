@@ -50,7 +50,7 @@ function X4D_Bag:New(bagId)
                 Id = slotId,
                 IsEmpty = false,
                 ItemIcon = X4D.Icons:CreateString(iconFilename), -- TODO: stop storing formatted strings
-                Icon58 = X4D.Icons:ToIcon58(iconFilename),
+                IconFilename = iconFilename,
                 ItemName = itemName,
                 ItemLink = itemLink,
                 ItemColor = itemColor,

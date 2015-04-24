@@ -100,7 +100,6 @@ local function AddBagSlotInternal(bag, slotIndex)
 		ItemLink = itemLink,
 		ItemColor = itemColor or "|cFF0000",
 		ItemIcon = iconFilename, -- deprecated
-        Icon58 = X4D.Icons:ToIcon58(iconFilename),
         ItemId = GetItemInstanceId(bag.Id, slotIndex) or 0, -- TODO: verify this is the same itemId as appears in itemlinks
 		Stack = stack,
 		MaxStack = maxStack,
@@ -182,7 +181,6 @@ local function UpdateBagSlotInternal(bag, slotId)
 				slot.ItemLink = itemLink
 				slot.ItemColor = itemColor
 				slot.ItemIcon = iconFilename -- deprecated
-                slot.Icon58 = X4D.Icons:ToIcon58(iconFilename)
                 slot.SellPrice = sellPrice
 				if (bag.Id == 1) then
 					wasChangeDetected = true
@@ -197,7 +195,6 @@ local function UpdateBagSlotInternal(bag, slotId)
 			end
             slot.SellPrice = sellprice
 			slot.ItemIcon = iconFilename
-            slot.Icon58 = X4D.Icons:ToIcon58(iconFilename)
 			if (stack ~= slot.Stack) then
 				local stackChange = stack - slot.Stack
 				if (stackChange > 0) then
@@ -257,8 +254,7 @@ local function AddQuestStepConditionInternal(quest, step, conditionIndex)
 	end
 	local condition = {
 		Id = conditionIndex,
-		ItemIcon = iconFilename, -- deprecate
-        Icon58 = X4D.Icons:ToIcon58(iconFilename),
+		ItemIcon = iconFilename,
 		ItemLink = "[" .. itemName .. "]", -- TODO: can we link to quest? implement custom link handler?
 		ItemColor = "|cFF6600", -- TODO: color by quest type?
 		Stack = stackCount,
@@ -297,8 +293,7 @@ local function AddQuestToolInternal(quest, toolIndex)
 	end
 	local tool = {
 		Id = toolIndex,
-		ItemIcon = iconFilename,-- deprecate
-        Icon58 = X4D.Icons:ToIcon58(iconFilename),
+		ItemIcon = iconFilename,
 		ItemLink = "[" .. toolName .. "]", -- TODO: can we link to quest? implement custom link handler?
 		ItemColor = "|cFF6600", -- TODO: color by quest type?
 		Stack = stackCount,
@@ -359,8 +354,7 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 		if (iconFilename == nil or iconFilename:len() == 0) then
 			iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 		end
-		condition.ItemIcon = iconFilename-- deprecate
-        condition.Icon58 = X4D.Icons:ToIcon58(iconFilename)
+		condition.ItemIcon = iconFilename
 		if (stackCount ~= condition.Stack) then
 			local stackChange = stackCount - condition.Stack
 			if (stackChange > 0) then
@@ -389,8 +383,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 		if (iconFilename == nil or iconFilename:len() == 0) then
 			iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 		end
-		tool.ItemIcon = iconFilename-- deprecate
-        tool.Icon58 = X4D.Icons:ToIcon58(iconFilename)
+		tool.ItemIcon = iconFilename
 		if (tool.Stack ~= stackCount) then
 			local stackChange = stackCount - tool.Stack
 			if (stackChange > 0) then
@@ -504,7 +497,7 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
     if (not lootedBySelf) then
         -- TODO: find a way to lookup item details without interrogating Bag API
         if (X4D.Loot.Settings:Get("DisplayPartyLoot")) then
-		    InvokeCallbackSafe(slot.ItemColor, receivedBy .. " received " .. objectName .. X4D_Loot.Colors.StackCount .. " x" .. stackCount)
+		    InvokeCallbackSafe(X4D.Colors.X4D, receivedBy .. " received " .. objectName .. X4D.Colors.StackCount .. " x" .. stackCount)
         end
     else
 	    if (lootType == LOOT_TYPE_ITEM) then
