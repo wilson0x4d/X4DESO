@@ -8,9 +8,9 @@ X4D.Bank = X4D_Bank
 X4D_Bank.NAME = "X4D_Bank"
 X4D_Bank.VERSION = "1.16"
 
-local constLeaveAlone = "Leave Alone" -- 0
-local constDeposit = X4D.Colors.Deposit .. "Deposit" -- 1
-local constWithdraw = X4D.Colors.Withdraw .. "Withdraw" -- 2
+local constLeaveAlone = "Leave Alone"
+local constDeposit = X4D.Colors.Deposit .. "Deposit"
+local constWithdraw = X4D.Colors.Withdraw .. "Withdraw"
 
 local _itemTypeChoices = {
     constLeaveAlone,
@@ -491,6 +491,8 @@ local function InitializeSettingsUI()
         end,
     })
 
+    --region ItemType Options
+
     for _,groupName in pairs(X4D.Items.ItemGroups) do
         table.insert(panelControls, {
             type = "header",
@@ -566,6 +568,7 @@ local function InitializeSettingsUI()
         width = "half",
     })
 
+    -- endregion
 
     LAM:RegisterOptionControls(
         "X4D_BANK_CPL",
