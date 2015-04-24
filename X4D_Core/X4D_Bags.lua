@@ -90,7 +90,7 @@ local function OnRefreshVisible(control, data, scrollList)
     for _,item in pairs(scrollList.data) do
         local bag = X4D.Bags:GetBag(item.data.bagId)
         local slot = bag.Slots[item.data.slotIndex]
-        slot.SellPrice = item.data.sellPrice
+        slot.SellPrice = slot.SellPrice or item.data.sellPrice
         slot.LaunderPrice = item.data.launderPrice
         X4D.Debug:Verbose(slot)
     end
