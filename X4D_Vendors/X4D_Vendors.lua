@@ -33,11 +33,10 @@ function X4D_Vendor:New(tag)
     if (unitName == nil or unitName:len() == 0) then
         unitName = tag
     end
-    local normalizedName = unitName:gsub("%^.*", "")
-    local key = "$" .. base58(sha1(normalizedName):FromHex())
+    local key = "$" .. base58(sha1(unitName):FromHex())
     local position = { GetMapPlayerPosition("player") }
     local proto = {
-        Name = normalizedName,
+        Name = unitName,
         Position = { [1] = 0, [2] = 0, [3] = 0 },
         IsFence = false,
         --Items = {}, -- TODO: vendor search?
@@ -186,7 +185,9 @@ local function ConductTransactions(vendor)
                                 statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
                                 _debits = _debits + totalPrice
                             end
-	                        InvokeCallbackSafe(slot.ItemColor, "Laundered " .. slot.ItemIcon .. slot.ItemLink .. X4D.Colors.StackCount .. " x" .. slot.StackCount .. statement)
+                            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+                                "Laundered", X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.StackCount, statement)
+			                InvokeCallbackSafe(slot.ItemColor, message)
                         end
                     end
                 elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
@@ -208,7 +209,9 @@ local function ConductTransactions(vendor)
                             statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
                             _credits = _credits + totalPrice
                         end
-	                    InvokeCallbackSafe(slot.ItemColor, "Sold " .. slot.ItemIcon .. slot.ItemLink .. X4D.Colors.StackCount .. " x" .. slot.StackCount .. statement)
+                        local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+                            "Sold", X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.StackCount, statement)
+			            InvokeCallbackSafe(slot.ItemColor, message)
                     end
                 end
             end
@@ -275,8 +278,7 @@ function X4D_Vendors:GetVendor(tag)
     if (unitName == nil or unitName:len() == 0) then
         unitName = tag
     end
-    local normalizedName = unitName:gsub("%^.*", "")
-    local key = "$" .. base58(sha1(normalizedName):FromHex())
+    local key = "$" .. base58(sha1(unitName):FromHex())
     local vendor = self.DB:Find(key)
     if (vendor == nil) then
         vendor = X4D_Vendor(tag)

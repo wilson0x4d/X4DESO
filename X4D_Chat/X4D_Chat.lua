@@ -267,7 +267,7 @@ local function AddPlayer(fromName)
 end
 
 local function TryUpdatePlayerCharacterName(player, fromName)
-	if (string.StartsWith(fromName,"@")) then
+	if (fromName:StartsWith("@")) then
 		for guildIndex = 1,GetNumGuilds() do
 			local guildId = GetGuildId(guildIndex)
 			if (guildId ~= nil) then
@@ -276,7 +276,7 @@ local function TryUpdatePlayerCharacterName(player, fromName)
 					if (name == fromName) then
 						local hasCharacter, characterName, zoneName, classType, alliance, level, veteranRank = GetGuildMemberCharacterInfo(guildId, memberIndex)
 						if (characterName ~= nil and characterName:len() > 0) then
-							player.CharacterName = characterName:gsub("%^.*", "")
+							player.CharacterName = characterName--:gsub("%^.*", "")
 							break
 						end
 					end
@@ -291,7 +291,7 @@ end
 
 function X4D_Chat.CreateCharacterLink(fromName, channelInfo)
 	local result = fromName
-	if (X4D_Chat.Settings:Get('GuildCharNames')) then
+	if (X4D_Chat.Settings:Get("GuildCharNames")) then
 		local player = GetPlayer(fromName)
 		if (not (player and player.CharacterName and player.Time >= (GetGameTimeMilliseconds() - 15000))) then
 			player = AddPlayer(fromName)
@@ -309,7 +309,7 @@ function X4D_Chat.CreateCharacterLink(fromName, channelInfo)
 			local rep = fromName:gsub("([^%a%d%s])", "%%%1")
 			local linkName = ZO_LinkHandler_CreatePlayerLink(fromName)
 			if (linkName) then
-				if (X4D_Chat.Settings:Get('GuildPlayerNames')) then
+				if (X4D_Chat.Settings:Get("GuildPlayerNames")) then
 					result = linkName:gsub(rep, result .. fromName)
 				else
 					result = linkName:gsub(rep, result)

@@ -17,10 +17,9 @@ function X4D_Player:New(tag)
     if (unitName == nil or unitName:len() == 0) then
         unitName = tag
     end
-    local normalizedName = unitName:gsub("%^.*", "")
-    local key = "$" .. base58(sha1(normalizedName):FromHex())
+    local key = "$" .. base58(sha1(unitName):FromHex())
     local proto = {
-        Name = normalizedName,
+        Name = unitName,
         IsWhitelisted = false,
         IsBlacklisted = false,
         IsFlooder = false,
@@ -32,8 +31,7 @@ function X4D_Player:New(tag)
 end
 
 function X4D_Players:IsSelf(player)
-    local normalizedName = GetRawUnitName("player"):gsub("%^.*", "") -- TODO: optimize
-	return (player.Name == normalizedName)
+	return (player.Name == GetRawUnitName("player"))
 end
 
 function X4D_Players:IsInGroup(player)
@@ -50,14 +48,12 @@ function X4D_Players:IsInGuild(player)
 		if (guildId ~= nil) then
 			for memberIndex = 1,GetNumGuildMembers(guildId) do
 				local name, note, rankIndex, playerStatus, secsSinceLogoff = GetGuildMemberInfo(guildId, memberIndex)				
-				local normalizedName = name:gsub("%^.*", "")
 				if (name == player.Name) then
 					return true
 				end
-				local hasCharacter, name, zoneName, classType, alliance, level, veteranRank = GetGuildMemberCharacterInfo(guildId, memberIndex)
+				local hasCharacter, characterName, zoneName, classType, alliance, level, veteranRank = GetGuildMemberCharacterInfo(guildId, memberIndex)
                 if (hasCharacter) then
-				    normalizedName = name:gsub("%^.*", "")
-				    if (normalizedName == player.Name) then
+				    if (characterName == player.Name) then
 					    return true
 				    end
                 end
@@ -110,13 +106,12 @@ function X4D_Players:GetPlayer(tag)
         unitName = tag
     end
     -- attempt to lookup by key
-    local normalizedName = unitName:gsub("%^.*", "")
-    local key = "$" .. base58(sha1(normalizedName):FromHex())
+    local key = "$" .. base58(sha1(unitName):FromHex())
     local player = self.DB:Find(key)
     if (player == nil) then
         -- lookup by key failed, perhaps this user is known by name (e.g. cross-channel chat where player-names are not discoverable, but we know this player through some other means such as friends list or guild where their account name is in the clear.)
         player = self.DB
-            :Where(function(player) return player.Name == normalizedName end)
+            :Where(function(player) return player.Name == unitName end)
             :FirstOrDefault()
         if (player == nil) then
             player = X4D_Player(tag)

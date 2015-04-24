@@ -31,10 +31,7 @@ X4D_Bank.Colors = {
 local _nextAutoDepositTime = 0
 
 local function GetItemLinkInternal(bagId, slotIndex)
-    local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS) --:gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
-    local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
-    return itemLink, itemColor, itemQuality
-    --TODO: return X4D.Items:FromBagSlot(bagId, slotIndex)
+    return X4D.Items:FromBagSlot(bagId, slotIndex)
 end
 
 local function DefaultEmitCallback(color, text)
@@ -81,7 +78,7 @@ local function IsSlotIgnoredItem(slot)
                         isIgnored = true
                     end
                 end )) then
-                InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(BANK) Bad Item Pattern: |cFF7777" .. pattern)
+                InvokeCallbackSafe(X4D.Colors.SYSTEM, "(BANK) Bad Item Pattern: |cFF7777" .. pattern)
             end
             if (isIgnored) then
                 return true
@@ -191,7 +188,9 @@ local function TryCombinePartialStacks(bagState, depth)
             lval.StackCount = lval.StackCount - countToMove
             CallSecureProtected("PickupInventoryItem", bagState.Id, lval.Id, countToMove)
             CallSecureProtected("PlaceInInventory", bagState.Id, rval.Id)
-            InvokeCallbackSafe(lval.ItemColor, "Restacked " .. lval.ItemIcon .. lval.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. countToMove)
+            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
+                "Restacked", X4D.Icons:CreateString(lval.ItemIcon), lval.ItemLink, X4D.Colors.StackCount, countToMove)
+			InvokeCallbackSafe(lval.ItemColor, message)
         end
     end
     if (combineCount > 0 and depth > 0) then
@@ -254,7 +253,9 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         end
     end
     if (totalMoved > 0) then
-        InvokeCallbackSafe(sourceSlot.ItemColor, directionText .. " " .. sourceSlot.ItemIcon .. sourceSlot.ItemLink .. X4D_Bank.Colors.StackCount .. " x" .. totalMoved)
+            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
+                directionText, X4D.Icons:CreateString(sourceSlot.ItemIcon), sourceSlot.ItemLink, X4D.Colors.StackCount, totalMoved)
+			InvokeCallbackSafe(sourceSlot.ItemColor, message)
         return true
     else
         return false

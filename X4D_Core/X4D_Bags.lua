@@ -13,10 +13,7 @@ local _bags = X4D.DB()
 local X4D_Bag = {}
 
 local function GetSlotItemLink(bagId, slotId)
-    local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS) --:gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
-    local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
-    return itemLink, itemColor, itemQuality
-    --TODO: return X4D.Items:FromBagSlot(bagId, slotIndex)
+    return X4D.Items:FromBagSlot(bagId, slotId)
 end
 
 function X4D_Bag:New(bagId)
@@ -49,8 +46,7 @@ function X4D_Bag:New(bagId)
             local slot = {
                 Id = slotId,
                 IsEmpty = false,
-                ItemIcon = X4D.Icons:CreateString(iconFilename), -- TODO: stop storing formatted strings
-                IconFilename = iconFilename,
+                ItemIcon = iconFilename,
                 ItemName = itemName,
                 ItemLink = itemLink,
                 ItemColor = itemColor,

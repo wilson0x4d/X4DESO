@@ -69,10 +69,7 @@ local function InvokeCallbackSafe(color, text)
 end
 
 local function GetItemLinkInternal(bagId, slotId)
-	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS) --:gsub("(%[%l)", function (i) return i:upper() end):gsub("(%s%l)", function (i) return i:upper() end):gsub("%^[^%]]*", "")
-    local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
-	return itemLink, itemColor, itemQuality
-    --return X4D.Items:FromBagSlot(bagId, slotId)
+    return X4D.Items:FromBagSlot(bagId, slotId)
 end
 
 X4D_Loot.Bags = {}
@@ -99,7 +96,7 @@ local function AddBagSlotInternal(bag, slotIndex)
 		Id = slotIndex,
 		ItemLink = itemLink,
 		ItemColor = itemColor or "|cFF0000",
-		ItemIcon = iconFilename, -- deprecated
+		ItemIcon = iconFilename,
         ItemId = GetItemInstanceId(bag.Id, slotIndex) or 0, -- TODO: verify this is the same itemId as appears in itemlinks
 		Stack = stack,
 		MaxStack = maxStack,
@@ -156,7 +153,9 @@ local function UpdateBagSlotInternal(bag, slotId)
 		if (bag.Id == 1) then
 			wasChangeDetected = true
 			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then                
-				InvokeCallbackSafe(slot.ItemColor, X4D.Icons:CreateString(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot, slot.Stack))
+                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+                    X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.Stack, GetWorthString(slot, slot.Stack))
+			    InvokeCallbackSafe(slot.ItemColor, message)
 			end
 		end
 	else	
@@ -180,11 +179,13 @@ local function UpdateBagSlotInternal(bag, slotId)
 				end
 				slot.ItemLink = itemLink
 				slot.ItemColor = itemColor
-				slot.ItemIcon = iconFilename -- deprecated
+				slot.ItemIcon = iconFilename
                 slot.SellPrice = sellPrice
 				if (bag.Id == 1) then
 					wasChangeDetected = true
-					InvokeCallbackSafe(slot.ItemColor, X4D.Icons:CreateString(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. slot.Stack .. GetWorthString(slot, slot.Stack))
+                    local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+                        X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.Stack, GetWorthString(slot, slot.Stack))
+					InvokeCallbackSafe(slot.ItemColor, message)
 				end
 			end
 		elseif (itemId > 0) then
@@ -200,7 +201,9 @@ local function UpdateBagSlotInternal(bag, slotId)
 				if (stackChange > 0) then
 					if (bag.Id == 1) then
 						wasChangeDetected = true
-						InvokeCallbackSafe(slot.ItemColor, X4D.Icons:CreateString(slot.ItemIcon) .. slot.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. GetWorthString(slot, stackChange))
+                        local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+                            X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.Stack, GetWorthString(slot, slot.Stack))
+					    InvokeCallbackSafe(slot.ItemColor, message)
 					end
 				end
 				slot.Stack = stack
@@ -347,7 +350,9 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 		condition = AddQuestStepConditionInternal(quest, step, conditionIndex)
 		wasChangeDetected = true
 		if (condition ~= nil and condition.Stack > 0) then
-			InvokeCallbackSafe(condition.ItemColor, X4D.Icons:CreateString(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. condition.Stack .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
+            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.Stack, X4D_Loot.Colors.Subtext)
+			InvokeCallbackSafe(slot.ItemColor, message)
 		end
 	else
 		local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
@@ -359,7 +364,9 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 			local stackChange = stackCount - condition.Stack
 			if (stackChange > 0) then
 				wasChangeDetected = true
-				InvokeCallbackSafe(condition.ItemColor, X4D.Icons:CreateString(condition.ItemIcon) .. condition.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
+                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                    X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.Stack, X4D_Loot.Colors.Subtext)
+			    InvokeCallbackSafe(slot.ItemColor, message)
 			end
 			condition.Stack = stackCount
 		end
@@ -376,7 +383,9 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 		wasChangeDetected = true
 		if (tool ~= nil and tool.Stack > 0) then
 			wasChangeDetected = true
-			InvokeCallbackSafe(tool.ItemColor, X4D.Icons:CreateString(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. tool.Stack .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
+            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.Stack, X4D_Loot.Colors.Subtext)
+			InvokeCallbackSafe(slot.ItemColor, message)
 		end
 	else
 		local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
@@ -388,7 +397,9 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 			local stackChange = stackCount - tool.Stack
 			if (stackChange > 0) then
 				wasChangeDetected = true
-				InvokeCallbackSafe(tool.ItemColor, X4D.Icons:CreateString(tool.ItemIcon) .. tool.ItemLink .. X4D_Loot.Colors.StackCount .. " x" .. stackChange .. X4D_Loot.Colors.Subtext .. " (Quest Item)")
+                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                    X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.Stack, X4D_Loot.Colors.Subtext)
+			    InvokeCallbackSafe(slot.ItemColor, message)
 			end
 			tool.Stack = stackCount
 		end
@@ -497,7 +508,10 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
     if (not lootedBySelf) then
         -- TODO: find a way to lookup item details without interrogating Bag API
         if (X4D.Loot.Settings:Get("DisplayPartyLoot")) then
-		    InvokeCallbackSafe(X4D.Colors.X4D, receivedBy .. " received " .. objectName .. X4D.Colors.StackCount .. " x" .. stackCount)
+            local receivingPlayer = X4D.Players:GetPlayer(receivedBy)
+            local message = zo_strformat("<<1>>: <<t:2>> <<3>> x<<4>>",
+                receivingPlayer, objectName, X4D.Colors.StackCount, stackCount)                
+			InvokeCallbackSafe(slot.ItemColor, message)
         end
     else
 	    if (lootType == LOOT_TYPE_ITEM) then
@@ -541,13 +555,12 @@ function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     if (not X4D.Loot.Settings:Get("DisplayMoneyUpdates")) then
         return
     end
-	local icon = X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 	local reason = GetMoneyReason(reasonId)
 	local amount = newMoney - oldMoney
 	if (amount >= 0) then
-		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s total)", reason[1], formatnum(amount), icon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
+		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s total)", reason[1], formatnum(amount), _goldIcon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
 	else
-		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s remaining)", reason[2], formatnum(math.abs(amount)), icon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
+		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s remaining)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
 	end
 end
 

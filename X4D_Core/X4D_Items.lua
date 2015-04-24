@@ -117,7 +117,7 @@ function X4D_Items:FromBagSlot(bagId, slotId)
     --itemLink = itemLink:gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
     --X4D.Debug:Warning({bagId, slotId, itemLink, itemColor, itemQuality})
-	return itemLink, itemColor, itemQuality, self:FromLink(itemLink)    
+	return itemLink, itemColor, itemQuality, self:FromLink(itemLink)
 end
 
 --endregion
