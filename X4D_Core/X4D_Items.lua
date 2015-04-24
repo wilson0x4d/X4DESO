@@ -12,16 +12,16 @@ local X4D_Item = {}
 function X4D_Item:New(name, options)
     local normalizedName = name:lower()
     local item = {
-        Name = name,
+        Name = normalizedName,
         Options = options,
         -- remainder of props are values we cannot obtain from 'options' and thus track separate
         ItemType = nil,
         Icon = nil,
-        SellPrice = 0,
-        LaunderPrice = 0,
-        MarketPrice = 0,
+        SellPrice = 0, -- TODO: sell prices per-level
+        LaunderPrice = 0, -- TODO: sell prices by level
+        MarketPrice = 0, -- TODO: sell prices by level
     }
-    return item, name
+    return item, normalizedName
 end
 
 setmetatable(X4D_Item, { __call = X4D_Item.New })
@@ -36,30 +36,28 @@ EVENT_MANAGER:RegisterForEvent("X4D_Items.DB", EVENT_ADD_ON_LOADED, function(eve
     end
 end)
 
-function X4D_Items:FromName(name)
-    name = name:gsub("%^.*", ""):lower()
-    local item = self.DB:Find(key)
-    if (item == nil) then        
-        item = X4D_Item(name)
-        self.DB:Add(name, item)
-    end
-    return item, name
-end
-
-function X4D_Items:FromLink(link)
-    local name, options = self:Parse(link)
-    name = name:gsub("%^.*", ""):lower()
-    local item = self.DB:Find(key)
-    if (item == nil) then        
-        item = X4D_Item(name, options)
-        self.DB:Add(name, item)
-    end
-    return item, name
-end
-
 function X4D_Items:ParseLink(link)
-    local options, name = link:lower():match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
-    return name, options
+    local options, name = link:match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
+    --d({link or 'no-link', options or 'no-options', name or 'no-name'})
+    name = name:gsub("%^.*", ""):lower()
+    if (options ~= nil) then
+        local
+            id, quality, levelReq, enchantType, 
+            _5, _6, _7, _8,
+            _9, _10, _11, _12,
+            _13, _14, _15, style,
+            isCraft, isBound, isStolen, condition,
+            instanceData 
+                = self:ParseOptions(options)
+        return name, options, 
+            id, quality, levelReq, enchantType, 
+            _5, _6, _7, _8,
+            _9, _10, _11, _12,
+            _13, _14, _15, style,
+            isCraft, isBound, isStolen, condition,
+            instanceData
+    end
+    return name
 end
 
 function X4D_Items:ParseOptions(options)
@@ -80,6 +78,46 @@ function X4D_Items:ParseOptions(options)
         -- X4D.Debug:Verbose({options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)")})
         return options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)")
     end
+end
+
+function X4D_Items:FromLink(link)
+    local name, options, itemId = self:ParseLink(link)
+    if (itemId ~= nil) then
+        local item = self.DB:Find(itemId)
+        if (item == nil) then        
+            item = X4D_Item(name, options)
+            self.DB:Add(itemId, item)
+        else
+            if (options ~= nil) then
+                if ((item.Options == nil) or (item.Options:len() < options:len())) then
+                    item.Options = options
+                end
+            end
+        end
+    else
+        return self:FromName(name)
+    end
+    return item, name
+end
+
+function X4D_Items:FromName(name)
+    name = name:gsub("%^.*", ""):lower()    
+    local item = self.DB
+        :Where(function (item) return item.Name == name end)
+        :FirstOrDefault()
+    return item, name
+end
+
+function X4D_Items:FromBagSlot(bagId, slotId)
+	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS)
+    if (itemLink == nil or itemLink:len() == 0) then
+        -- asked for empty slot, return nil
+        return nil, nil, nil, nil
+    end
+    --itemLink = itemLink:gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
+    local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
+    --X4D.Debug:Warning({bagId, slotId, itemLink, itemColor, itemQuality})
+	return itemLink, itemColor, itemQuality, self:FromLink(itemLink)    
 end
 
 --endregion
