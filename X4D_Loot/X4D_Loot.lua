@@ -68,8 +68,8 @@ local function InvokeCallbackSafe(color, text)
 	end
 end
 
-local function GetItemLinkInternal(bagId, slotId)
-    return X4D.Items:FromBagSlot(bagId, slotId)
+local function GetItemLinkInternal(bagId, slotIndex)
+    return X4D.Items:FromBagSlot(bagId, slotIndex)
 end
 
 X4D_Loot.Bags = {}
@@ -118,8 +118,8 @@ local function AddBagInternal(bags, bagId)
 		Icon = bagIcon,
 		Slots = {},
 	}
-	for slotId = 0, bagSlots do
-		AddBagSlotInternal(bag, slotId)
+	for slotIndex = 0, bagSlots do
+		AddBagSlotInternal(bag, slotIndex)
 	end
 	bags[bag.Id] = bag
 	return bag
@@ -145,11 +145,11 @@ local function GetWorthString(slot, stackCount)
     return worth
 end
 
-local function UpdateBagSlotInternal(bag, slotId)
+local function UpdateBagSlotInternal(bag, slotIndex)
 	local wasChangeDetected = false
-	local slot = bag.Slots[slotId]
+	local slot = bag.Slots[slotIndex]
 	if (slot == nil) then
-		slot = AddBagSlotInternal(bag, slotId)
+		slot = AddBagSlotInternal(bag, slotIndex)
 		if (bag.Id == 1) then
 			wasChangeDetected = true
 			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then                
@@ -159,7 +159,7 @@ local function UpdateBagSlotInternal(bag, slotId)
 			end
 		end
 	else	
-		local itemId = GetItemInstanceId(bag.Id, slotId) or 0
+		local itemId = GetItemInstanceId(bag.Id, slotIndex) or 0
 		if (itemId ~= slot.ItemId) then
 			slot.ItemId = itemId
 			slot.IsEmpty = slot.ItemId == 0			
@@ -167,13 +167,13 @@ local function UpdateBagSlotInternal(bag, slotId)
 				slot.Stack = 0
 				slot.MaxStack = 0
 			else
-				local stack, maxStack = GetSlotStackSize(bag.Id, slotId)
+				local stack, maxStack = GetSlotStackSize(bag.Id, slotIndex)
 				slot.Stack = stack
 				slot.MaxStack = maxStack
 			end
 			if (not slot.IsEmpty) then
-				local itemLink, itemColor = GetItemLinkInternal(bag.Id, slotId)
-				local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotId)
+				local itemLink, itemColor = GetItemLinkInternal(bag.Id, slotIndex)
+				local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotIndex)
 				if (iconFilename == nil or iconFilename:len() == 0) then
 					iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 				end
@@ -189,8 +189,8 @@ local function UpdateBagSlotInternal(bag, slotId)
 				end
 			end
 		elseif (itemId > 0) then
-			local stack, maxStack = GetSlotStackSize(bag.Id, slotId)
-			local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotId)
+			local stack, maxStack = GetSlotStackSize(bag.Id, slotIndex)
+			local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotIndex)
 			if (iconFilename == nil or iconFilename:len() == 0) then
 				iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 			end
@@ -526,7 +526,7 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
     end
 end
 
-function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotId, isNewItem, itemSoundCategory, updateReason)
+function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
     if(updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
     	return
     end
@@ -536,7 +536,7 @@ function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotId, isNewIte
 			local bags = X4D_Loot.Bags
 			bag = AddBagInternal(bags, bagId)
 		else
-			AddBagSlotInternal(bag, slotId)
+			AddBagSlotInternal(bag, slotIndex)
 		end		
 	end
 end

@@ -108,15 +108,15 @@ function X4D_Items:FromName(name)
     return item, name
 end
 
-function X4D_Items:FromBagSlot(bagId, slotId)
-	local itemLink = GetItemLink(bagId, slotId, LINK_STYLE_BRACKETS)
+function X4D_Items:FromBagSlot(bagId, slotIndex)
+	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS)
     if (itemLink == nil or itemLink:len() == 0) then
         -- asked for empty slot, return nil
         return nil, nil, nil, nil
     end
     --itemLink = itemLink:gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
-    --X4D.Debug:Warning({bagId, slotId, itemLink, itemColor, itemQuality})
+    --X4D.Debug:Warning({bagId, slotIndex, itemLink, itemColor, itemQuality})
 	return itemLink, itemColor, itemQuality, self:FromLink(itemLink)
 end
 

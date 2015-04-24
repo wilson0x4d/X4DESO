@@ -12,8 +12,8 @@ local _bags = X4D.DB()
 
 local X4D_Bag = {}
 
-local function GetSlotItemLink(bagId, slotId)
-    return X4D.Items:FromBagSlot(bagId, slotId)
+local function GetSlotItemLink(bagId, slotIndex)
+    return X4D.Items:FromBagSlot(bagId, slotIndex)
 end
 
 function X4D_Bag:New(bagId)
@@ -27,16 +27,16 @@ function X4D_Bag:New(bagId)
         PartialSlotCount = 0,
         PartialSlots = { },
     }
-    for slotId = 0,(bagState.SlotCount - 1) do
-        local itemName = GetItemName(bagId, slotId)
-        local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, itemQuality = GetItemInfo(bagId, slotId)
+    for slotIndex = 0,(bagState.SlotCount - 1) do
+        local itemName = GetItemName(bagId, slotIndex)
+        local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, itemQuality = GetItemInfo(bagId, slotIndex)
         if (itemName ~= nil and itemName:len() > 0) then
-            local stackCount, stackMax = GetSlotStackSize(bagId, slotId)
-            local itemLink, itemColor, itemQuality = GetSlotItemLink(bagId, slotId)
+            local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex)
+            local itemLink, itemColor, itemQuality = GetSlotItemLink(bagId, slotIndex)
             local itemQualityString = X4D.Items.ToQualityString(itemQuality)
-            local itemType = X4D.Items.ItemTypes[GetItemType(bagId, slotId)] or X4D.Items.ItemTypes[ITEMTYPE_NONE]
-            local itemLevel = GetItemLevel(bagId, slotId)
-            local isStolen = IsItemStolen(bagId, slotId)
+            local itemType = X4D.Items.ItemTypes[GetItemType(bagId, slotIndex)] or X4D.Items.ItemTypes[ITEMTYPE_NONE]
+            local itemLevel = GetItemLevel(bagId, slotIndex)
+            local isStolen = IsItemStolen(bagId, slotIndex)
 
             local normalizedItemData = (" L" .. itemLevel .. " " .. itemQualityString .. " T" .. itemType.Id .. " " .. itemType.Canonical .. " "):upper() .. itemName:lower() .. " " .. itemLink
             if (isStolen) then
@@ -44,7 +44,7 @@ function X4D_Bag:New(bagId)
                 -- TODO: handler for when "stolen" state of an item changes
             end
             local slot = {
-                Id = slotId,
+                Id = slotIndex,
                 IsEmpty = false,
                 ItemIcon = iconFilename,
                 ItemName = itemName,
@@ -58,7 +58,7 @@ function X4D_Bag:New(bagId)
                 IsStolen = isStolen,
                 Normalized = normalizedItemData
             }
-            bagState.Slots[slotId] = slot
+            bagState.Slots[slotIndex] = slot
             if ((stackMax > 0) and(stackCount < stackMax) and(not isStolen)) then
                 bagState.PartialSlotCount = bagState.PartialSlotCount + 1
                 table.insert(bagState.PartialSlots, slot)
@@ -66,11 +66,11 @@ function X4D_Bag:New(bagId)
         else
             bagState.FreeSlotCount = bagState.FreeSlotCount + 1
             local slot = {
-                Id = slotId,
+                Id = slotIndex,
                 IsEmpty = true,
                 Normalized = "~ISEMPTY"
             }
-            bagState.Slots[slotId] = slot
+            bagState.Slots[slotIndex] = slot
             table.insert(bagState.FreeSlots, slot)
         end
     end
