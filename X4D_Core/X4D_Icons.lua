@@ -6,5 +6,5 @@ local X4D = LibStub("X4D")
 X4D.Icons = X4D_Icons
 
 function X4D_Icons.Create(filename, width, height)
-    return string.format("|t%u:%u:%s|t", width or 16, height or 16, filename)
+    return string.format("|t%u:%u:%s|t", width or 16, height or 16, filename or "EsoUI/Art/Icons/icon_missing.dds")
 end
