@@ -5,11 +5,84 @@ end
 local X4D = LibStub("X4D")
 X4D.Items = X4D_Items
 
+--region X4D_Item entity
+
+local X4D_Item = {}
+
+function X4D_Item:New(name, options)
+    local normalizedName = name:lower()
+    local item = {
+        Name = name,
+        Options = options,
+        -- remainder of props are values we cannot obtain from 'options' and thus track separate
+        ItemType = nil,
+        Icon = nil,
+        SellPrice = 0,
+        LaunderPrice = 0,
+        MarketPrice = 0,
+    }
+    return item, name
+end
+
+setmetatable(X4D_Item, { __call = X4D_Item.New })
+
+--endregion
+
+--region X4D_Items DB
+
 EVENT_MANAGER:RegisterForEvent("X4D_Items.DB", EVENT_ADD_ON_LOADED, function(event, name)
     if (name == "X4D_Core") then
         X4D_Items.DB = X4D.DB("X4D_Items.DB")
     end
-end )
+end)
+
+function X4D_Items:FromName(name)
+    name = name:gsub("%^.*", ""):lower()
+    local item = self.DB:Find(key)
+    if (item == nil) then        
+        item = X4D_Item(name)
+        self.DB:Add(name, item)
+    end
+    return item, name
+end
+
+function X4D_Items:FromLink(link)
+    local name, options = self:Parse(link)
+    name = name:gsub("%^.*", ""):lower()
+    local item = self.DB:Find(key)
+    if (item == nil) then        
+        item = X4D_Item(name, options)
+        self.DB:Add(name, item)
+    end
+    return item, name
+end
+
+function X4D_Items:ParseLink(link)
+    local options, name = link:lower():match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
+    return name, options
+end
+
+function X4D_Items:ParseOptions(options)
+    if (options == nil) then
+        return nil
+    else
+        --[[
+        local
+            id, quality, levelReq, enchantType, 
+            _5, _6, _7, _8,
+            _9, _10, _11, _12,
+            _13, _14, _15, style,
+            isCraft, isBound, isStolen, condition,
+            instanceData 
+                = self:ParseOptions(options)
+        ]]
+
+        -- X4D.Debug:Verbose({options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)")})
+        return options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)")
+    end
+end
+
+--endregion
 
 X4D_Items.ItemQualities = {
     [ITEM_QUALITY_TRASH] = {
