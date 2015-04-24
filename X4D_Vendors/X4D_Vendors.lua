@@ -8,6 +8,16 @@ X4D.Vendors = X4D_Vendors
 X4D_Vendors.NAME = "X4D_Vendors"
 X4D_Vendors.VERSION = "1.0"
 
+local constLeaveAlone = "Leave Alone"
+local constKeep = X4D.Colors.Deposit .. "Keep"
+local constSell = X4D.Colors.Withdraw .. "Sell"
+
+local _itemTypeChoices = {
+    constLeaveAlone,
+    constKeep,
+    constSell,
+}
+
 EVENT_MANAGER:RegisterForEvent("X4D_Vendors.DB", EVENT_ADD_ON_LOADED, function(event, name)
     if (name == "X4D_Vendors") then
         X4D_Vendors.DB = X4D.DB("X4D_Vendors.DB")
@@ -109,7 +119,7 @@ local function GetPatternAction(slot)
                     vendorAction = X4D_VENDORACTION_KEEP
                 end
             end)) then
-                InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Item Pattern: |cFF7777" .. pattern)
+                InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Pattern: |cFF7777" .. pattern)
             end
             if (vendorAction ~= X4D_VENDORACTION_NONE) then
                 return vendorAction
@@ -137,33 +147,53 @@ local _debits = 0
 local _credits = 0
 local _goldIcon = " " .. X4D.Icons.Create("EsoUI/Art/currency/currency_gold.dds")
 
+local function GetItemTypeActions()
+    local itemTypeActions = { }
+    for _,groupName in pairs(X4D.Items.ItemGroups) do
+        for _,itemType in pairs(X4D.Items.ItemTypes) do
+            if (itemType.Group == groupName) then
+                local action = X4D_Vendors.Settings:Get(itemType.Id)
+                if (action == constKeep or action == 1) then
+                    itemTypeActions[itemType.Id] = 1
+                elseif (action == constSell or action == 2) then
+                    itemTypeActions[itemType.Id] = 2
+                else
+                    itemTypeActions[itemType.Id] = 0                
+                end                    
+            end
+        end
+    end
+    return itemTypeActions
+end
+
 local function ConductTransactions(vendor)
+    local itemTypeActions = GetItemTypeActions()
     local bag = X4D.Bags:GetInventoryBag(true)
     if (bag ~= nil) then
         for _,slot in pairs(bag.Slots) do
             if (slot ~= nil and not slot.IsEmpty) then
-                -- pattern match item names for sales
                 local vendorAction = GetPatternAction(slot)
-                if (vendorAction == X4D_VENDORACTION_KEEP) then
+                local itemTypeAction = itemTypeActions[slot.ItemType.Id]
+                if (vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) then
                     if (vendor.IsFence and slot.IsStolen) then
                         local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
                         if (laundersUsed < laundersMax) then
                             LaunderItem(bag.Id, slot.Id, slot.StackCount)
+                            slot.IsEmpty = false
+                            local statement = ""
+                            if (slot.LaunderPrice ~= nil) then
+                                local totalPrice = (slot.LaunderPrice * slot.StackCount)
+                                statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
+                                _debits = _debits + totalPrice
+                            end
+	                        InvokeCallbackSafe(slot.ItemColor, "Laundered " .. slot.ItemIcon .. slot.ItemLink .. X4D.Colors.StackCount .. " x" .. slot.StackCount .. statement)
                         end
-                        slot.IsEmpty = false
-                        local statement = ""
-                        if (slot.LaunderPrice ~= nil) then
-                            local totalPrice = (slot.LaunderPrice * slot.StackCount)
-                            statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
-                            _debits = _debits + totalPrice
-                        end
-	                    InvokeCallbackSafe(slot.ItemColor, "Laundered " .. slot.ItemIcon .. slot.ItemLink .. X4D.Colors.StackCount .. " x" .. slot.StackCount .. statement)
                     end
-                elseif (vendorAction == X4D_VENDORACTION_SELL) then
+                elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
                     if (vendor.IsFence == slot.IsStolen) then
                         if (vendor.IsFence) then
                             local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
-                            if (sellsUsed > sellsMax) then
+                            if (sellsUsed >= sellsMax) then
                                 return
                             end
                         else
@@ -255,7 +285,6 @@ function X4D_Vendors:GetVendor(tag)
     return vendor, key
 end
 
-
 local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_VENDORS_CPL", {
@@ -267,8 +296,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = "For Keeps",
-        tooltip = "Line-delimited list of 'For Keeps' items using 'lua patterns'. 'For Keeps' items will not be sold, and if you visit a fence and they are stolen items they will be laundered for you.",
+        name = "For Keeps Patterns",
+        tooltip = "Line-delimited list of 'For Keeps Patterns', items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.",
         isMultiline = true,
         width = "full",
         getFunc = function()
@@ -292,8 +321,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = "For Sale",
-        tooltip = "Line-delimited list of 'For Sale' items using 'lua patterns'. 'For Sale' items WILL BE SOLD. |cC7C7C7Note that the 'For Keeps' list takes precedence over 'For Sale' list.",
+        name = "For Sale Patterns",
+        tooltip = "Line-delimited list of 'For Sale Patterns', items matching these patterns WILL BE SOLD. |cC7C7C7Note that the 'For Keeps Patterns' list take precedence over 'For Sale Patterns' list.",
         isMultiline = true,
         width = "full",
         getFunc = function()
@@ -314,6 +343,83 @@ local function InitializeSettingsUI()
             X4D_Vendors.Settings:Set("ForSaleItemPatterns", result)
         end,
     })
+
+    --region ItemType Options
+
+    for _,groupName in pairs(X4D.Items.ItemGroups) do
+        table.insert(panelControls, {
+            type = "header",
+            name = groupName,
+        })
+        for _,itemType in pairs(X4D.Items.ItemTypes) do
+            if (itemType.Group == groupName) then
+                table.insert(panelControls, {
+                    type = "dropdown",
+                    name = itemType.Name,
+                    tooltip = itemType.Tooltip or itemType.Canonical,
+                    choices = _itemTypeChoices,
+                    getFunc = function() 
+                        local v = X4D_Vendors.Settings:Get(itemType.Id) or 0
+                        if (v == 1) then
+                            return constLaunder
+                        elseif (v == 2) then
+                            return constSell
+                        else
+                            return constLeaveAlone
+                        end
+                    end,
+                    setFunc = function(v)
+                        if (v == constLaunder) then
+                            v = 1
+                        elseif (v == constSell) then
+                            v = 2
+                        else
+                            v = 0
+                        end
+                        X4D_Vendors.Settings:Set(itemType.Id, v)
+                    end,
+                    width = "half",
+                })
+            end
+        end
+    end
+
+    table.insert(panelControls, {
+        type = "header",
+        name = 'Reset',
+    })
+    table.insert(panelControls, {
+        type = "dropdown",
+        name = "Item Type Settings",
+        tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
+        choices = _itemTypeChoices,
+        getFunc = function() 
+            local v = 0
+            if (v == 1) then
+                return constLaunder
+            elseif (v == 2) then
+                return constSell
+            else
+                return constLeaveAlone
+            end
+        end,
+        setFunc = function(v)
+            if (v == constLaunder) then
+                v = 1
+            elseif (v == constSell) then
+                v = 2
+            else
+                v = 0
+            end
+            for _,itemType in pairs(X4D.Items.ItemTypes) do
+                X4D_Vendors.Settings:Set(itemType.Id, v)
+            end
+            ReloadUI() -- only necessary because i have no way to force LibAddonMenu to re-get/refresh all options
+        end,
+        width = "half",
+    })
+
+    -- endregion
 
     LAM:RegisterOptionControls(
         "X4D_VENDORS_CPL",
@@ -341,7 +447,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
             SettingsAre = "Account-Wide",
             ForKeepsItemPatterns =
             {
-                -- items matching a "for keeps" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered                
+                -- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered                
                 "lockpick",
                 "LEGENDARY",
                 "ARTIFACT",
@@ -351,7 +457,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
             ForSaleItemPatterns =
             {
                 -- items matching a "for sale" pattern WILL BE SOLD without confirmation, this includes STOLEN items while at a vendor
-                -- laundering (or "for keeps") takes precedence over "for sale"
+                -- laundering (or "Launder") takes precedence over "for sale"
                 "TRASH",
                 "ITEMTYPE_NONE",
             },
