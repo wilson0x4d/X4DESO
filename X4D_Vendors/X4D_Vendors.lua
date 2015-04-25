@@ -20,7 +20,7 @@ local _itemTypeChoices = {
 
 EVENT_MANAGER:RegisterForEvent("X4D_Vendors.DB", EVENT_ADD_ON_LOADED, function(event, name)
     if (name == "X4D_Vendors") then
-        X4D_Vendors.DB = X4D.DB("X4D_Vendors.DB")
+        X4D_Vendors.DB = X4D.DB:Open("X4D_Vendors.DB")
     end
 end)
 
@@ -232,13 +232,19 @@ local function ReportEarnings()
     end
 end
 
+local function UpdateVendorPositionData(vendor)
+    vendor.MapId = GetCurrentMapIndex()
+    vendor.ZoneId = GetCurrentMapZoneIndex()
+    vendor.Position = { GetMapPlayerPosition("player") }
+    X4D.Debug:Verbose(vendor)
+end
+
 local function OnOpenFence()
     _debits = 0
     _credits = 0
     local vendor = X4D_Vendors:GetVendor("interact")
     vendor.IsFence = true
-    vendor.Position = { GetMapPlayerPosition("player") }
-    X4D.Debug:Verbose(vendor)
+    UpdateVendorPositionData(vendor)
     ConductTransactions(vendor)
     ReportEarnings()
 end
@@ -248,8 +254,7 @@ local function OnOpenStore()
     _credits = 0
     local vendor = X4D_Vendors:GetVendor("interact")
     vendor.IsFence = false
-    vendor.Position = { GetMapPlayerPosition("player") }
-    X4D.Debug:Verbose(vendor)
+    UpdateVendorPositionData(vendor)
     ConductTransactions(vendor)
     ReportEarnings()
 end
