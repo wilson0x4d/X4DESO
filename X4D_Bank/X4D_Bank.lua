@@ -30,10 +30,6 @@ X4D_Bank.Colors = {
 
 local _nextAutoDepositTime = 0
 
-local function GetItemLinkInternal(bagId, slotIndex)
-    return X4D.Items:FromBagSlot(bagId, slotIndex)
-end
-
 local function DefaultEmitCallback(color, text)
     d(color .. text)
 end
