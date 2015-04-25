@@ -8,7 +8,7 @@ X4D.Bags = X4D_Bags
 X4D_Bags.NAME = "X4D_Bags"
 X4D_Bags.VERSION = "1.0"
 
-local _bags = X4D.DB()
+local _bags = X4D.DB:Create()
 
 local X4D_Bag = {}
 
