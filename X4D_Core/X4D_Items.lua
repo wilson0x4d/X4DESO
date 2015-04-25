@@ -9,22 +9,55 @@ X4D.Items = X4D_Items
 
 local X4D_Item = {}
 
-function X4D_Item:New(name, options)
+function X4D_Item:New(itemId, name)
     local normalizedName = name:lower()
     local item = {
+        Id = tonumber(tostring(itemId)),
         Name = normalizedName,
-        Options = options,
-        -- remainder of props are values we cannot obtain from 'options' and thus track separate
         ItemType = nil,
-        SellPrice = 0, -- TODO: sell prices per-level
-        LaunderPrice = 0, -- TODO: sell prices by level
-        MarketPrice = 0, -- TODO: sell prices by level
+        MaxStack = nil,
         Icon58 = nil,
+        SellPrice = nil, -- TODO: sell prices per-level
+        LaunderPrice = nil, -- TODO: sell prices by per-level
+        MarketPrice = nil, -- TODO: sell prices by per-level
     }
+    setmetatable(item, { __index = X4D_Item })
     return item, normalizedName
 end
 
 setmetatable(X4D_Item, { __call = X4D_Item.New })
+
+function X4D_Item:GetItemLink(quality, level, style, isCrafted, isBound, isStolen, condition, instanceId, enchantment1, enchantment2, enchantment3)
+    if (quality == nil or type(quality) == "number") then
+        quality = quality ~= nil and quality or 0
+        level = level ~= nil and level or 0
+        style = style ~= nil and style or 0
+        isCrafted = (isCrafted ~= nil and isCrafted and 1) or 0
+        isBound = (isBound ~= nil and isBound and 1) or 0
+        isStolen = (isStolen ~= nil and isStolen and 1) or 0
+        condition = condition ~= nil and condition or 0
+        instanceId = instanceId ~= nil and instanceId or 0
+        enchantment1 = enchantment1 ~= nil and enchantment1 or 0
+        enchantment2 = enchantment2 ~= nil and enchantment2 or 0
+        enchantment3 = enchantment3 ~= nil and enchantment3 or 0
+        return string.format("|H1:item:%s:%s:%s:%s:%s:%s:0:0:0:0:0:0:0:0:0:%s:%s:%s:%s:%s:%s|h[%s]|h",
+            self.Id, quality, level, enchantment1, enchantment2, enchantment3,
+            style, isCrafted, isBound, isStolen, condition, instanceId,
+            self.Name)
+    else
+        return string.format("|H1:item:%s|h[%s]|h",
+            quality, -- this is assumed to contain a pre-constructed 'options' string, not a quality value
+            self.Name)
+    end
+end
+
+function X4D_Item:GetItemIconFilename()
+    return X4D.Icons:FromIcon58(self.Icon58)
+end
+
+function X4D_Item:GetItemIcon()
+    return X4D.Icons:CreateString58(self.Icon58)
+end
 
 --endregion
 
@@ -40,24 +73,18 @@ function X4D_Items:ParseLink(link)
     local options, name = link:match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
     --d({link or 'no-link', options or 'no-options', name or 'no-name'})
     name = name:gsub("%^.*", ""):lower()
-    if (options ~= nil) then
-        local
-            id, quality, levelReq, enchantType, 
-            _5, _6, _7, _8,
-            _9, _10, _11, _12,
-            _13, _14, _15, style,
-            isCraft, isBound, isStolen, condition,
-            instanceData 
-                = self:ParseOptions(options)
-        return name, options, 
-            id, quality, levelReq, enchantType, 
-            _5, _6, _7, _8,
-            _9, _10, _11, _12,
-            _13, _14, _15, style,
-            isCraft, isBound, isStolen, condition,
-            instanceData
+    if (options == nil) then
+        options = ""
     end
-    return name
+    local
+        id, quality, levelReq, _4, _5, _6,
+        _7, _8, _9, _10, _11, _12, _13, _14, _15, 
+        style, isCraft, isBound, isStolen, condition, instanceData 
+            = self:ParseOptions(options)
+    return name, options, 
+        id, quality, levelReq, _4, _5, _6,
+        _7, _8, _9, _10, _11, _12, _13, _14, _15, 
+        style, isCraft, isBound, isStolen, condition, instanceData 
 end
 
 function X4D_Items:ParseOptions(options)
@@ -81,43 +108,61 @@ function X4D_Items:ParseOptions(options)
 end
 
 function X4D_Items:FromLink(link)
+    local item
     local name, options, itemId = self:ParseLink(link)
     if (itemId ~= nil) then
-        local item = self.DB:Find(itemId)
+        item = self.DB:Find(itemId)
         if (item == nil) then        
-            item = X4D_Item(name, options)
+            item = X4D_Item(itemId, name)
             self.DB:Add(itemId, item)
-        else
-            if (options ~= nil) then
-                if ((item.Options == nil) or (item.Options:len() < options:len())) then
-                    item.Options = options
-                end
-            end
         end
-    else
-        return self:FromName(name)
+    elseif (name ~= nil) then
+        item = self:FromName(name)
+    end
+    if (item ~= nil) then
+        setmetatable(item, { __index = X4D_Item })
     end
     return item, name
 end
 
 function X4D_Items:FromName(name)
-    name = name:gsub("%^.*", ""):lower()    
+    name = name:gsub("%^.*", ""):lower()
     local item = self.DB
         :Where(function (item) return item.Name == name end)
         :FirstOrDefault()
+    if (item ~= nil) then
+        setmetatable(item, { __index = X4D_Item })
+    end
     return item, name
 end
 
 function X4D_Items:FromBagSlot(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS)
     if (itemLink == nil or itemLink:len() == 0) then
-        -- asked for empty slot, return nil
-        return nil, nil, nil, nil
+        -- asked for empty slot, return nil values
+        return nil, nil, nil, nil, nil, nil, nil
     end
-    --itemLink = itemLink:gsub("(%[%l)", function(i) return i:upper() end):gsub("(%s%l)", function(i) return i:upper() end):gsub("%^[^%]]*", "")
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
-    --X4D.Debug:Warning({bagId, slotIndex, itemLink, itemColor, itemQuality})
-	return itemLink, itemColor, itemQuality, self:FromLink(itemLink)
+    local item, itemName = self:FromLink(itemLink)
+    if (item.Name == nil) then
+        item.Name = itemName
+    end
+    if (item.ItemType == nil) then
+        item.ItemType = GetItemType(bagId, slotIndex) or ITEMTYPE_NONE
+    end
+    if (item.MaxStack == nil) then
+        local stack, maxStack = GetSlotStackSize(bagId, slotIndex)
+        item.MaxStack = maxStack
+    end
+	local iconFilename, slotStackCount, sellPrice, meetsUsageRequirement, slotLocked, slotEquipType, itemStyle, quality = GetItemInfo(bagId, slotIndex)
+    item.SellPrice = item.SellPrice or sellPrice or nil
+    if (item.Icon58 == nil) then
+        item.Icon58 = X4D.Icons:ToIcon58(iconFilename)
+    end
+    if (item ~= nil) then
+        setmetatable(item, { __index = X4D_Item })
+    end
+	return itemLink, itemColor, itemQuality, item, slotStackCount, slotLocked, slotEquipType
 end
 
 --endregion
