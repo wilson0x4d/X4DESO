@@ -110,15 +110,16 @@ X4D_VENDORACTION_SELL = 2
 local function GetPatternAction(slot)
     local vendorAction = X4D_VENDORACTION_NONE
     if (not slot.IsEmpty) then
+        local normalized = X4D.Bags:GetNormalizedString(slot)
         local forKeepsPatterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
         for i = 1, #forKeepsPatterns do
             local pattern = forKeepsPatterns[i]
             if (not pcall( function()
-                if (slot.Normalized:find(pattern)) then
+                if (normalized:find(pattern)) then
                     vendorAction = X4D_VENDORACTION_KEEP
                 end
             end)) then
-                InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Pattern: |cFF7777" .. pattern)
+                InvokeCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Pattern: |cFF7777" .. pattern)
             end
             if (vendorAction ~= X4D_VENDORACTION_NONE) then
                 return vendorAction
@@ -128,11 +129,11 @@ local function GetPatternAction(slot)
         for i = 1, #forSalePatterns do
             local pattern = forSalePatterns[i]
             if (not pcall( function()
-                    if (slot.Normalized:find(pattern)) then
+                    if (normalized:find(pattern)) then
                         vendorAction = X4D_VENDORACTION_SELL
                     end
                 end )) then
-                InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Sale' Item Pattern: |cFF7777" .. pattern)
+                InvokeCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Sale' Item Pattern: |cFF7777" .. pattern)
             end
             if (vendorAction ~= X4D_VENDORACTION_NONE) then
                 return vendorAction
@@ -172,13 +173,14 @@ local function ConductTransactions(vendor)
         for _,slot in pairs(bag.Slots) do
             if (slot ~= nil and not slot.IsEmpty) then
                 local vendorAction = GetPatternAction(slot)
-                local itemTypeAction = itemTypeActions[slot.ItemType.Id]
+                local itemTypeAction = itemTypeActions[slot.Item.ItemType]
                 if (vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) then
                     if (vendor.IsFence and slot.IsStolen) then
                         local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
                         if (laundersUsed < laundersMax) then
                             LaunderItem(bag.Id, slot.Id, slot.StackCount)
                             slot.IsEmpty = false
+                            slot.IsStolen = false
                             local statement = ""
                             if (slot.LaunderPrice ~= nil) then
                                 local totalPrice = (slot.LaunderPrice * slot.StackCount)
@@ -186,7 +188,7 @@ local function ConductTransactions(vendor)
                                 _debits = _debits + totalPrice
                             end
                             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                "Laundered", X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.StackCount, statement)
+                                "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.Options), X4D.Colors.StackCount, slot.StackCount, statement)
 			                InvokeCallbackSafe(slot.ItemColor, message)
                         end
                     end
@@ -202,7 +204,6 @@ local function ConductTransactions(vendor)
                             CallSecureProtected("PlaceInStoreWindow")
                         end
                         slot.IsEmpty = true
-                        slot.Normalized = "~ISEMPTY"
                         local statement = ""
                         if (slot.SellPrice ~= nil) then
                             local totalPrice = (slot.SellPrice * slot.StackCount)
@@ -210,7 +211,7 @@ local function ConductTransactions(vendor)
                             _credits = _credits + totalPrice
                         end
                         local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                            "Sold", X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.StackCount, statement)
+                            "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.Options), X4D.Colors.StackCount, slot.StackCount, statement)
 			            InvokeCallbackSafe(slot.ItemColor, message)
                     end
                 end
