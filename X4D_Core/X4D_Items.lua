@@ -15,7 +15,7 @@ function X4D_Item:New(itemId, name)
         Id = tonumber(tostring(itemId)),
         Name = normalizedName,
         ItemType = nil,
-        MaxStack = nil,
+        StackMax = nil,
         Icon58 = nil,
         SellPrice = nil, -- TODO: sell prices per-level
         LaunderPrice = nil, -- TODO: sell prices by per-level
@@ -77,14 +77,14 @@ function X4D_Items:ParseLink(link)
         options = ""
     end
     local
-        id, quality, levelReq, _4, _5, _6,
+        itemId, itemQuality, levelReq, _4, _5, _6,
         _7, _8, _9, _10, _11, _12, _13, _14, _15, 
-        style, isCraft, isBound, isStolen, condition, instanceData 
+        style, isCrafted, isBound, isStolen, condition, instanceData 
             = self:ParseOptions(options)
     return name, options, 
-        id, quality, levelReq, _4, _5, _6,
+        itemId, itemQuality, levelReq, _4, _5, _6,
         _7, _8, _9, _10, _11, _12, _13, _14, _15, 
-        style, isCraft, isBound, isStolen, condition, instanceData 
+        style, isCrafted, isBound, isStolen, condition, instanceData 
 end
 
 function X4D_Items:ParseOptions(options)
@@ -93,16 +93,12 @@ function X4D_Items:ParseOptions(options)
     else
         --[[
         local
-            id, quality, levelReq, enchantType, 
-            _5, _6, _7, _8,
-            _9, _10, _11, _12,
-            _13, _14, _15, style,
-            isCraft, isBound, isStolen, condition,
-            instanceData 
+            itemId, itemQuality, levelReq, _4, _5, _6,
+            _7, _8, _9, _10, _11, _12, _13, _14, _15, 
+            style, isCrafted, isBound, isStolen, condition, instanceData 
                 = self:ParseOptions(options)
         ]]
 
-        -- X4D.Debug:Verbose({options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)")})
         return options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)")
     end
 end
@@ -150,9 +146,9 @@ function X4D_Items:FromBagSlot(bagId, slotIndex)
     if (item.ItemType == nil) then
         item.ItemType = GetItemType(bagId, slotIndex) or ITEMTYPE_NONE
     end
-    if (item.MaxStack == nil) then
-        local stack, maxStack = GetSlotStackSize(bagId, slotIndex)
-        item.MaxStack = maxStack
+    if (item.StackMax == nil) then
+        local stack, stackMax = GetSlotStackSize(bagId, slotIndex)
+        item.StackMax = stackMax
     end
 	local iconFilename, slotStackCount, sellPrice, meetsUsageRequirement, slotLocked, slotEquipType, itemStyle, quality = GetItemInfo(bagId, slotIndex)
     item.SellPrice = item.SellPrice or sellPrice or nil
