@@ -188,7 +188,7 @@ local function ConductTransactions(vendor)
                                 _debits = _debits + totalPrice
                             end
                             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.Options), X4D.Colors.StackCount, slot.StackCount, statement)
+                                "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
 			                InvokeCallbackSafe(slot.ItemColor, message)
                         end
                     end
@@ -211,7 +211,7 @@ local function ConductTransactions(vendor)
                             _credits = _credits + totalPrice
                         end
                         local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                            "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.Options), X4D.Colors.StackCount, slot.StackCount, statement)
+                            "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
 			            InvokeCallbackSafe(slot.ItemColor, message)
                     end
                 end

@@ -30,6 +30,8 @@ X4D_Bank.Colors = {
 
 local _nextAutoDepositTime = 0
 
+--region Chat Callback
+
 local function DefaultEmitCallback(color, text)
     d(color .. text)
 end
@@ -63,14 +65,17 @@ local function InvokeCallbackSafe(color, text)
     end
 end
 
+--endregion
+
 local function IsSlotIgnoredItem(slot)
     if (not slot.IsEmpty) then
+        local normalized = X4D.Bags:GetNormalizedString(slot)
         local patterns = X4D_Bank.Settings:Get("IgnoredItemPatterns")
         for i = 1, #patterns do
             local pattern = patterns[i]
             local isIgnored = false
             if (not pcall( function()
-                    if (slot.Normalized:find(pattern)) then
+                    if (normalized:find(pattern)) then
                         isIgnored = true
                     end
                 end )) then
@@ -124,11 +129,11 @@ local function TryWithdrawReserveAmount()
 end
 
 local function ShouldDepositItem(slot, itemTypeDirections)
-    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.ItemType.Id] == 1)
+    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.Item.ItemType] == 1)
 end
 
 local function ShouldWithdrawItem(slot, itemTypeDirections)
-    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.ItemType.Id] == 2)
+    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.Item.ItemType] == 2)
 end
 
 local function CreateSettingsName(itemType)
@@ -156,15 +161,15 @@ local function TryCombinePartialStacks(bagState, depth)
     ClearCursor()
     local combines = { }
     local combineCount = 0
-    for i = 1, bagState.PartialSlotCount - 1 do
-        local lval = bagState.PartialSlots[i]
+    for i = 1, bagState.PartialStackCount - 1 do
+        local lval = bagState.PartialStacks[i]
         if (lval ~= nil) then
-            for j = i + 1, bagState.PartialSlotCount do
-                local rval = bagState.PartialSlots[j]
+            for j = i + 1, bagState.PartialStackCount do
+                local rval = bagState.PartialStacks[j]
                 if (rval ~= nil) then
                     local lslot = bagState.Slots[lval.Id]
                     local rslot = bagState.Slots[rval.Id]
-                    if ((lval.Id ~= rval.Id) and(lval.ItemLevel == rval.ItemLevel) and(lval.ItemQuality == rval.ItemQuality) and(lval.ItemName == rval.ItemName) and(rval.StackCount ~= 0) and(lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and(not lslot.IsEmpty) and(not rslot.IsEmpty) and(lslot.IsStolen == rslot.IsStolen)) then
+                    if ((lval.Id ~= rval.Id) and(lval.ItemLevel == rval.ItemLevel) and(lval.ItemQuality == rval.ItemQuality) and(lval.Item.Name == rval.Item.Name) and(rval.StackCount ~= 0) and(lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and(not lslot.IsEmpty) and(not rslot.IsEmpty) and(lslot.IsStolen == rslot.IsStolen)) then
                         table.insert(combines, { [1] = lval, [2] = rval })
                         combineCount = combineCount + 1
                         break
@@ -175,7 +180,7 @@ local function TryCombinePartialStacks(bagState, depth)
     end
     for i = 1, combineCount do
         local lval, rval = combines[i][1], combines[i][2]
-        local countToMove =(rval.StackMax - rval.StackCount)
+        local countToMove = (rval.Item.StackMax - rval.StackCount)
         if (lval.StackCount < countToMove) then
             countToMove = lval.StackCount
         end
@@ -185,7 +190,7 @@ local function TryCombinePartialStacks(bagState, depth)
             CallSecureProtected("PickupInventoryItem", bagState.Id, lval.Id, countToMove)
             CallSecureProtected("PlaceInInventory", bagState.Id, rval.Id)
             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
-                "Restacked", X4D.Icons:CreateString(lval.ItemIcon), lval.ItemLink, X4D.Colors.StackCount, countToMove)
+                "Restacked", lval.Item:GetItemIcon(), lval.Item:GetItemLink(lval.ItemOptions), X4D.Colors.StackCount, countToMove)
 			InvokeCallbackSafe(lval.ItemColor, message)
         end
     end
@@ -201,9 +206,9 @@ local function FindTargetSlots(sourceSlot, targetBag)
     for _, slot in pairs(targetBag.Slots) do
         if (slot.IsEmpty) then
             table.insert(empties, slot)
-        elseif ((sourceSlot.Id ~= slot.Id) and(sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.ItemName == slot.ItemName) and(slot.StackCount < slot.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
+        elseif ((sourceSlot.Id ~= slot.Id) and(sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Name == slot.Item.Name) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
             table.insert(partials, slot)
-            remaining = slot.StackMax - slot.StackCount
+            remaining = slot.Item.StackMax - slot.StackCount
             if (remaining <= 0) then
                 break
             end
@@ -217,7 +222,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     local totalMoved = 0
     local partialSlots, emptySlots = FindTargetSlots(sourceSlot, targetBag)
     for _, targetSlot in pairs(partialSlots) do
-        local countToMove = targetSlot.StackMax - targetSlot.StackCount
+        local countToMove = targetSlot.Item.StackMax - targetSlot.StackCount
         if (countToMove > sourceSlot.StackCount) then
             countToMove = sourceSlot.StackCount
         end
@@ -227,7 +232,6 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         sourceSlot.StackCount = sourceSlot.StackCount - countToMove
         if (sourceSlot.StackCount <= 0) then
             sourceSlot.IsEmpty = true
-            sourceSlot.Normalized = "~ISEMPTY"
             break
         end
     end
@@ -241,7 +245,6 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 sourceSlot.StackCount = sourceSlot.StackCount - countToMove
                 if (sourceSlot.StackCount <= 0) then
                     sourceSlot.IsEmpty = true
-                    sourceSlot.Normalized = "~ISEMPTY"
                     targetSlot.IsEmpty = false
                     break
                 end
@@ -250,7 +253,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     end
     if (totalMoved > 0) then
             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
-                directionText, X4D.Icons:CreateString(sourceSlot.ItemIcon), sourceSlot.ItemLink, X4D.Colors.StackCount, totalMoved)
+                directionText, sourceSlot.Item:GetItemIcon(), sourceSlot.Item:GetItemLink(sourceSlot.ItemOptions), X4D.Colors.StackCount, totalMoved)
 			InvokeCallbackSafe(sourceSlot.ItemColor, message)
         return true
     else
@@ -297,6 +300,7 @@ local function TryDepositsAndWithdrawals()
             local sourceBag = inventoryState
             local sourceSlot = table.remove(pendingDeposits, 1)
             local targetBag = bankState
+            
             if (TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")) then
                 changeWasMade = true
                 pendingDepositCount = pendingDepositCount - 1
@@ -597,18 +601,18 @@ local function GetMoneyReason(reasonId)
     return _moneyUpdateReason[reasonId] or { "Gained", "Lost" }
 end
 
+local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 
 local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     if (not X4D.Bank.Settings:Get("DisplayMoneyUpdates")) then
         return
     end
-    local icon = X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
     local reason = GetMoneyReason(reasonId)
     local amount = newMoney - oldMoney
     if (amount >= 0) then
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s total)", reason[1], formatnum(amount), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s total)", reason[1], formatnum(amount), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     else
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s remaining)", reason[2], formatnum(math.abs(amount)), icon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s remaining)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     end
 end
 
