@@ -8,11 +8,11 @@ X4D.VERSION = "1.7"
 
 EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)
     if (name == "X4D_Core") then
-        X4D.Settings(
-            "X4D_CORE_SV",
+        X4D.InternalSettings = X4D.Settings(
+            "X4D_Core_SV",
             {
                 SettingsAre = "Account-Wide",
-                X4DB = { },
+                X4DB = nil,
             }, 
             3)
     end
@@ -100,7 +100,7 @@ function X4D:Test()
 
     -- SavedVars API
     -- DB API (indirectly also verifies "Settings API")
-    local nonPersistentDb = X4D.DB()
+    local nonPersistentDb = X4D.DB:Create()
     nonPersistentDb:Add({
         Id = ITEMTYPE_NONE,
         Canonical = "ITEMTYPE_NONE",
@@ -127,7 +127,7 @@ function X4D:Test()
     })
 
     -- NOTE: to verify, /reloadui or quit game and check file on disk
-    local persistentDb = X4D.DB(".x4d")
+    local persistentDb = X4D.DB:Open(".x4d")
     persistentDb:Add({
         Key = "X4D_TEST_RESULT",
         Value = "SUCCESS",

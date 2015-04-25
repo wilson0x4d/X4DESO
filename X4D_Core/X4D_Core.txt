@@ -3,7 +3,7 @@
 ## Author: @wilson0x4d
 ## Description: X4D Core Library and Shared APIs which all X4D Add-Ons depend on.
 ## Version: 1.7
-## SavedVariables: X4D_CORE_SV
+## SavedVariables: X4D_Core_SV
 ## OptionalDependsOn: LibAddonMenu-2.0
 
 ## third-party

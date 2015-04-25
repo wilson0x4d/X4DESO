@@ -34,9 +34,6 @@ function X4D_Settings:Get(name)
 end
 
 function X4D_Settings:Set(name, value)
-	if (self.Saved == nil) then
-		return nil
-	end
     if (name == "SettingsAre") then
 	    self.Saved.SettingsAre = value
     else
@@ -60,10 +57,10 @@ end
 
 function X4D_Settings:GetOrSet(name, value)
     if (value ~= nil) then
-        self.Set(name, value)
+        self:Set(name, value)
         return value
     else
-        return self.Get(name)
+        return self:Get(name)
     end
 end
 
@@ -79,7 +76,7 @@ function X4D_Settings:Create(savedVarsName, defaults, version)
         end
         defaults = {}
     end
-    version = math.floor(version) + X4D_SETTINGS_IMPLEMENTATION_VERSION -- TODO: whenever X4D_Settings implementation changes how data is stored we increment this to accomodate - it wipes settings - that's why it is done
+    version = math.floor(version) + X4D_SETTINGS_IMPLEMENTATION_VERSION
     local saved = ZO_SavedVars:NewAccountWide(savedVarsName, version, nil, {})
     saved.SettingsAre = saved.SettingsAre or defaults.SettingsAre or "Account-Wide"
 
@@ -98,7 +95,7 @@ function X4D_Settings:Create(savedVarsName, defaults, version)
     -- TODO: if "Saved" is missing members that are present in "Default", perform merge of missing members (e.g. apply missing defaults)
     -- TODO: if members of "Default" are assigned the value of "retired-variable" and it exists in "Saved", then is to be removed from "Saved"
 
-	setmetatable(proto, { __index = self, __call = self.GetOrSet })
+	setmetatable(proto, { __index = X4D_Settings, __call = X4D_Settings.GetOrSet })
 
 	return proto
 end

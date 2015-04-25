@@ -16,11 +16,11 @@ function X4D_DB:Open(database)
     end
     if (type(database) ~= "table") then
         if (_databases == nil) then
-            local sv = X4D.Settings("X4D_CORE_SV", nil, 2)
-            if (sv:Get("X4DB") == nil) then
-                sv:Set("X4DB", {})
+            _databases = X4D.InternalSettings:Get("X4DB")
+            if (_databases == nil) then
+                _databases = {}
+                X4D.InternalSettings:Set("X4DB", _databases)
             end
-            _databases = sv:Get("X4DB")
         end
         if (_databases[database] == nil) then
             _databases[database] = {}
@@ -90,6 +90,6 @@ function X4D_DB:Remove(key)
     self._table[key] = nil
 end
 
-setmetatable(X4D_DB, { __call = X4D_DB.Open })
+--setmetatable(X4D_DB, { __call = X4D_DB.Open })
 
 X4D_DB.Create = X4D_DB.Open
