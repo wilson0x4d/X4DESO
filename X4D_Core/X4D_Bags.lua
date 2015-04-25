@@ -12,66 +12,53 @@ local _bags = X4D.DB:Create()
 
 local X4D_Bag = {}
 
-local function GetSlotItemLink(bagId, slotIndex)
-    return X4D.Items:FromBagSlot(bagId, slotIndex)
-end
-
 function X4D_Bag:New(bagId)
     local numSlots = GetBagSize(bagId)
     local bagState = {
         Id = bagId,
         SlotCount = numSlots,
         Slots = { },
-        FreeSlotCount = 0,
-        FreeSlots = { },
         PartialSlotCount = 0,
         PartialSlots = { },
     }
     for slotIndex = 0,(bagState.SlotCount - 1) do
-        local itemName = GetItemName(bagId, slotIndex)
-        local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, itemQuality = GetItemInfo(bagId, slotIndex)
-        if (itemName ~= nil and itemName:len() > 0) then
-            local stackCount, stackMax = GetSlotStackSize(bagId, slotIndex)
-            local itemLink, itemColor, itemQuality = GetSlotItemLink(bagId, slotIndex)
-            local itemQualityString = X4D.Items.ToQualityString(itemQuality)
-            local itemType = X4D.Items.ItemTypes[GetItemType(bagId, slotIndex)] or X4D.Items.ItemTypes[ITEMTYPE_NONE]
-            local itemLevel = GetItemLevel(bagId, slotIndex)
-            local isStolen = IsItemStolen(bagId, slotIndex)
+    	local itemLink, itemColor, itemQuality, item, slotStackCount, slotLocked, slotEquipType = X4D.Items:FromBagSlot(bagId, slotIndex)
 
-            local normalizedItemData = (" L" .. itemLevel .. " " .. itemQualityString .. " T" .. itemType.Id .. " " .. itemType.Canonical .. " "):upper() .. itemName:lower() .. " " .. itemLink
-            if (isStolen) then
-                normalizedItemData = " STOLEN" .. normalizedItemData
-                -- TODO: handler for when "stolen" state of an item changes
-            end
+        if (itemLink ~= nil and itemLink:len() > 0) then
+            local _, itemOptions, _1, _2, itemLevel, enchantment1, enchantment2, enchantment3, _7, _8, _9, _10, _11, _12, _13, _14, _15, itemStyle, isCrafted, isBound, isStolen, condition, instanceId =
+                    X4D.Items:ParseLink(itemLink)  
+            --X4D.Debug:Warning{_, itemOptions, _1, _2, itemLevel, enchantment1, enchantment2, enchantment3, _7, _8, _9, _10, _11, _12, _13, _14, _15, itemStyle, isCrafted, isBound, isStolen, condition, instanceId}
             local slot = {
                 Id = slotIndex,
                 IsEmpty = false,
-                ItemIcon = iconFilename,
-                ItemName = itemName,
-                ItemLink = itemLink,
+                Item = item,
+                IsLocked = slotLocked == "1",
                 ItemColor = itemColor,
-                ItemQuality = itemQuality,
-                ItemLevel = itemLevel,
-                ItemType = itemType,
-                StackCount = stackCount,
-                StackMax = stackMax,
-                IsStolen = isStolen,
-                Normalized = normalizedItemData
+                ItemQuality = tonumber(itemQuality or "0"),
+                ItemLevel = tonumber(itemLevel or "0"),
+                ItemStyle = tonumber(itemStyle or "0"),
+                StackCount = tonumber(slotStackCount or "0"),
+                IsStolen = isStolen == "1",
+                IsCrafted = isCrafted == "1",
+                IsBound = isBound == "1",
+                Condition = tonumber(condition or "0"),
+                InstanceId = instanceId,
+                ItemOptions = itemOptions,
+                --
+                SellPrice = item.SellPrice,
+                LaunderPrice = itemLink.LaunderPrice,
             }
             bagState.Slots[slotIndex] = slot
-            if ((stackMax > 0) and(stackCount < stackMax) and(not isStolen)) then
+            if (item.StackMax ~= nil and slot.StackCount ~= nil and (item.StackMax > 0) and (slot.StackCount < item.StackMax) and (not slot.IsStolen)) then -- TODO: remove IsStolen constraint and perform check whenever doing stacking/merging slot selections
                 bagState.PartialSlotCount = bagState.PartialSlotCount + 1
                 table.insert(bagState.PartialSlots, slot)
             end
         else
-            bagState.FreeSlotCount = bagState.FreeSlotCount + 1
             local slot = {
                 Id = slotIndex,
                 IsEmpty = true,
-                Normalized = "~ISEMPTY"
             }
             bagState.Slots[slotIndex] = slot
-            table.insert(bagState.FreeSlots, slot)
         end
     end
     return bagState, bagId
@@ -88,9 +75,9 @@ local function OnRefreshVisible(control, data, scrollList)
     for _,item in pairs(scrollList.data) do
         local bag = X4D.Bags:GetBag(item.data.bagId)
         local slot = bag.Slots[item.data.slotIndex]
-        slot.SellPrice = slot.SellPrice or item.data.sellPrice
-        slot.LaunderPrice = item.data.launderPrice
-        X4D.Debug:Verbose(slot)
+        slot.Item.SellPrice = slot.Item.SellPrice or item.data.sellPrice
+        slot.Item.LaunderPrice = slot.Item.LaunderPrice or item.data.launderPrice
+        --X4D.Debug:Verbose(slot)
     end
 end
 
@@ -116,4 +103,17 @@ end
 
 function X4D_Bags:GetBankBag(refresh)
     return X4D_Bags:GetBag(BAG_BANK, refresh)
+end
+
+function X4D_Bags:GetNormalizedString(slot)
+    if (slot == nil or slot.IsEmpty) then
+        return "ISEMPTY"
+    end
+    local itemQualityString = X4D.Items.ToQualityString(slot.ItemQuality)
+    local itemType = X4D.Items.ItemTypes[slot.Item.ItemType]
+    local normalized = ("L" .. slot.ItemLevel .. " " .. itemQualityString .. " " .. itemType.Canonical .. " "):upper() .. slot.Item.Name .. " " .. slot.Item:GetItemLink(slot.Options)
+    if (slot.IsStolen) then
+        normalized = "STOLEN " .. normalized
+    end
+    return normalized
 end
