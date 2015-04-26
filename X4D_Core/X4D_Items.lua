@@ -210,14 +210,15 @@ function X4D_Items.FromQualityString(v)
 end
 
 X4D_Items.ItemGroups = {
+    "Equipment",
+    "Consumables",
     "Alchemy",
     "Blacksmithing",
     "Clothing",
-    "Consumables",
     "Enchanting",
     "Provisioning",
-    "Styles",
     "Woodworking",
+    "Styles",
     "Misc",
     "AvA",
 }
@@ -242,7 +243,7 @@ X4D_Items.ItemTypes = {
         Canonical = "ITEMTYPE_ARMOR",
         Name = "Armor",
         Tooltip = nil,
-        Group = "Blacksmithing"
+        Group = "Equipment"
     },
     [ITEMTYPE_ARMOR_BOOSTER] = {
         Id = ITEMTYPE_ARMOR_BOOSTER,
@@ -261,7 +262,7 @@ X4D_Items.ItemTypes = {
     [ITEMTYPE_AVA_REPAIR] = {
         Id = ITEMTYPE_AVA_REPAIR,
         Canonical = "ITEMTYPE_AVA_REPAIR",
-        Name = "Repairs",
+        Name = "Siege Repairs",
         Tooltip = nil,
         Group = "AvA"
     },
@@ -564,7 +565,7 @@ X4D_Items.ItemTypes = {
         Canonical = "ITEMTYPE_WEAPON",
         Name = "Weapons",
         Tooltip = nil,
-        Group = "Blacksmithing"
+        Group = "Equipment"
     },
     [ITEMTYPE_WEAPON_BOOSTER] = {
         Id = ITEMTYPE_WEAPON_BOOSTER,
