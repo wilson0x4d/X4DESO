@@ -203,24 +203,33 @@ local function FindTargetSlots(sourceSlot, targetBag)
     local partials = { }
     local empties = { }
     local remaining = sourceSlot.StackCount
-    for _, slot in pairs(targetBag.Slots) do
-        if (slot.IsEmpty) then
+	for slotIndex = 0, (targetBag.SlotCount - 1) do
+        local slot = targetBag.Slots[slotIndex]
+        if (slot == nil) then
+            X4D.Debug:Error{"WTF"}
+        elseif (slot.IsEmpty) then
             table.insert(empties, slot)
-        elseif ((sourceSlot.Id ~= slot.Id) and(sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Name == slot.Item.Name) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
+        elseif ((sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Name == slot.Item.Name) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
             table.insert(partials, slot)
             remaining = slot.Item.StackMax - slot.StackCount
             if (remaining <= 0) then
                 break
             end
+        else
+            X4D.Debug:Information{slotIndex, sourceSlot.Item.Name, slot.Item.Name}
         end
     end
     return partials, empties
 end
 
 local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, directionText)
+    local itemIcon = sourceSlot.Item:GetItemIcon()
+    local itemLink = sourceSlot.Item:GetItemLink(sourceSlot.ItemOptions)
     local countRemaining = 0
     local totalMoved = 0
+    local usedEmptySlot = false
     local partialSlots, emptySlots = FindTargetSlots(sourceSlot, targetBag)
+    X4D.Debug:Warning{partialSlots, emptySlots}
     for _, targetSlot in pairs(partialSlots) do
         local countToMove = targetSlot.Item.StackMax - targetSlot.StackCount
         if (countToMove > sourceSlot.StackCount) then
@@ -241,11 +250,12 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 local countToMove = sourceSlot.StackCount
                 CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
                 CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
+                targetSlot.IsEmpty = false
+                usedEmptySlot = true
                 totalMoved = totalMoved + countToMove
                 sourceSlot.StackCount = sourceSlot.StackCount - countToMove
                 if (sourceSlot.StackCount <= 0) then
                     sourceSlot.IsEmpty = true
-                    targetSlot.IsEmpty = false
                     break
                 end
             end
@@ -253,12 +263,10 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     end
     if (totalMoved > 0) then
             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
-                directionText, sourceSlot.Item:GetItemIcon(), sourceSlot.Item:GetItemLink(sourceSlot.ItemOptions), X4D.Colors.StackCount, totalMoved)
+                directionText, itemIcon, itemLink, X4D.Colors.StackCount, totalMoved)
 			InvokeCallbackSafe(sourceSlot.ItemColor, message)
-        return totalMoved
-    else
-        return 0
     end
+    return totalMoved, usedEmptySlot
 end
 
 local function TryDepositsAndWithdrawals()
@@ -312,11 +320,13 @@ local function TryDepositsAndWithdrawals()
             local sourceSlot = table.remove(pendingDeposits, 1)
             if (not sourceSlot.IsEmpty) then
                 local targetBag = bankState
-                local countMoved = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
+                local countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
                 if (countMoved > 0) then
                     if (sourceSlot.IsEmpty) then
                         backpackFreeCount = backpackFreeCount + 1
-                        bankFreeCount = bankFreeCount - 1
+                        if (usedEmptySlot) then
+                            bankFreeCount = bankFreeCount - 1
+                        end
                     end
                     totalDeposits = totalDeposits + countMoved
                     changeWasMade = true
@@ -331,10 +341,12 @@ local function TryDepositsAndWithdrawals()
             local sourceSlot = table.remove(pendingWithdrawals, 1)
             if (not sourceSlot.IsEmpty) then
                 local targetBag = inventoryState
-                local countMoved = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
+                local countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
                 if (countMoved > 0) then
                     if (sourceSlot.IsEmpty) then
-                        backpackFreeCount = backpackFreeCount - 1
+                        if (usedEmptySlot) then
+                            backpackFreeCount = backpackFreeCount - 1
+                        end
                         bankFreeCount = bankFreeCount + 1
                     end
                     totalWithdrawals = totalWithdrawals + countMoved

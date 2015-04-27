@@ -29,7 +29,7 @@ function X4D_Bag:New(bagId)
     }
     setmetatable(bag, { __call = nil, __index = X4D_Bag })
     local freeCount = 0
-    for slotIndex = 0,(numSlots - 1) do
+    for slotIndex = 0, (numSlots - 1)  do
         local current = bag:PopulateSlot(slotIndex)
         if (current == nil or current.IsEmpty) then
             freeCount = freeCount + 1
