@@ -10,6 +10,11 @@ X4D_Bags.VERSION = "1.0"
 
 local _bags = X4D.DB:Create()
 
+EVENT_MANAGER:RegisterForEvent(X4D_Bags.NAME, EVENT_PLAYER_ACTIVATED, function() 
+    -- reset state on player activate, ensure clean bag state on player login/out and zone change
+    _bags = X4D.DB:Create()
+end)
+
 local X4D_Bag = {}
 
 function X4D_Bag:New(bagId)
@@ -17,14 +22,20 @@ function X4D_Bag:New(bagId)
     local bag = {
         Id = bagId,
         SlotCount = numSlots,
+        FreeCount = 0,
         Slots = { },
         PartialStackCount = 0,
         PartialStacks = { },
     }
     setmetatable(bag, { __call = nil, __index = X4D_Bag })
-    for slotIndex = 0,(bag.SlotCount - 1) do
-        bag:PopulateSlot(slotIndex)        
+    local freeCount = 0
+    for slotIndex = 0,(numSlots - 1) do
+        local current = bag:PopulateSlot(slotIndex)
+        if (current == nil or current.IsEmpty) then
+            freeCount = freeCount + 1
+        end
     end
+    bag.FreeCount = freeCount
     return bag, bagId
 end
 
