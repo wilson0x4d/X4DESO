@@ -29,7 +29,7 @@ function X4D_Bag:New(bagId)
     }
     setmetatable(bag, { __call = nil, __index = X4D_Bag })
     local freeCount = 0
-    for slotIndex = 0, (numSlots - 1)  do
+    for slotIndex = 0, numSlots  do
         local current = bag:PopulateSlot(slotIndex)
         if (current == nil or current.IsEmpty) then
             freeCount = freeCount + 1
@@ -79,6 +79,11 @@ function X4D_Bag:PopulateSlot(slotIndex)
         }
         self.Slots[slotIndex] = slot
     end
+    if (slot.IsEmpty and not (previous == nil or previous.IsEmpty)) then
+        self.FreeCount = self.FreeCount + 1
+    elseif ((previous ~= nil and previous.IsEmpty) and not slot.IsEmpty) then
+        self.FreeCount = self.FreeCount - 1
+    end
     return slot, previous
 end
 
@@ -121,12 +126,16 @@ function X4D_Bags:GetBag(bagId, refresh)
     return bag
 end
 
-function X4D_Bags:GetInventoryBag(refresh)
-    return X4D_Bags:GetBag(BAG_BACKPACK, refresh)
+function X4D_Bags:GetBackpackBag(refresh)
+    return self:GetBag(BAG_BACKPACK, refresh)
 end
 
 function X4D_Bags:GetBankBag(refresh)
-    return X4D_Bags:GetBag(BAG_BANK, refresh)
+    return self:GetBag(BAG_BANK, refresh)
+end
+
+function X4D_Bags:GetGuildBankBag(refresh)
+    return self:GetBag(BAG_GUILDBANK, refresh)
 end
 
 function X4D_Bags:GetNormalizedString(slot)
@@ -135,7 +144,8 @@ function X4D_Bags:GetNormalizedString(slot)
     end
     local itemQualityString = X4D.Items.ToQualityString(slot.ItemQuality)
     local itemType = X4D.Items.ItemTypes[slot.Item.ItemType]
-    local normalized = ("L" .. slot.ItemLevel .. " " .. itemQualityString .. " " .. itemType.Canonical .. " "):upper() .. slot.Item.Name .. " " .. slot.Item:GetItemLink(slot.ItemOptions)
+    local normalized = string.format("L%02d %s %s %s",
+        slot.ItemLevel, itemQualityString:upper(), itemType.Canonical, slot.Item:GetItemLink(slot.ItemOptions))
     if (slot.IsStolen) then
         normalized = "STOLEN " .. normalized
     end

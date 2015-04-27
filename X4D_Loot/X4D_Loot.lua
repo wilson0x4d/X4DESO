@@ -113,7 +113,7 @@ local function CheckBagForChange(bagId)
         _snapshots[bagId] = snapshot
     else
         snapshot.SlotCount = GetBagSize(bagId)
-		for slotIndex = 0, (snapshot.SlotCount - 1) do
+		for slotIndex = 0, snapshot.SlotCount do
 	        local current, previous = snapshot:PopulateSlot(slotIndex)
             if (current ~= nil and not current.IsEmpty) then
                 if (current ~= previous and (previous == nil or current.InstanceId ~= previous.InstanceId)) then
@@ -317,7 +317,7 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 		end
 		condition.ItemIcon = iconFilename
 		if (stackCount ~= condition.StackCount) then
-        --X4D.Debug:Warning{stackCount,condition.StackCount}
+        --X4D.Debug:Verbose{stackCount,condition.StackCount}
 			local stackChange = stackCount - condition.StackCount
 			if (stackChange > 0) then
 				wasChangeDetected = true

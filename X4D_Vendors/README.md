@@ -25,7 +25,7 @@ v1.1
 - Now you can conduct transactions based on item type settings similar to [bank] addon (keep/sell patterns still take precedence)
 - Now tracking map/zone in Vendor DB
 - Adopted use of zo_strformat where appropriate.
-- Intergation with recent X4D Core library changes (icons, items, bags, etc)
+- Integration with recent X4D Core library changes (icons, items, bags, etc)
 
 v1.0
 

@@ -108,6 +108,7 @@ X4D_VENDORACTION_KEEP = 1
 X4D_VENDORACTION_SELL = 2
 
 local function GetPatternAction(slot)
+    --X4D.Debug:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
     local vendorAction = X4D_VENDORACTION_NONE
     if (not slot.IsEmpty) then
         local normalized = X4D.Bags:GetNormalizedString(slot)
@@ -168,9 +169,13 @@ end
 
 local function ConductTransactions(vendor)
     local itemTypeActions = GetItemTypeActions()
-    local bag = X4D.Bags:GetInventoryBag(true)
+    local bag = X4D.Bags:GetBackpackBag(true)
     if (bag ~= nil) then
-        for _,slot in pairs(bag.Slots) do
+        for slotIndex = 0, bag.SlotCount do
+            local slot = bag.Slots[slotIndex]
+            --if (slot ~= nil and slot.Item ~= nil) then
+            --    X4D.Debug:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
+            --end
             if (slot ~= nil and not slot.IsEmpty) then
                 local vendorAction = GetPatternAction(slot)
                 local itemTypeAction = itemTypeActions[slot.Item.ItemType]
