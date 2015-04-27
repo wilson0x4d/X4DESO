@@ -116,7 +116,7 @@ local function CheckBagForChange(bagId)
 		for slotIndex = 0, snapshot.SlotCount do
 	        local current, previous = snapshot:PopulateSlot(slotIndex)
             if (current ~= nil and not current.IsEmpty) then
-                if (current ~= previous and (previous == nil or current.InstanceId ~= previous.InstanceId)) then
+                if (current ~= previous and (previous == nil or previous.IsEmpty or current.InstanceId ~= previous.InstanceId)) then
                     -- slot contents are new
                     local stackChange = 0
                     if (current ~= nil and not current.IsEmpty) then
