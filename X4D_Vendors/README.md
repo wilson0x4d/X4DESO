@@ -20,6 +20,10 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.2
+
+- Will no longer attempt to launder items where there are insufficient funds available, condquently does not show incorrect earnings report for failed launder attempts.
+
 v1.1
 
 - Now you can conduct transactions based on item type settings similar to [bank] addon (keep/sell patterns still take precedence)

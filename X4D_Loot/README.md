@@ -23,6 +23,12 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.12
+
+- Fixed bug where empty slots would process as modified slots and error.
+- Fixed bug where quest tool display would not report correct count.
+- Fixed bug displaying incorrect values for stackable loot (cumulative vs. deltas)
+
 v1.11
 
 - Misc clean-up and fixed Group/Party Member Loot display.

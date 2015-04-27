@@ -22,6 +22,11 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+
+v1.18
+
+- Fixed bug where partial stacks were sometimes not being filled if target bag was full and prior stack failed to fill.
+
 v1.17
 
 - Reports withdrawal/deposit summaries at end of auto-deposit/auto-withdraw actions, and also shows free backpack/bank slot counts (no need to click tabs.)

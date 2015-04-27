@@ -1,4 +1,4 @@
-local X4D_Bags = LibStub:NewLibrary("X4D_Bags", 1000)
+local X4D_Bags = LibStub:NewLibrary("X4D_Bags", 1009)
 if (not X4D_Bags) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Bags = X4D_Bags
 
 X4D_Bags.NAME = "X4D_Bags"
-X4D_Bags.VERSION = "1.0"
+X4D_Bags.VERSION = "1.9"
 
 local _bags = X4D.DB:Create()
 

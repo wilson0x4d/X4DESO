@@ -85,6 +85,12 @@ lib/X4D_Core/X4D_Bags.lua
 </pre>
 
 ## Versions
+
+v1.9
+
+- Fixed bug where FreeCount would desync when slots were repopulated.
+- Modified item normalization text so that "level" portion uses minimum of 2 digits for level (to assist with low level item pattern matches e.g. "L[012][0-9].*ITEMTYPE_POTION")
+
 v1.8
 
 - Reset of Core DBs (nobody will notice)
