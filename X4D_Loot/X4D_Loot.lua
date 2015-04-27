@@ -342,7 +342,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 		if (tool ~= nil and tool.StackCount > 0) then
 			wasChangeDetected = true
             local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext)
+                X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.StackCount, X4D_Loot.Colors.Subtext)
 			InvokeCallbackSafe(tool.ItemColor, message)
 		end
 	else
