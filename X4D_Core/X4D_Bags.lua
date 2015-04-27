@@ -95,11 +95,11 @@ local function OnRefreshVisible(control, data, scrollList)
         local slot = bag.Slots[item.data.slotIndex]
         if (slot ~= nil) then
             if (slot.Item ~= nil) then
-                slot.Item.SellPrice = slot.Item.SellPrice or item.data.sellPrice
-                slot.Item.LaunderPrice = slot.Item.LaunderPrice or item.data.launderPrice
+                slot.Item.SellPrice = item.data.sellPrice or slot.Item.SellPrice
+                slot.Item.LaunderPrice = item.data.launderPrice or slot.Item.LaunderPrice
             end
-            slot.SellPrice = slot.SellPrice or item.data.sellPrice
-            slot.LaunderPrice = slot.LaunderPrice or item.data.launderPrice
+            slot.SellPrice = item.data.sellPrice or slot.SellPrice
+            slot.LaunderPrice = item.data.launderPrice or slot.LaunderPrice
         end
         --X4D.Debug:Verbose(slot)
     end
