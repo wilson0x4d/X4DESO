@@ -265,15 +265,23 @@ local function TryDepositsAndWithdrawals()
     local totalDeposits = 0
     local totalWithdrawals = 0
 
-    local itemTypeDirections = GetItemTypeActions()
     local inventoryState = TryGetBagState(BAG_BACKPACK)
     local bankState = TryGetBagState(BAG_BANK)
+
+    TryCombinePartialStacks(inventoryState)
+    TryCombinePartialStacks(bankState)
+
+    ClearCursor()
+
+    local itemTypeDirections = GetItemTypeActions()
     local pendingDeposits = { }
     local pendingDepositCount = 0
     local pendingWithdrawals = { }
     local pendingWithdrawalCount = 0
 
     local backpackFreeCount = 0
+    local bankFreeCount = 0
+
     for _, slot in pairs(inventoryState.Slots) do
         if (slot ~= nil and not slot.IsEmpty) then
             if (ShouldDepositItem(slot, itemTypeDirections)) then
@@ -285,7 +293,6 @@ local function TryDepositsAndWithdrawals()
         end
     end
 
-    local bankFreeCount = 0
     for _, slot in pairs(bankState.Slots) do
         if (slot ~= nil and not slot.IsEmpty) then
             if (ShouldWithdrawItem(slot, itemTypeDirections)) then
@@ -297,63 +304,72 @@ local function TryDepositsAndWithdrawals()
         end
     end
 
-    ClearCursor()
-
-    TryCombinePartialStacks(inventoryState)
-    TryCombinePartialStacks(bankState)
-
     local changeWasMade = true
     while (changeWasMade and((pendingDepositCount > 0) or(pendingWithdrawalCount > 0))) do
         changeWasMade = false
         if (pendingDepositCount > 0) then
             local sourceBag = inventoryState
             local sourceSlot = table.remove(pendingDeposits, 1)
-            local targetBag = bankState
-            local countMoved = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
-            if (countMoved > 0) then
-                if (sourceSlot.IsEmpty) then
-                    backpackFreeCount = backpackFreeCount + 1
+            if (not sourceSlot.IsEmpty) then
+                local targetBag = bankState
+                local countMoved = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
+                if (countMoved > 0) then
+                    if (sourceSlot.IsEmpty) then
+                        backpackFreeCount = backpackFreeCount + 1
+                        bankFreeCount = bankFreeCount - 1
+                    end
+                    totalDeposits = totalDeposits + countMoved
+                    changeWasMade = true
+                    pendingDepositCount = pendingDepositCount - 1
+                else
+                    table.insert(pendingDeposits, sourceSlot)
                 end
-                totalDeposits = totalDeposits + countMoved
-                changeWasMade = true
-                pendingDepositCount = pendingDepositCount - 1
-            else
-                table.insert(pendingDeposits, sourceSlot)
             end
         end
         if (pendingWithdrawalCount > 0) then
             local sourceBag = bankState
             local sourceSlot = table.remove(pendingWithdrawals, 1)
-            local targetBag = inventoryState
-            local countMoved = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
-            if (countMoved > 0) then
-                if (sourceSlot.IsEmpty) then
-                    bankFreeCount = bankFreeCount + 1
+            if (not sourceSlot.IsEmpty) then
+                local targetBag = inventoryState
+                local countMoved = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
+                if (countMoved > 0) then
+                    if (sourceSlot.IsEmpty) then
+                        backpackFreeCount = backpackFreeCount - 1
+                        bankFreeCount = bankFreeCount + 1
+                    end
+                    totalWithdrawals = totalWithdrawals + countMoved
+                    changeWasMade = true
+                    pendingWithdrawalCount = pendingWithdrawalCount - 1
+                else
+                    table.insert(pendingDeposits, sourceSlot)
                 end
-                totalWithdrawals = totalWithdrawals + countMoved
-                changeWasMade = true
-                pendingWithdrawalCount = pendingWithdrawalCount - 1
-            else
-                table.insert(pendingDeposits, sourceSlot)
             end
         end
     end
 
-    if (totalDeposits > 0 or totalWithdrawals > 0) then
-        local inventoryFreeColor = X4D.Colors.Gold
-        if (inventoryState.FreeCount < (inventoryState.SlotCount * 0.2)) then
-            inventoryFreeColor = X4D.Colors.Red
-        end
-        local bankFreeColor = X4D.Colors.Gold
-        if (bankState.FreeCount < (bankState.SlotCount * 0.2)) then
-            bankFreeColor = X4D.Colors.Red
-        end
-        local message = string.format("Bank Deposits: %s, Withdrawals: %s, Backpack: %s/%s free, Bank: %s/%s free",
-            X4D.Colors.Gold .. totalDeposits .. X4D.Colors.X4D, X4D.Colors.Gold .. totalWithdrawals .. X4D.Colors.X4D, 
-            inventoryFreeColor .. inventoryState.FreeCount .. X4D.Colors.X4D, inventoryState.SlotCount,
-            bankFreeColor ..  bankState.FreeCount .. X4D.Colors.X4D, bankState.SlotCount)
-        InvokeCallbackSafe(X4D.Colors.X4D, message)
+    inventoryState.FreeCount = backpackFreeCount
+    bankState.FreeCount = bankFreeCount
+
+    local message
+    local inventoryFreeColor = X4D.Colors.Gold
+    if (inventoryState.FreeCount < (inventoryState.SlotCount * 0.2)) then
+        inventoryFreeColor = X4D.Colors.Red
     end
+    local bankFreeColor = X4D.Colors.Gold
+    if (bankState.FreeCount < (bankState.SlotCount * 0.2)) then
+        bankFreeColor = X4D.Colors.Red
+    end
+    if (totalDeposits > 0 or totalWithdrawals > 0) then
+        message = string.format("Bank Deposits: %s, Withdrawals: %s, Bank: %s/%s free, Backpack: %s/%s free",
+            X4D.Colors.Gold .. totalDeposits .. X4D.Colors.X4D, X4D.Colors.Gold .. totalWithdrawals .. X4D.Colors.X4D, 
+            bankFreeColor ..  bankState.FreeCount .. X4D.Colors.X4D, bankState.SlotCount,
+            inventoryFreeColor .. inventoryState.FreeCount .. X4D.Colors.X4D, inventoryState.SlotCount)
+    else
+        message = string.format("Bank: %s/%s free, Backpack: %s/%s free",
+            bankFreeColor ..  bankState.FreeCount .. X4D.Colors.X4D, bankState.SlotCount,
+            inventoryFreeColor .. inventoryState.FreeCount .. X4D.Colors.X4D, inventoryState.SlotCount)
+    end
+    InvokeCallbackSafe(X4D.Colors.X4D, message)
 end
 
 local function OnOpenBank(eventCode)
