@@ -127,7 +127,7 @@ local function CheckBagForChange(bagId)
                     end
 		            if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
                         local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
 			            InvokeCallbackSafe(current.ItemColor, message)
 		            end
                 elseif (previous ~= nil and (current == previous or current.InstanceId == previous.InstanceId) and (current.StackCount ~= previous.StackCount)) then
@@ -135,7 +135,7 @@ local function CheckBagForChange(bagId)
                     local stackChange = current.StackCount - previous.StackCount
 		            if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
                         local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
 			            InvokeCallbackSafe(current.ItemColor, message)
 		            end
                 end
