@@ -183,18 +183,19 @@ local function ConductTransactions(vendor)
                     if (vendor.IsFence and slot.IsStolen) then
                         local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
                         if (laundersUsed < laundersMax) then
-                            LaunderItem(bag.Id, slot.Id, slot.StackCount)
-                            slot.IsEmpty = false
-                            slot.IsStolen = false
-                            local statement = ""
-                            if (slot.LaunderPrice ~= nil) then
+                            if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
                                 local totalPrice = (slot.LaunderPrice * slot.StackCount)
-                                statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
-                                _debits = _debits + totalPrice
+                                if (totalPrice < GetCurrentMoney()) then
+                                    LaunderItem(bag.Id, slot.Id, slot.StackCount)
+                                    slot.IsEmpty = false
+                                    slot.IsStolen = false
+                                    local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
+                                    _debits = _debits + totalPrice
+                                    local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+                                        "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
+			                        InvokeCallbackSafe(slot.ItemColor, message)
+                                end
                             end
-                            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
-			                InvokeCallbackSafe(slot.ItemColor, message)
                         end
                     end
                 elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
