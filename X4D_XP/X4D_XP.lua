@@ -132,34 +132,34 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
 		local reason = GetExpReason(reasonIndex)
 		if (reason ~= nil) then            
             message = message .. " for " .. reason
-		end
-        local xpMinute = _eta:GetSessionAverage(60000)
-        message = message .. X4D.Colors.Subtext .. " (" .. math.ceil(xpMinute) .. " " .. _pointType .. "/minute" 
-        local tnl = (_eta.TargetCount - _eta.AllTimeCount)
-        if (X4D_XP.Settings:Get("ShowTTL")) then
-            local ttl = (tnl / _eta:GetSessionAverage())
-            local ttlDays = math.floor(ttl / 86400)
-            local shave = (ttlDays * 86400)
-            local ttlHours = math.floor((ttl - shave) / 3600)
-            shave = shave + (ttlHours * 3600)
-            local ttlMinutes = math.floor((ttl - shave) / 60)
-            shave = shave + (ttlMinutes * 60)
-            local ttlSeconds = math.floor(ttl - shave)
-            local ttlString = ""
-            if (ttlDays > 0) then
-                ttlString = string.format("%d:%02d:%02d:%02d", ttlDays, ttlHours, ttlMinutes, ttlSeconds)
-            elseif (ttlHours > 0) then
-                ttlString = string.format("%02d:%02d:%02d", ttlHours, ttlMinutes, ttlSeconds)
-            else
-                ttlString = string.format("%02d:%02d", ttlMinutes, ttlSeconds)
+            local xpMinute = _eta:GetSessionAverage(60000)
+            message = message .. X4D.Colors.Subtext .. " (" .. math.ceil(xpMinute) .. " " .. _pointType .. "/minute" 
+            local tnl = (_eta.TargetCount - _eta.AllTimeCount)
+            if (X4D_XP.Settings:Get("ShowTTL")) then
+                local ttl = (tnl / _eta:GetSessionAverage())
+                local ttlDays = math.floor(ttl / 86400)
+                local shave = (ttlDays * 86400)
+                local ttlHours = math.floor((ttl - shave) / 3600)
+                shave = shave + (ttlHours * 3600)
+                local ttlMinutes = math.floor((ttl - shave) / 60)
+                shave = shave + (ttlMinutes * 60)
+                local ttlSeconds = math.floor(ttl - shave)
+                local ttlString = ""
+                if (ttlDays > 0) then
+                    ttlString = string.format("%d:%02d:%02d:%02d", ttlDays, ttlHours, ttlMinutes, ttlSeconds)
+                elseif (ttlHours > 0) then
+                    ttlString = string.format("%02d:%02d:%02d", ttlHours, ttlMinutes, ttlSeconds)
+                else
+                    ttlString = string.format("%02d:%02d", ttlMinutes, ttlSeconds)
+                end
+                message = message .. ", " .. ttlString
             end
-            message = message .. ", " .. ttlString
+            if (X4D_XP.Settings:Get("ShowTNL")) then
+                message = message .. ", " .. tnl .. " tnl"
+            end
+            message = message .. ")"
+		    InvokeCallbackSafe(X4D.Colors.XP, message)
         end
-        if (X4D_XP.Settings:Get("ShowTNL")) then
-            message = message .. ", " .. tnl .. " tnl"
-        end
-        message = message .. ")"
-		InvokeCallbackSafe(X4D.Colors.XP, message)
 	end
 	_currentXP = _currentXP + xpGained
 end
