@@ -215,8 +215,6 @@ local function FindTargetSlots(sourceSlot, targetBag)
             if (remaining <= 0) then
                 break
             end
-        else
-            X4D.Debug:Information{slotIndex, sourceSlot.Item.Name, slot.Item.Name}
         end
     end
     return partials, empties
@@ -229,7 +227,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     local totalMoved = 0
     local usedEmptySlot = false
     local partialSlots, emptySlots = FindTargetSlots(sourceSlot, targetBag)
-    X4D.Debug:Warning{partialSlots, emptySlots}
+    --X4D.Debug:Warning{partialSlots, emptySlots}
     for _, targetSlot in pairs(partialSlots) do
         local countToMove = targetSlot.Item.StackMax - targetSlot.StackCount
         if (countToMove > sourceSlot.StackCount) then
@@ -312,48 +310,52 @@ local function TryDepositsAndWithdrawals()
         end
     end
 
-    local changeWasMade = true
-    while (changeWasMade and((pendingDepositCount > 0) or(pendingWithdrawalCount > 0))) do
-        changeWasMade = false
-        if (pendingDepositCount > 0) then
-            local sourceBag = inventoryState
-            local sourceSlot = table.remove(pendingDeposits, 1)
+    local shouldProcessBags = (pendingDepositCount > 0 or pendingWithdrawalCount > 0)
+    local sourceBag
+    local targetBag
+    while (shouldProcessBags) do
+        shouldProcessBags = false
+        sourceBag = inventoryState
+        targetBag = bankState
+        for _,sourceSlot in pairs(pendingDeposits) do
             if (not sourceSlot.IsEmpty) then
-                local targetBag = bankState
                 local countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
-                if (countMoved > 0) then
-                    if (sourceSlot.IsEmpty) then
-                        backpackFreeCount = backpackFreeCount + 1
-                        if (usedEmptySlot) then
-                            bankFreeCount = bankFreeCount - 1
-                        end
-                    end
+                while (countMoved > 0 and not sourceSlot.IsEmpty) do
                     totalDeposits = totalDeposits + countMoved
-                    changeWasMade = true
+                    countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
+                end
+                totalDeposits = totalDeposits + countMoved
+                if (usedEmptySlot) then
+                    bankFreeCount = bankFreeCount - 1
+                    if (pendingWithdrawalCount > 0) then
+                        shouldProcessBags = true
+                    end
+                end
+                if (sourceSlot.IsEmpty) then
+                    backpackFreeCount = backpackFreeCount + 1
                     pendingDepositCount = pendingDepositCount - 1
-                else
-                    table.insert(pendingDeposits, sourceSlot)
                 end
             end
         end
-        if (pendingWithdrawalCount > 0) then
-            local sourceBag = bankState
-            local sourceSlot = table.remove(pendingWithdrawals, 1)
+        sourceBag = bankState
+        targetBag = inventoryState
+        for _,sourceSlot in pairs(pendingWithdrawals) do
             if (not sourceSlot.IsEmpty) then
-                local targetBag = inventoryState
                 local countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
-                if (countMoved > 0) then
-                    if (sourceSlot.IsEmpty) then
-                        if (usedEmptySlot) then
-                            backpackFreeCount = backpackFreeCount - 1
-                        end
-                        bankFreeCount = bankFreeCount + 1
-                    end
+                while (countMoved > 0 and not sourceSlot.IsEmpty) do
                     totalWithdrawals = totalWithdrawals + countMoved
-                    changeWasMade = true
+                    countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
+                end
+                totalWithdrawals = totalWithdrawals + countMoved
+                if (usedEmptySlot) then
+                    backpackFreeCount = backpackFreeCount - 1
+                    if (pendingDepositCount > 0) then
+                        shouldProcessBags = true
+                    end
+                end
+                if (sourceSlot.IsEmpty) then
+                    bankFreeCount = bankFreeCount + 1
                     pendingWithdrawalCount = pendingWithdrawalCount - 1
-                else
-                    table.insert(pendingDeposits, sourceSlot)
                 end
             end
         end
