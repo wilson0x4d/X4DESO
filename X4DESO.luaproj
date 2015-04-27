@@ -111,6 +111,7 @@
     <Content Include="X4D_Chat\README.md" />
     <Content Include="X4D_Chat\X4D_Chat.txt" />
     <Content Include="X4D_Chat\X4D_Chat.xml" />
+    <Content Include="X4D_Core\lib\LibAddonMenu-2.0\LICENSE" />
     <Content Include="X4D_Core\LICENSE.md" />
     <Content Include="X4D_Core\README.md" />
     <Content Include="X4D_Core\X4D_Core.txt" />

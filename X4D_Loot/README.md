@@ -23,6 +23,13 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.11
+
+- Misc clean-up and fixed Group/Party Member Loot display.
+- Properly built item links now show when an Item was stolen or not.
+- First version to embrace the new modules added to core (Icons, Items, Bags.)
+- Completely refactored how updates were determined, retiring some really old (and complex) code.
+
 v1.10
 
 - Allowing X4D_Vendors to take over responsibility of reporting vendor income/expenses.

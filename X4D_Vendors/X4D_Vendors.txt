@@ -2,7 +2,7 @@
 ## Title: X4D |cFFAE19Vendors
 ## Author: @wilson0x4d
 ## Description: Interacts and tracks Vendors, performing sales/laundering on your behalf.
-## Version: 1.0
+## Version: 1.1
 ## SavedVariables: X4D_Vendors_SV
 ## DependsOn: X4D_Core
 

@@ -2,7 +2,7 @@
 ## Title: X4D |cFFAE19Core
 ## Author: @wilson0x4d
 ## Description: X4D Core Library and Shared APIs which all X4D Add-Ons depend on.
-## Version: 1.7
+## Version: 1.8
 ## SavedVariables: X4D_Core_SV
 ## OptionalDependsOn: LibAddonMenu-2.0
 

@@ -22,6 +22,12 @@ Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.17
+
+- Reports withdrawal/deposit summaries at end of auto-deposit/auto-withdraw actions, and also shows free backpack/bank slot counts (no need to click tabs.)
+- Improved display of item links by adopting zo_strformat where appropriate, removed old method of reformatting of link text, 
+- Misc clean-up and bugfixes from core/items refactor for icons, items, bags, etc.
+
 v1.16
 
 - Added 'Reset' section where users can quickly reset all item type options at once, handy for reconfigurations and first time setups.

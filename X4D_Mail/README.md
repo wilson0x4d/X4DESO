@@ -15,9 +15,13 @@ Open the Archive and copy the **X4D_Mail** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.4
+
+- Minor updates required due to changes in X4D Core library.
+
 v1.3
 
-- fixed error when Loot addon was not loaded
+- Fixed UI error when Loot addon was not loaded.
 
 v1.2
 

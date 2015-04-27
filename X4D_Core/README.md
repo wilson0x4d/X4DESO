@@ -42,7 +42,6 @@ All X4D Add-Ons depend on this Framework.
 
 Open the Archive and copy the **X4D_Core** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
 
-
 If ESO is already running, execute **/reloadui** command.
 
 ## Integration
@@ -86,6 +85,12 @@ lib/X4D_Core/X4D_Bags.lua
 </pre>
 
 ## Versions
+v1.8
+
+- Reset of Core DBs (nobody will notice)
+- Improved Icons, Items, Bags, Players and Settings modules.
+- Bug fixes for DB, Players and Settings moduls.
+
 v1.7-hotfix
 
 - fix null reference error in X4D_DB module
