@@ -18,6 +18,10 @@ X4D_Loot.Colors = {
 	Subtext = "|c5C5C5C",
 }
 
+--region Money Reasons
+
+-- TODO: relocate
+
 X4D_Loot.MoneyUpdateReason = {
 	[0] = { "Looted", "Stored" },
 	[1] = { "Earned", "Spent" },
@@ -34,6 +38,9 @@ X4D_Loot.MoneyUpdateReason = {
 local function GetMoneyReason(reasonId)
 	return X4D_Loot.MoneyUpdateReason[reasonId] or { "Gained", "Lost" }
 end
+
+--endregion
+--region Chat Callback
 
 local function DefaultCallback(color, text)
 	d(color .. text)
@@ -68,72 +75,8 @@ local function InvokeCallbackSafe(color, text)
 	end
 end
 
-local function GetItemLinkInternal(bagId, slotIndex)
-    return X4D.Items:FromBagSlot(bagId, slotIndex)
-end
-
-X4D_Loot.Bags = {}
-X4D_Loot.Quests = {}
-
-local function GetBagInternal(bagId)
-	return X4D_Loot.Bags[bagId]
-end
-
-local function GetQuestInternal(questName)
-	return X4D_Loot.Quests[questIndex]
-end
-
---== Populate Bags ==--
-
-local function AddBagSlotInternal(bag, slotIndex)
-	local stack, maxStack = GetSlotStackSize(bag.Id, slotIndex)
-	local itemLink, itemColor = GetItemLinkInternal(bag.Id, slotIndex)	
-	local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotIndex)
-	if (iconFilename == nil or iconFilename:len() == 0) then
-		iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
-	end
-	local slot = {
-		Id = slotIndex,
-		ItemLink = itemLink,
-		ItemColor = itemColor or "|cFF0000",
-		ItemIcon = iconFilename,
-        ItemId = GetItemInstanceId(bag.Id, slotIndex) or 0, -- TODO: verify this is the same itemId as appears in itemlinks
-		Stack = stack,
-		MaxStack = maxStack,
-        SellPrice = sellPrice,
-	}
-	slot.IsEmpty = slot.ItemId == 0
-	bag.Slots[slot.Id] = slot
-	return slot
-end
-
-local function AddBagInternal(bags, bagId)
-	local bagSlots = GetBagSize(bagId)
-    local bagIcon = nil
-	if (bagIcon == nil or bagIcon:len() == 0) then
-		bagIcon = "EsoUI/Art/Icons/icon_missing.dds" -- TODO: how to know which icon to use? also, choose better default icon for this case
-	end
-	local bag = {
-		Id = bagId,
-		Icon = bagIcon,
-		Slots = {},
-	}
-	for slotIndex = 0, bagSlots do
-		AddBagSlotInternal(bag, slotIndex)
-	end
-	bags[bag.Id] = bag
-	return bag
-end
-
-local function PopulateBagsInternal()
-	local bags = {}
-	for bagId = 0, GetMaxBags() do
-		AddBagInternal(bags, bagId)
-	end
-	X4D_Loot.Bags = bags
-end
-
---== Update Bags ==--
+--endregion
+--region Item Worth
 
 local function GetWorthString(slot, stackCount)
     local worth = ""
@@ -145,108 +88,110 @@ local function GetWorthString(slot, stackCount)
     return worth
 end
 
-local function UpdateBagSlotInternal(bag, slotIndex)
-	local wasChangeDetected = false
-	local slot = bag.Slots[slotIndex]
-	if (slot == nil) then
-		slot = AddBagSlotInternal(bag, slotIndex)
-		if (bag.Id == 1) then
-			wasChangeDetected = true
-			if (slot.ItemColor ~= nil and slot.ItemColor:len() == 8 and slot.ItemLink ~= nil and slot.ItemLink:len() > 0) then                
-                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                    X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.Stack, GetWorthString(slot, slot.Stack))
-			    InvokeCallbackSafe(slot.ItemColor, message)
-			end
-		end
-	else	
-		local itemId = GetItemInstanceId(bag.Id, slotIndex) or 0
-		if (itemId ~= slot.ItemId) then
-			slot.ItemId = itemId
-			slot.IsEmpty = slot.ItemId == 0			
-			if (itemId == 0) then
-				slot.Stack = 0
-				slot.MaxStack = 0
-			else
-				local stack, maxStack = GetSlotStackSize(bag.Id, slotIndex)
-				slot.Stack = stack
-				slot.MaxStack = maxStack
-			end
-			if (not slot.IsEmpty) then
-				local itemLink, itemColor = GetItemLinkInternal(bag.Id, slotIndex)
-				local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotIndex)
-				if (iconFilename == nil or iconFilename:len() == 0) then
-					iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
-				end
-				slot.ItemLink = itemLink
-				slot.ItemColor = itemColor
-				slot.ItemIcon = iconFilename
-                slot.SellPrice = sellPrice
-				if (bag.Id == 1) then
-					wasChangeDetected = true
-                    local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                        X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.Stack, GetWorthString(slot, slot.Stack))
-					InvokeCallbackSafe(slot.ItemColor, message)
-				end
-			end
-		elseif (itemId > 0) then
-			local stack, maxStack = GetSlotStackSize(bag.Id, slotIndex)
-			local iconFilename, itemStack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bag.Id, slotIndex)
-			if (iconFilename == nil or iconFilename:len() == 0) then
-				iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
-			end
-            slot.SellPrice = sellprice
-			slot.ItemIcon = iconFilename
-			if (stack ~= slot.Stack) then
-				local stackChange = stack - slot.Stack
-				if (stackChange > 0) then
-					if (bag.Id == 1) then
-						wasChangeDetected = true
+--endregion
+
+--region Snapshots
+
+local _snapshots
+
+local function InitializeSnapshots()
+    if (_snapshots == nil) then
+	    local snapshots = {}
+	    for bagId = 0, GetMaxBags() do
+		    snapshots[bagId] = X4D.Bags:GetBag(bagId, true)
+            --X4D.Bags:GetBag(bagId, true) -- NOTE: only calling this a second time to force the previously returned instance out of the cache (e.g. making a copy for future callers to use so 'our' version isn't tampered with by anyone else)
+	    end
+	    _snapshots = snapshots
+    end
+end
+
+local function CheckBagForChange(bagId)
+    local snapshot = _snapshots[bagId]
+    local freeCount = 0
+    if (snapshot == nil) then
+		snapshot = X4D.Bags:GetBag(bagId, true)
+        _snapshots[bagId] = snapshot
+    else
+        snapshot.SlotCount = GetBagSize(bagId)
+		for slotIndex = 0, snapshot.SlotCount do
+	        local current, previous = snapshot:PopulateSlot(slotIndex)
+            if (current ~= nil and not current.IsEmpty) then
+                if (current ~= previous and (previous == nil or current.InstanceId ~= previous.InstanceId)) then
+                    -- slot contents are new
+                    local stackChange = 0
+                    if (current ~= nil and not current.IsEmpty) then
+                        stackChange = current.StackCount
+                    end
+                    if (previous ~= nil and not previous.IsEmpty) then
+                        stackChange = stackChange - previous.StackCount
+                    end
+		            if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
                         local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                            X4D.Icons:CreateString(slot.ItemIcon), slot.ItemLink, X4D.Colors.StackCount, slot.Stack, GetWorthString(slot, slot.Stack))
-					    InvokeCallbackSafe(slot.ItemColor, message)
-					end
-				end
-				slot.Stack = stack
-				slot.MaxStack = maxStack
-			end
-		end
-	end
-	return wasChangeDetected
+                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+			            InvokeCallbackSafe(current.ItemColor, message)
+		            end
+                elseif (previous ~= nil and (current == previous or current.InstanceId == previous.InstanceId) and (current.StackCount ~= previous.StackCount)) then
+                    -- slot contents are not new, but counts have changed
+                    local stackChange = current.StackCount - previous.StackCount
+		            if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
+                        local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+			            InvokeCallbackSafe(current.ItemColor, message)
+		            end
+                end
+            end
+            if (current == nil or current.IsEmpty) then
+                freeCount = freeCount + 1
+            end
+        end
+    end
+    snapshot.FreeCount = freeCount
 end
 
-local function UpdateBagInternal(bags, bagId)
-	local wasChangeDetected = false
-	local bag = bags[bagId]
-	if (bag == nil) then
-		bag = AddBagInternal(bags, bagId)
-		if (bagId == 1) then
-			wasChangeDetected = true
-		end
-	else
-		local  numSlots = GetBagSize(bagId)
-		for slotIndex = 0, numSlots do
-			if (UpdateBagSlotInternal(bag, slotIndex) and bagId == 1) then
-				wasChangeDetected = true
-			end
-		end
-	end
-	return wasChangeDetected
-end
+--TODO: not in use, and not tested.
+--local function CheckSlotForChange(bagId, slotIndex)
+--    local snapshot = _snapshots[bagId]
+--    if (snapshot == nil) then
+--	    snapshot = X4D.Bags:GetBag(bagId)
+--        _snapshot[bagId] = snapshot
+--    else
+--	    local current, previous = snapshot:PopulateSlot(slotIndex)
+--        if (current ~= nil and current ~= previous and current.InstanceId ~= previous.InstanceId) then
+--            -- there are slot contents
+--            if (previous == nil or previous.IsEmpty) then
+--                -- slot was empty, now now is not free
+--                snapshot.FreeCount = snapshot.FreeCount - 1
+--            end
+--            -- report details
+--            local stackChange = 0
+--            if (current ~= nil and not current.IsEmpty) then
+--                stackChange = current.StackCount
+--            end
+--		    if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
+--                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+--                    current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+--			    InvokeCallbackSafe(current.ItemColor, message)
+--		    end
+--        elseif (current ~= nil and previous ~= nil and (current == previous or current.InstanceId == previous.InstanceId) and (current.StackCount ~= previous.StackCount)) then
+--            -- slot contents are not new, but counts may have changed
+--            local stackChange = current.StackCount - previous.StackCount
+--		    if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
+--                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+--                    current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+--			    InvokeCallbackSafe(current.ItemColor, message)
+--		    end
+--        elseif ((current == nil or current.IsEmpty) and (previous ~= nil and not previous.IsEmpty)) then
+--            -- slot was not empty, bus now is free
+--            snapshot.FreeCount = snapshot.FreeCount + 1
+--        end
+--    end		
+--end
 
-local function UpdateBagsInternal()
-	local wasChangeDetected = false
-	local bags = X4D_Loot.Bags
-	for bagId = 0, GetMaxBags() do
-		if (UpdateBagInternal(bags, bagId) and bagId == 1) then
-			wasChangeDetected = true
-		end
-	end
-	return wasChangeDetected
-end
-
---== Populate Quest Tools ==--
+--endregion
+--region Quest Tools
 
 local function AddQuestStepConditionInternal(quest, step, conditionIndex)
+--    X4D.Debug:Information{"AddQuestStepConditionInternal",quest, step, conditionIndex}
 	local conditionText, current, max, isFailCondition, isComplete, isCreditShared = GetJournalQuestConditionInfo(quest.Id, step.Id, conditionIndex)
 	local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
 	if (iconFilename == nil or iconFilename:len() == 0) then
@@ -260,7 +205,7 @@ local function AddQuestStepConditionInternal(quest, step, conditionIndex)
 		ItemIcon = iconFilename,
 		ItemLink = "[" .. itemName .. "]", -- TODO: can we link to quest? implement custom link handler?
 		ItemColor = "|cFF6600", -- TODO: color by quest type?
-		Stack = stackCount,
+		StackCount = stackCount,
 		Current = current,
 		Max = max,
 		Text = conditionText,
@@ -271,6 +216,7 @@ local function AddQuestStepConditionInternal(quest, step, conditionIndex)
 end
 
 local function AddQuestStepInternal(quest, stepIndex)
+--    X4D.Debug:Information{"AddQuestStepInternal",quest, stepIndex}
 	local stepText, visibility, stepType, trackerOverrideText, numConditions = GetJournalQuestStepInfo(quest.Id, stepIndex)
 	local step = {
 		Id = stepIndex,
@@ -288,6 +234,7 @@ end
 
 local function AddQuestToolInternal(quest, toolIndex)
 	local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
+--    X4D.Debug:Information{"AddQuestToolInternal",toolIndex,iconFilename, stackCount, isUsable, toolName}
 	if (iconFilename == nil or iconFilename:len() == 0) then
 		iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 	end
@@ -299,17 +246,19 @@ local function AddQuestToolInternal(quest, toolIndex)
 		ItemIcon = iconFilename,
 		ItemLink = "[" .. toolName .. "]", -- TODO: can we link to quest? implement custom link handler?
 		ItemColor = "|cFF6600", -- TODO: color by quest type?
-		Stack = stackCount,
+		StackCount = stackCount,
 		Usable = isUsable,
 	}
 	quest.Tools[toolIndex] = tool
 	return tool
 end
 
-local function AddQuestInternal(quests, questIndex)
+local _quests = {}
+
+local function AddQuestInternal(questIndex)
+    -- called when creating quests for updates (new quests)
+--    X4D.Debug:Information{"AddQuestInternal",questIndex}
 	local questName, backgroundText, activeStepText, activeStepType, activeStepTrackerOverrideText, isCompleted, tracked, questLevel, pushed, questType = GetJournalQuestInfo(questIndex)
-	local numSteps = GetJournalQuestNumSteps(questIndex)
-	local numTools = GetQuestToolCount(questIndex)
 	local quest = {
 		Id = questIndex,
 		Name = questName,
@@ -318,41 +267,48 @@ local function AddQuestInternal(quests, questIndex)
 		Completed = isCompleted,
 		QuestText = backgroundText,
 		Steps = {},
-		StepCount = numSteps,
+		StepCount = 0,
 		Tools = {},
-		ToolCount = numTools,
+		ToolCount = 0,
 		CurrentStepText = activeStepText,
 	}
+	_quests[quest.Id] = quest
+	return quest
+end
+
+local function PopulateQuestInternal(questIndex)
+    -- called when populating quests for the first time
+	local quest = AddQuestInternal(questIndex)
+    quest.StepCount = GetJournalQuestNumSteps(questIndex)
+    quest.ToolCount = GetQuestToolCount(questIndex)
 	for stepIndex = 0, quest.StepCount do
 		AddQuestStepInternal(quest, stepIndex)
 	end
 	for toolIndex = 0, quest.ToolCount do
 		AddQuestToolInternal(quest, toolIndex)
 	end
-	quests[quest.Id] = quest
+	_quests[quest.Id] = quest
 	return quest
 end
 
 local function PopulateQuestsInternal()
-	local quests = {}
+--    X4D.Debug:Information{"PopulateQuestsInternal"}
 	for questIndex = 0, GetNumJournalQuests() do
-		AddQuestInternal(quests, questIndex)
+		PopulateQuestInternal(questIndex)
 	end
-	X4D_Loot.Quests = quests
 end
 
---== Update Quest Tools ==--
-
 local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
+--    X4D.Debug:Information{"UpdateQuestStepConditionInternal",quest, step, conditionIndex}
 	local wasChangeDetected = false
 	local condition = step.Conditions[conditionIndex]
 	if (condition == nil) then
 		condition = AddQuestStepConditionInternal(quest, step, conditionIndex)
 		wasChangeDetected = true
-		if (condition ~= nil and condition.Stack > 0) then
+		if (condition ~= nil and condition.StackCount > 0) then
             local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.Stack, X4D_Loot.Colors.Subtext)
-			InvokeCallbackSafe(slot.ItemColor, message)
+                X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.StackCount, X4D_Loot.Colors.Subtext)
+			InvokeCallbackSafe(condition.ItemColor, message)
 		end
 	else
 		local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
@@ -360,32 +316,34 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 			iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 		end
 		condition.ItemIcon = iconFilename
-		if (stackCount ~= condition.Stack) then
-			local stackChange = stackCount - condition.Stack
+		if (stackCount ~= condition.StackCount) then
+        --X4D.Debug:Warning{stackCount,condition.StackCount}
+			local stackChange = stackCount - condition.StackCount
 			if (stackChange > 0) then
 				wasChangeDetected = true
                 local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                    X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.Stack, X4D_Loot.Colors.Subtext)
-			    InvokeCallbackSafe(slot.ItemColor, message)
+                    X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext)
+			    InvokeCallbackSafe(condition.ItemColor, message)
 			end
-			condition.Stack = stackCount
+			condition.StackCount = stackCount
 		end
 	end
 	return wasChangeDetected
 end
 
 local function UpdateQuestToolInternal(quest, toolIndex)
+--    X4D.Debug:Information{"UpdateQuestToolInternal",quest, toolIndex}
 	local wasChangeDetected = false
 
 	local tool = quest.Tools[toolIndex]
 	if (tool == nil) then
 		tool = AddQuestToolInternal(quest, toolIndex)
 		wasChangeDetected = true
-		if (tool ~= nil and tool.Stack > 0) then
+		if (tool ~= nil and tool.StackCount > 0) then
 			wasChangeDetected = true
             local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.Stack, X4D_Loot.Colors.Subtext)
-			InvokeCallbackSafe(slot.ItemColor, message)
+                X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext)
+			InvokeCallbackSafe(tool.ItemColor, message)
 		end
 	else
 		local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
@@ -393,15 +351,15 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 			iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 		end
 		tool.ItemIcon = iconFilename
-		if (tool.Stack ~= stackCount) then
-			local stackChange = stackCount - tool.Stack
+		if (tool.StackCount ~= stackCount) then
+			local stackChange = stackCount - tool.StackCount
 			if (stackChange > 0) then
 				wasChangeDetected = true
                 local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                    X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.Stack, X4D_Loot.Colors.Subtext)
-			    InvokeCallbackSafe(slot.ItemColor, message)
+                    X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext)
+			    InvokeCallbackSafe(tool.ItemColor, message)
 			end
-			tool.Stack = stackCount
+			tool.StackCount = stackCount
 		end
 	end
 
@@ -409,6 +367,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 end
 
 local function UpdateQuestStepInternal(quest, stepIndex)
+--    X4D.Debug:Information{"UpdateQuestStepInternal",quest, stepIndex}
 	local wasChangeDetected = false
 	local step = quest.Steps[stepIndex]
 	if (step == nil) then
@@ -430,51 +389,61 @@ local function UpdateQuestStepInternal(quest, stepIndex)
 	return wasChangeDetected
 end
 
-local function UpdateQuestInternal(quests, questIndex)
+local function UpdateQuestInternal(questIndex)
+--    X4D.Debug:Information{"UpdateQuestInternal",questIndex}
 	local wasChangeDetected = false
-	local quest = quests[questIndex]
+	local quest = _quests[questIndex]
 	if (quest == nil) then
-		quest = AddQuestInternal(quests, questIndex)
+		quest = AddQuestInternal(questIndex)
 		wasChangeDetected = true
-	else
-		local numSteps = GetJournalQuestNumSteps(questIndex)
-		local numTools = GetQuestToolCount(questIndex)
-		if (quest.StepCount ~= numSteps) then
+	end
+	local numSteps = GetJournalQuestNumSteps(questIndex)
+	local numTools = GetQuestToolCount(questIndex)
+	if (quest.StepCount ~= numSteps) then
+		wasChangeDetected = true
+		quest.Steps = {}
+		quest.StepCount = numSteps
+	end
+	if (quest.ToolCount ~= numTools) then
+		wasChangeDetected = true
+		quest.Tools = {}
+		quest.ToolCount = numTools
+	end
+	for stepIndex = 0, quest.StepCount do
+		if (UpdateQuestStepInternal(quest, stepIndex)) then
 			wasChangeDetected = true
-			quest.Steps = {}
-			quest.StepCount = numSteps
 		end
-		if (quest.ToolCount ~= numTools) then
+	end
+	for toolIndex = 0, quest.ToolCount do
+		if (UpdateQuestToolInternal(quest, toolIndex)) then
 			wasChangeDetected = true
-			quest.Tools = {}
-			quest.ToolCount = numTools
-		end
-		for stepIndex = 0, quest.StepCount do
-			if (UpdateQuestStepInternal(quest, stepIndex)) then
-				wasChangeDetected = true
-			end
-		end
-		for toolIndex = 0, quest.ToolCount do
-			if (UpdateQuestToolInternal(quest, toolIndex)) then
-				wasChangeDetected = true
-			end
 		end
 	end
 	return wasChangeDetected
 end
 
 local function UpdateQuestsInternal()
+--    X4D.Debug:Information{"UpdateQuestsInternal"}
 	local wasChangeDetected = false
-	local quests = X4D_Loot.Quests
 	for questIndex = 0, GetNumJournalQuests() do
-		if (UpdateQuestInternal(quests, questIndex)) then
+		if (UpdateQuestInternal(questIndex)) then
 			wasChangeDetected = true
 		end
 	end
 	return wasChangeDetected
 end
 
---== Inventory Checks ==--
+function X4D_Loot.OnQuestAdded(journalIndex, questName, objectiveName)
+	UpdateQuestsInternal()
+end
+
+function X4D_Loot.OnQuestToolUpdated(journalIndex, questName)
+	UpdateQuestsInternal()
+end
+
+--endregion Quest Tools
+
+--region Bag Space Checking
 
 local _nextInventoryCheckTime = 0
 local _wasLow = false
@@ -482,17 +451,19 @@ local _wasFull = false
 
 local function CheckInventorySpaceInternal()
 	if (not CheckInventorySpaceSilently(10)) then
-		if (not CheckInventorySpaceSilently(1)) then
+		if (not CheckInventorySpaceSilently(BAG_BACKPACK)) then
 			if (_wasLow or _nextInventoryCheckTime <= GetGameTimeMilliseconds()) then
 				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 20000
 				_wasLow = false
 				_wasFull = true
 				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceFull, "Out of Bag Space")
+                --TODO: play sound
 			end
 		else
 			if (_wasFull or _nextInventoryCheckTime <= GetGameTimeMilliseconds()) then
 				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 20000
 				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceLow, "Low Bag Space")
+                --TODO: play sound
 				_wasLow = true
 				_wasFull = false
 			end
@@ -511,13 +482,12 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
             local receivingPlayer = X4D.Players:GetPlayer(receivedBy)
             local message = zo_strformat("<<1>>: <<t:2>> <<3>> x<<4>>",
                 receivingPlayer, objectName, X4D.Colors.StackCount, stackCount)                
-			InvokeCallbackSafe(slot.ItemColor, message)
+			InvokeCallbackSafe(X4D.Colors.XP, message) -- TODO: fix color to use item color or 'group chat' color
         end
     else
 	    if (lootType == LOOT_TYPE_ITEM) then
-		    if (UpdateBagsInternal()) then
-			    CheckInventorySpaceInternal()
-		    end
+            CheckBagForChange(BAG_BACKPACK)
+			CheckInventorySpaceInternal()
 	    elseif (lootType == LOOT_TYPE_QUEST_ITEM) then
 		    if (UpdateQuestsInternal()) then
 			    -- NOP
@@ -527,19 +497,14 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
 end
 
 function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
-    if(updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
+    if(bagId ~= BAG_BACKPACK or updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
     	return
     end
-	if (not isNewItem) then
-		local bag = GetBagInternal(bagId)
-		if (bag == nil) then
-			local bags = X4D_Loot.Bags
-			bag = AddBagInternal(bags, bagId)
-		else
-			AddBagSlotInternal(bag, slotIndex)
-		end		
-	end
+    --NOTE: this causes problems with Bank withdrawals, possibly other events
+    --CheckSlotForChange(bagId, slotIndex)
 end
+
+--region Money Update
 
 local function formatnum(n)
 	local left, num, right = string.match(n,"^([^%d]*%d)(%d*)(.-)$")
@@ -564,13 +529,7 @@ function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
 	end
 end
 
-function X4D_Loot.OnQuestAdded(journalIndex, questName, objectiveName)
-	UpdateQuestsInternal()
-end
-
-function X4D_Loot.OnQuestToolUpdated(journalIndex, questName)
-	UpdateQuestsInternal()
-end
+--endregion
 
 local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
@@ -630,7 +589,31 @@ local function InitializeSettingsUI()
     )
 end
 
-function X4D_Loot.OnAddOnLoaded(event, addonName)
+
+local function OnCraftCompleted(...)
+    CheckBagForChange(BAG_BACKPACK)
+    CheckInventorySpaceInternal()
+end
+
+function X4D_Loot.Register()
+    -- TODO: EVENT_ALLIANCE_POINT_UPDATE
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_LOOT_RECEIVED, X4D_Loot.OnLootReceived)
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, X4D_Loot.OnInventorySingleSlotUpdate)
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_MONEY_UPDATE, X4D_Loot.OnMoneyUpdate)
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_ADDED, X4D_Loot.OnQuestAdded)
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_TOOL_UPDATED, X4D_Loot.OnQuestToolUpdated)
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CRAFT_COMPLETED, OnCraftCompleted)
+end
+
+function X4D_Loot.Unregister()
+end
+
+local function OnPlayerActivated()
+	InitializeSnapshots()
+	PopulateQuestsInternal()
+end
+
+local function OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Loot.NAME) then
 		return
 	end	
@@ -650,29 +633,5 @@ function X4D_Loot.OnAddOnLoaded(event, addonName)
 	X4D_Loot.Register()
 end
 
-local function OnCraftCompleted(...)
-	PopulateBagsInternal()	
-end
-
-function X4D_Loot.Register()
-    -- TODO: EVENT_ALLIANCE_POINT_UPDATE
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_LOOT_RECEIVED, X4D_Loot.OnLootReceived)
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, X4D_Loot.OnInventorySingleSlotUpdate)
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_MONEY_UPDATE, X4D_Loot.OnMoneyUpdate)
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_ADDED, X4D_Loot.OnQuestAdded)
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_TOOL_UPDATED, X4D_Loot.OnQuestToolUpdated)
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CRAFT_COMPLETED, OnCraftCompleted)
-end
-
-function X4D_Loot.Unregister()
-end
-
-function X4D_Loot.OnPlayerActivated()
-	PopulateBagsInternal()
-	PopulateQuestsInternal()
-end
-
-EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_ADD_ON_LOADED, X4D_Loot.OnAddOnLoaded)
-EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_PLAYER_ACTIVATED, X4D_Loot.OnPlayerActivated)
-
-
+EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
+EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
