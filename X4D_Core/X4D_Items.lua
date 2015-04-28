@@ -22,7 +22,7 @@ function X4D_Item:New(itemId, name)
         MarketPrice = nil, -- TODO: sell prices by per-level
     }
     setmetatable(item, { __index = X4D_Item })
-    return item, normalizedName
+    return item, itemId
 end
 
 setmetatable(X4D_Item, { __call = X4D_Item.New })
@@ -135,14 +135,11 @@ end
 function X4D_Items:FromBagSlot(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS)
     if (itemLink == nil or itemLink:len() == 0) then
-        -- asked for empty slot, return nil values
+        -- ask for empty slot, get nil values
         return nil, nil, nil, nil, nil, nil, nil
     end
     local itemColor, itemQuality = X4D.Colors:ExtractLinkColor(itemLink)
     local item, itemName = self:FromLink(itemLink)
-    if (item ~= nil) then
-        item.Name = itemName
-    end
     if (item.ItemType == nil) then
         item.ItemType = GetItemType(bagId, slotIndex) or ITEMTYPE_NONE
     end
