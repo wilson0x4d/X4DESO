@@ -152,10 +152,6 @@ local function CheckBagForChange(bagId, reportChanges)
     snapshot.FreeCount = freeCount
 end
 
-function X4D_Loot:Refresh(displayChanges)
-    CheckBagForChange(BAG_BACKPACK, displayChanges)
-end
-
 --TODO: not in use, and not tested.
 --local function CheckSlotForChange(bagId, slotIndex)
 --    local snapshot = _snapshots[bagId]
@@ -483,6 +479,13 @@ local function CheckInventorySpaceInternal()
 
 end
 
+function X4D_Loot:Refresh(displayChanges)
+    CheckBagForChange(BAG_BACKPACK, displayChanges)
+    if (displayChanges) then
+        CheckInventorySpaceInternal()
+    end
+end
+
 function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, soundCategory, lootType, lootedBySelf)
     if (not lootedBySelf) then
         -- TODO: find a way to lookup item details without interrogating Bag API
@@ -598,9 +601,12 @@ local function InitializeSettingsUI()
 end
 
 
-local function OnCraftCompleted(...)
-    CheckBagForChange(BAG_BACKPACK, true)
-    CheckInventorySpaceInternal()
+local function DoRefreshSnapshots(...)
+    X4D_Loot:Refresh(true)
+end
+
+local function DoRefreshSnapshots_Silent()
+    X4D_Loot:Refresh(false)
 end
 
 function X4D_Loot.Register()
@@ -610,7 +616,13 @@ function X4D_Loot.Register()
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_MONEY_UPDATE, X4D_Loot.OnMoneyUpdate)
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_ADDED, X4D_Loot.OnQuestAdded)
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_TOOL_UPDATED, X4D_Loot.OnQuestToolUpdated)
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CRAFT_COMPLETED, OnCraftCompleted)
+    -- do not report updates for banks and stores
+    EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CLOSE_BANK, DoRefreshSnapshots_Silent)
+    EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CLOSE_GUILD_BANK, DoRefreshSnapshots_Silent)
+    EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CLOSE_STORE, DoRefreshSnapshots_Silent)
+    -- report updates for crafting
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CRAFT_COMPLETED, DoRefreshSnapshots)
+    EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_END_CRAFTING_STATION_INTERACT, DoRefreshSnapshots)
 end
 
 function X4D_Loot.Unregister()

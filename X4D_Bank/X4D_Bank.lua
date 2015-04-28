@@ -397,9 +397,7 @@ local function OnOpenBank(eventCode)
 end
 
 local function OnCloseBank()
-    if (X4D.Loot ~= nil and X4D.Loot.Refresh ~= nil) then
-        X4D.Loot:Refresh(false)
-    end
+    -- NOP
 end
 
 local function SetComboboxValue(controlName, value)
