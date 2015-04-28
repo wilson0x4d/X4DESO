@@ -58,6 +58,7 @@
     <Compile Include="X4D_Chat\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Chat\X4D_Chat.lua" />
     <Compile Include="X4D_Core\lib\badgerman\BigNum.lua" />
+    <Compile Include="X4D_Core\lib\kikito\md5.lua" />
     <Compile Include="X4D_Core\lib\kikito\sha1.lua" />
     <Compile Include="X4D_Core\lib\LibAddonMenu-2.0\controls\button.lua" />
     <Compile Include="X4D_Core\lib\LibAddonMenu-2.0\controls\checkbox.lua" />
