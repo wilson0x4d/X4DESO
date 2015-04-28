@@ -75,7 +75,7 @@ lib/X4D_Core/X4D_Strings.lua
 lib/X4D_Core/X4D_Convert.lua
 lib/X4D_Core/X4D_Colors.lua
 lib/X4D_Core/X4D_Icons.lua
-lib/X4D_Core/X4D_Debug.lua
+lib/X4D_Core/X4D_Log.lua
 lib/X4D_Core/X4D_Async.lua
 lib/X4D_Core/X4D_ETA.lua
 lib/X4D_Core/X4D_Settings.lua

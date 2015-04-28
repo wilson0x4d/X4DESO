@@ -80,7 +80,7 @@
     <Compile Include="X4D_Core\X4D_Convert.lua" />
     <Compile Include="X4D_Core\X4D_Core.lua" />
     <Compile Include="X4D_Core\X4D_DB.lua" />
-    <Compile Include="X4D_Core\X4D_Debug.lua" />
+    <Compile Include="X4D_Core\X4D_Log.lua" />
     <Compile Include="X4D_Core\X4D_ETA.lua" />
     <Compile Include="X4D_Core\X4D_Guilds.lua" />
     <Compile Include="X4D_Core\X4D_Icons.lua" />
