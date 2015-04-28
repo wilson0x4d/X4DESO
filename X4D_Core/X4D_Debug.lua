@@ -3,7 +3,7 @@ if (not X4D_Debug) then
 	return
 end
 local X4D = LibStub("X4D")
-X4D.Debug = X4D_Debug
+X4D.Log = X4D_Debug
 
 X4D_Debug.TRACE_LEVELS = {
 	VERBOSE = 0,
@@ -155,14 +155,14 @@ end
 
 Example Usage:
 
-X4D.Debug:SetTraceLevel(X4D_DEBUG.TRACE_LEVELS.VERBOSE)
+X4D.Log:SetTraceLevel(X4D_DEBUG.TRACE_LEVELS.VERBOSE)
 
-X4D.Debug:Log("MyAddon", X4D_DEBUG.TRACE_LEVELS.INFO, "This is a test.")
+X4D.Log:Log("MyAddon", X4D_DEBUG.TRACE_LEVELS.INFO, "This is a test.")
 
-X4D.Debug:Verbose("This is a test.", "MyAddon")
-X4D.Debug:Info("This is a test.", "MyAddon")
-X4D.Debug:Warn("This is a test.", "MyAddon")
-X4D.Debug:Error("This is a test.", "MyAddon")
-X4D.Debug:Critical("This is a test.", "MyAddon")
+X4D.Log:Verbose("This is a test.", "MyAddon")
+X4D.Log:Info("This is a test.", "MyAddon")
+X4D.Log:Warn("This is a test.", "MyAddon")
+X4D.Log:Error("This is a test.", "MyAddon")
+X4D.Log:Critical("This is a test.", "MyAddon")
 
 ]]

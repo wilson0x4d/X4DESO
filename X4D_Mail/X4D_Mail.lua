@@ -14,11 +14,11 @@ X4D_Mail.VERSION = "1.4"
 -- X4D_Mail:HandleSpam(mailId)
 
 if (X4D.AntiSpam == nil) then
-	X4D.Debug:Warning("No usable AntiSpam Library was detected.", "X4D Mail")
+	X4D.Log:Warning("No usable AntiSpam Library was detected.", "X4D Mail")
 end
 
 local function DefaultEmitCallback(color, text)
-	X4D.Debug:Info(color .. text, "X4D Mail")
+	X4D.Log:Info(color .. text, "X4D Mail")
 end 
 
 local _emitCallback = DefaultEmitCallback
@@ -63,7 +63,7 @@ end
 
 function X4D_Mail:HandleMailAttachments(mailId)
 	if (not X4D_Mail:IsMailReadable(mailId)) then
-		X4D.Debug:Error({ "HandleMailAttachments", "!IsMailReadable", mailId }, "X4D Mail")
+		X4D.Log:Error({ "HandleMailAttachments", "!IsMailReadable", mailId }, "X4D Mail")
 		return
 	end
 	local mail = _readableMail[mailId]
@@ -101,14 +101,14 @@ function X4D_Mail:HandleMailAttachments(mailId)
 		end
 	end
     if (shouldDelete and X4D_Mail.Settings:Get("AutoDeleteMail")) then
-	    X4D.Debug:Verbose("Deleting mail from: " .. mail.SenderDisplayName, "X4D Mail")
+	    X4D.Log:Verbose("Deleting mail from: " .. mail.SenderDisplayName, "X4D Mail")
 	    DeleteMail(mailId, false)
     end
 end
 
 function X4D_Mail:HandleSpam(mailId)
 	if (not X4D_Mail:IsMailReadable(mailId)) then
-		X4D.Debug:Error({ "HandleSpam", "!IsMailReadable", mailId }, "X4D Mail")
+		X4D.Log:Error({ "HandleSpam", "!IsMailReadable", mailId }, "X4D Mail")
 		return
 	end
 	local mail = _readableMail[mailId]
@@ -123,7 +123,7 @@ function X4D_Mail:HandleSpam(mailId)
 					})
 				if (isSpam) then
 					mail.IsSpam = true
-					X4D.Debug:Verbose("Deleting mail from spammer: " .. mail.SenderDisplayName, "X4D Mail")
+					X4D.Log:Verbose("Deleting mail from spammer: " .. mail.SenderDisplayName, "X4D Mail")
 					DeleteMail(mailId, false)
 				end
 			end

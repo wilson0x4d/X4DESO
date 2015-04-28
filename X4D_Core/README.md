@@ -15,18 +15,19 @@ All X4D Add-Ons depend on this Framework.
 * Color API
     * Color constants used throughout X4D Addons as well as color helpers to create, parse, lerp, etc.
 * Icons API
-    * Helpers for working with Icons
-* Debug API
+    * Helpers for working with Icons.
+    * Icons table to reference icons using less memory.
+* Logging API
     * Log Levels such as Verbose, Information, Warning, and Error
-    * Clean, for example: X4D.Debug:Verbose('Hello, World!')
+    * Clean, for example: X4D.Log:Verbose('Hello, World!')
 * Async API
-    * Async helpers, currently exposes a Timer via X4D.Async.CreateTimer() call
+    * Async helpers, currently exposes a Timer via X4D.Async:CreateTimer() call
 * Settings API
     * Tidy wrapper for 'Saved Variables', providing more consistent and predictable behavior.
 * Database API
     * Provides a LINQ-like wrapper around Lua tables *(Fx: myDb:Where(predicate) myDb:Select(builder) myDb:ForEach(visitor) myDb:FirstOrDefault() etc)
     * Query results also provide LINQ-like wrapper API
-    * Provides 'persistent' databases, as well. These databases can be accessed between multiple Addons to share data.
+    * Provides 'persistent, named' databases, as well. These databases can be accessed between multiple Addons to share data.
 * Items API
     * Lookup tables for:
         * Item Qualities
@@ -34,7 +35,8 @@ All X4D Add-Ons depend on this Framework.
         * Item Groups
     * Item DB (work in progress)
 * Players API
-    * Player DB (work in progress)
+    * Tracks recently seen players (last 15 minutes.)
+    * Remembers spammers, and whitelisted players (friends, guild members, etc.)
 * Guilds API
     * Guild DB (work in progress)
 
@@ -50,8 +52,8 @@ In your code:
 <pre>
 local X4D = LibStub('X4D')
 if (X4D) then
-	X4D.Debug.Verbose('Hello, World!')
-	X4D.Debug.Error({ ['HELLO'] = 'WORLD' })
+	X4D.Log.Verbose('Hello, World!')
+	X4D.Log.Error({ ['HELLO'] = 'WORLD' })
 end
 </pre>
 
@@ -105,7 +107,7 @@ v1.6
 
 - Added new X4D_Bags module, which will help consolidate code/requirements that exist for Vendor, Bank and Loot Addons.
 - X4D_DB now returns keys in addition to values from :Find() and most callbacks (predicates, builders, visitors) are now sent the key as a second parameter. This allows more efficient code to be written (knowing which key allows for direct lookups.)
-- Default 'trace level' is now "INFORMATION" (instead of WARNING), developers should use X4D.Debug:Verbose(...) for debug output, and X4D.Debug:Information(...) for user-friendly information messages. Eventually the end-user will be able to change trace level, developers need to ensure "Information" level is not used for dev-only feedback.
+- Default 'trace level' is now "INFORMATION" (instead of WARNING), developers should use X4D.Log:Verbose(...) for debug output, and X4D.Log:Information(...) for user-friendly information messages. Eventually the end-user will be able to change trace level, developers need to ensure "Information" level is not used for dev-only feedback.
 - X4D_Players base58 encodes keys, it does not duplicate the key as a conventional property (shaving memory for something we don't actually need to look-up.), and optimized player lookups.
 
 v1.5

@@ -106,7 +106,7 @@ local function OnRefreshVisible(control, data, scrollList)
             slot.SellPrice = item.data.sellPrice or slot.SellPrice
             slot.LaunderPrice = item.data.launderPrice or slot.LaunderPrice
         end
-        --X4D.Debug:Verbose(slot)
+        --X4D.Log:Verbose(slot)
     end
 end
 

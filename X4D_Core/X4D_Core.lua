@@ -51,8 +51,8 @@ EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
                 if (X4D.XP ~= nil) then
                     versions = versions .. "XP/" .. X4D.XP.VERSION .. " "
                 end
-                X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.INFORMATION)
-                X4D.Debug:Verbose(versions, "X4D")
+                X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.INFORMATION)
+                X4D.Log:Verbose(versions, "X4D")
             end, 1977, {}):Start()
         end
     end)
@@ -67,30 +67,30 @@ event handler and also be easily extended/modified by multiple Add-Ons.
 function X4D:Test()
     d("Begin Test of X4D Framework..")
 
-    X4D.Debug:SetTraceLevel(X4D.Debug.TRACE_LEVELS.VERBOSE)
+    X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.VERBOSE)
 
     -- Debug API
-    X4D.Debug:Verbose("Test Verbose")
-    X4D.Debug:Information("Test Information")
-    X4D.Debug:Warning("Test Warning")
-    X4D.Debug:Error({ ["TEST"] = { ["ERROR"] = "yes" } })
-	X4D.Debug:Critical({ [{ ["CRITICAL"] = "yes" }] = "TEST"})
+    X4D.Log:Verbose("Test Verbose")
+    X4D.Log:Information("Test Information")
+    X4D.Log:Warning("Test Warning")
+    X4D.Log:Error({ ["TEST"] = { ["ERROR"] = "yes" } })
+	X4D.Log:Critical({ [{ ["CRITICAL"] = "yes" }] = "TEST"})
 
     -- Conversion API
     local channelRoundTrip = X4D.Convert:CategoryToChannel(X4D.Convert:ChannelToCategory(CHAT_CHANNEL_OFFICER_1))
-    X4D.Debug:Verbose(CHAT_CHANNEL_OFFICER_1 == channelRoundTrip, 'CONVERT')
+    X4D.Log:Verbose(CHAT_CHANNEL_OFFICER_1 == channelRoundTrip, 'CONVERT')
 
     -- Async API
     local callback1 = function(timer, state)
         state.counter = state.counter + 1
-        X4D.Debug:Verbose("count=" .. state.counter .. " time=" .. GetGameTimeMilliseconds(), "TIMER#1@107ms")
+        X4D.Log:Verbose("count=" .. state.counter .. " time=" .. GetGameTimeMilliseconds(), "TIMER#1@107ms")
         if (state.counter >= 4) then
             timer:Stop()
         end
     end
     local callback2 = function(timer, state)
         state.counter = state.counter + 1
-        X4D.Debug:Verbose("count=" .. state.counter .. " time=" .. GetGameTimeMilliseconds(), "TIMER#2@47ms")
+        X4D.Log:Verbose("count=" .. state.counter .. " time=" .. GetGameTimeMilliseconds(), "TIMER#2@47ms")
         if (state.counter >= 4) then
             timer:Stop()
         end
@@ -145,5 +145,5 @@ end
 EVENT_MANAGER:RegisterForEvent("X4D_Core_OOM", EVENT_LUA_LOW_MEMORY, function()
     -- log to chat, including how much memory is in use
     local message = GetString(SI_LUA_LOW_MEMORY) .. X4D.Colors.Subtext .. " (" .. (math.ceil(collectgarbage("count") / 1024)) .. "MB used)"
-    X4D.Debug:Warning(message)
+    X4D.Log:Warning(message)
 end)

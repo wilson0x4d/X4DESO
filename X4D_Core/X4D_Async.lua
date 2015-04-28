@@ -38,7 +38,7 @@ function X4D_Timer:Elapsed()
 	end
 	local success, err = pcall(self._callback, self, self._state)
 	if (not success) then
-		X4D.Debug:Error(err)
+		X4D.Log:Error(err)
 		return
 	end
 	if (self._enabled) then
@@ -69,9 +69,9 @@ function X4D_Timer:Start(interval, state)
 	self._enabled = true
 
 --    if (self._interval ~= nil) then
---        X4D.Debug:Warning("Timer interval: " .. type(self._interval) .. " " .. tostring(self._interval))
+--        X4D.Log:Warning("Timer interval: " .. type(self._interval) .. " " .. tostring(self._interval))
 --    else
---        X4D.Debug:Warning("Timer Interval: nil")
+--        X4D.Log:Warning("Timer Interval: nil")
 --    end
 
 	zo_callLater(function() self:Elapsed() end, self._interval)

@@ -108,7 +108,7 @@ X4D_VENDORACTION_KEEP = 1
 X4D_VENDORACTION_SELL = 2
 
 local function GetPatternAction(slot)
-    --X4D.Debug:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
+    --X4D.Log:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
     local vendorAction = X4D_VENDORACTION_NONE
     if (not slot.IsEmpty) then
         local normalized = X4D.Bags:GetNormalizedString(slot)
@@ -174,7 +174,7 @@ local function ConductTransactions(vendor)
         for slotIndex = 0, bag.SlotCount do
             local slot = bag.Slots[slotIndex]
             --if (slot ~= nil and slot.Item ~= nil) then
-            --    X4D.Debug:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
+            --    X4D.Log:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
             --end
             if (slot ~= nil and not slot.IsEmpty) then
                 local vendorAction = GetPatternAction(slot)
@@ -243,7 +243,7 @@ local function UpdateVendorPositionData(vendor)
     vendor.MapId = GetCurrentMapIndex()
     vendor.ZoneId = GetCurrentMapZoneIndex()
     vendor.Position = { GetMapPlayerPosition("player") }
-    X4D.Debug:Verbose(vendor)
+    X4D.Log:Verbose(vendor)
 end
 
 local function OnOpenFence()
@@ -271,17 +271,17 @@ end
 
 local function OnItemBuy(eventId, entryName, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory)
     -- TODO: need items db to implement this properly, needs more time
-    --X4D.Debug:Verbose({eventId, entryName, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory})
+    --X4D.Log:Verbose({eventId, entryName, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory})
 end
 
 local function OnItemBuyBack(eventId, itemName, itemQuantity, money, itemSoundCategory)
     -- TODO: need items db to implement this properly, needs more time
-    --X4D.Debug:Verbose({ eventId, itemName, itemQuantity, money, itemSoundCategory })
+    --X4D.Log:Verbose({ eventId, itemName, itemQuantity, money, itemSoundCategory })
 end
 
 local function OnItemSale(eventId, itemName, quantity, money)
     -- TODO: need items db to implement this properly, needs more time
-    -- X4D.Debug:Verbose({eventId, itemName, quantity, money})
+    -- X4D.Log:Verbose({eventId, itemName, quantity, money})
 end
 
 

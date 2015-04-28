@@ -85,7 +85,7 @@ local function StartDbScavenger()
             X4D_Players.DB:Remove(key)
         end)
         memory = (memory - collectgarbage("count"))
-        X4D.Debug:Verbose("X4D Player DB Memory Delta: " .. memory)
+        X4D.Log:Verbose("X4D Player DB Memory Delta: " .. memory)
     end, _playerScavengerFrequency, {})
     _playerScavenger:Start()
 end

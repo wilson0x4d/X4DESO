@@ -206,7 +206,7 @@ local function FindTargetSlots(sourceSlot, targetBag)
 	for slotIndex = 0, targetBag.SlotCount do
         local slot = targetBag.Slots[slotIndex]
         if (slot == nil) then
-            X4D.Debug:Error{"WTF"}
+            X4D.Log:Error{"WTF"}
         elseif (slot.IsEmpty) then
             table.insert(empties, slot)
         elseif ((sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Name == slot.Item.Name) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
@@ -227,7 +227,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     local totalMoved = 0
     local usedEmptySlot = false
     local partialSlots, emptySlots = FindTargetSlots(sourceSlot, targetBag)
-    --X4D.Debug:Verbose{partialSlots, emptySlots}
+    --X4D.Log:Verbose{partialSlots, emptySlots}
     for _, targetSlot in pairs(partialSlots) do
         local countToMove = targetSlot.Item.StackMax - targetSlot.StackCount
         if (countToMove > sourceSlot.StackCount) then
