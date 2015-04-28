@@ -678,9 +678,9 @@ local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     local reason = GetMoneyReason(reasonId)
     local amount = newMoney - oldMoney
     if (amount >= 0) then
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s total)", reason[1], formatnum(amount), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[1], formatnum(amount), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     else
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s remaining)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     end
 end
 
