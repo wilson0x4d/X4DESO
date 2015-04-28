@@ -312,6 +312,20 @@ local function InitializeSettingsUI()
     local panelControls = { }
 
     table.insert(panelControls, {
+        type = "dropdown",
+        name = "Settings Are..",
+        tooltip = "Settings Scope",
+        choices = { "Account-Wide", "Per-Character" },
+        getFunc = function() return X4D_Vendors.Settings:Get("SettingsAre") or "Account-Wide" end,
+        setFunc = function(v)
+            if (X4D_Vendors.Settings:Get("SettingsAre") ~= v) then
+                X4D_Vendors.Settings:Set("SettingsAre", v)
+            end
+        end,
+    })
+
+
+    table.insert(panelControls, {
         type = "editbox",
         name = "For Keeps Patterns",
         tooltip = "Line-delimited list of 'For Keeps Patterns', items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.",
@@ -461,7 +475,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
 	X4D_Vendors.Settings = X4D.Settings(
 		X4D_Vendors.NAME .. "_SV",
 		{
-            SettingsAre = "Account-Wide",
+            SettingsAre = "Per-Character",
             ForKeepsItemPatterns =
             {
                 -- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered                
