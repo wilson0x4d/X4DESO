@@ -388,12 +388,18 @@ end
 
 local function OnOpenBank(eventCode)
     if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
-        _nextAutoDepositTime = GetGameTimeMilliseconds() +(X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000)
+        _nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000)
         local availableAmount = TryDepositFixedAmount()
         TryDepositPercentage(availableAmount)
     end
     TryWithdrawReserveAmount()
     TryDepositsAndWithdrawals()
+end
+
+local function OnCloseBank()
+    if (X4D.Loot ~= nil and X4D.Loot.Refresh ~= nil) then
+        X4D.Loot:Refresh(false)
+    end
 end
 
 local function SetComboboxValue(controlName, value)
@@ -706,6 +712,7 @@ local function OnAddOnLoaded(eventCode, addonName)
     InitializeSettingsUI()
 
     EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_OPEN_BANK, OnOpenBank)
+    EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_CLOSE_BANK, OnCloseBank)
     if (X4D.Loot == nil) then
         EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_MONEY_UPDATE, OnMoneyUpdate)
     end

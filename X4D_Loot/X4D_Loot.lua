@@ -96,16 +96,16 @@ local _snapshots
 
 local function InitializeSnapshots()
     if (_snapshots == nil) then
-	    local snapshots = {}
-	    for bagId = 0, GetMaxBags() do
-		    snapshots[bagId] = X4D.Bags:GetBag(bagId, true)
+        local snapshots = {}
+        for bagId = 0, GetMaxBags() do
+	        snapshots[bagId] = X4D.Bags:GetBag(bagId, true)
             --X4D.Bags:GetBag(bagId, true) -- NOTE: only calling this a second time to force the previously returned instance out of the cache (e.g. making a copy for future callers to use so 'our' version isn't tampered with by anyone else)
-	    end
-	    _snapshots = snapshots
+        end
+        _snapshots = snapshots
     end
 end
 
-local function CheckBagForChange(bagId)
+local function CheckBagForChange(bagId, reportChanges)
     local snapshot = _snapshots[bagId]
     local freeCount = 0
     if (snapshot == nil) then
@@ -125,19 +125,23 @@ local function CheckBagForChange(bagId)
                     if (previous ~= nil and not previous.IsEmpty) then
                         stackChange = stackChange - previous.StackCount
                     end
-		            if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
-                        local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
-			            InvokeCallbackSafe(current.ItemColor, message)
-		            end
+                    if (reportChanges) then
+		                if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
+                            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
+			                InvokeCallbackSafe(current.ItemColor, message)
+		                end
+                    end
                 elseif (previous ~= nil and (current == previous or current.InstanceId == previous.InstanceId) and (current.StackCount ~= previous.StackCount)) then
                     -- slot contents are not new, but counts have changed
-                    local stackChange = current.StackCount - previous.StackCount
-		            if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
-                        local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                            current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
-			            InvokeCallbackSafe(current.ItemColor, message)
-		            end
+                    if (reportChanges) then
+                        local stackChange = current.StackCount - previous.StackCount
+		                if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
+                            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
+                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
+			                InvokeCallbackSafe(current.ItemColor, message)
+		                end
+                    end
                 end
             end
             if (current == nil or current.IsEmpty) then
@@ -146,6 +150,10 @@ local function CheckBagForChange(bagId)
         end
     end
     snapshot.FreeCount = freeCount
+end
+
+function X4D_Loot:Refresh(displayChanges)
+    CheckBagForChange(BAG_BACKPACK, displayChanges)
 end
 
 --TODO: not in use, and not tested.
@@ -486,7 +494,7 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
         end
     else
 	    if (lootType == LOOT_TYPE_ITEM) then
-            CheckBagForChange(BAG_BACKPACK)
+            CheckBagForChange(BAG_BACKPACK, true)
 			CheckInventorySpaceInternal()
 	    elseif (lootType == LOOT_TYPE_QUEST_ITEM) then
 		    if (UpdateQuestsInternal()) then
@@ -591,7 +599,7 @@ end
 
 
 local function OnCraftCompleted(...)
-    CheckBagForChange(BAG_BACKPACK)
+    CheckBagForChange(BAG_BACKPACK, true)
     CheckInventorySpaceInternal()
 end
 
