@@ -144,8 +144,14 @@ function X4D_Bags:GetNormalizedString(slot)
     end
     local itemQualityString = X4D.Items.ToQualityString(slot.ItemQuality)
     local itemType = X4D.Items.ItemTypes[slot.Item.ItemType]
-    local normalized = string.format("L%02d %s %s %s",
-        slot.ItemLevel, itemQualityString:upper(), itemType.Canonical, slot.Item:GetItemLink(slot.ItemOptions))
+    local canonicalName
+    if (itemType ~= nil and itemType.Canonical ~= nil and itemType.Canonical:len() > 0) then
+        canonicalName = itemType.Canonical
+    else
+        canonicalName = "ITEMTYPE_NONE"
+    end
+    local normalized = string.format("L%02d %s %s/%s %s",
+        slot.ItemLevel, itemQualityString:upper(), canonicalName, slot.Item.Id, slot.Item:GetItemLink(slot.ItemOptions))
     if (slot.IsStolen) then
         normalized = "STOLEN " .. normalized
     end
