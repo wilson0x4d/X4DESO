@@ -168,6 +168,9 @@ local function GetItemTypeActions()
 end
 
 local function ConductTransactions(vendor)
+    -- TODO: add an option where once all fence laundering is exhausted, begin performing fence sales (or the other way around, based on user selection) with this, also: re-order transactions based on user setting ascending or descending.
+    local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
+    local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
     local itemTypeActions = GetItemTypeActions()
     local bag = X4D.Bags:GetBackpackBag(true)
     if (bag ~= nil) then
@@ -181,11 +184,11 @@ local function ConductTransactions(vendor)
                 local itemTypeAction = itemTypeActions[slot.Item.ItemType]
                 if (vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) then
                     if (vendor.IsFence and slot.IsStolen) then
-                        local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
                         if (laundersUsed < laundersMax) then
                             if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
                                 local totalPrice = (slot.LaunderPrice * slot.StackCount)
                                 if (totalPrice < GetCurrentMoney()) then
+                                    laundersUsed = laundersUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
                                     LaunderItem(bag.Id, slot.Id, slot.StackCount)
                                     slot.IsEmpty = false
                                     slot.IsStolen = false
@@ -201,11 +204,11 @@ local function ConductTransactions(vendor)
                 elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
                     if (vendor.IsFence == slot.IsStolen) then
                         if (vendor.IsFence) then
-                            local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
                             if (sellsUsed >= sellsMax) then
                                 return
                             end
                         else
+                            sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
                             CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
                             CallSecureProtected("PlaceInStoreWindow")
                         end
