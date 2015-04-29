@@ -80,9 +80,11 @@ function X4D_Mail:HandleMailAttachments(mailId)
 						for attachmentIndex = 1, mail.AttachedItemsCount do
 							local itemIcon, stackCount, creatorName = GetAttachedItemInfo(mailId, attachmentIndex)
 							local itemLink = GetAttachedItemLink(mailId, attachmentIndex, LINK_STYLE_BRACKETS)
+                            -- TODO: X4D.Items:FromLink(item)
 							local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
-							InvokeEmitCallbackSafe(itemColor, "Accepted " .. X4D.Icons:CreateString(itemIcon) .. itemLink .. " x" .. stackCount .. " from " .. mail.SenderDisplayName)
-
+                            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>> from <<6>>",
+                                "Accepted", X4D.Icons:CreateString(itemIcon), itemLink, X4D.Colors.StackCount, stackCount, mail.SenderDisplayName)
+			                InvokeCallbackSafe(lval.ItemColor, message)
 						end
 						TakeMailAttachedItems(mailId)
 					else
