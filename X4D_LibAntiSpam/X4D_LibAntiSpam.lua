@@ -3,7 +3,7 @@
 ----
 -- Spam/Flood library you can use from other addons, or stand-alone.
 --
-local X4D_LibAntiSpam = LibStub:NewLibrary("LibAntiSpam", 1062)
+local X4D_LibAntiSpam = LibStub:NewLibrary("LibAntiSpam", 1063)
 if (not X4D_LibAntiSpam) then
 	return
 end
@@ -11,7 +11,7 @@ local X4D = LibStub("X4D")
 X4D.AntiSpam = X4D_LibAntiSpam
 
 X4D_LibAntiSpam.NAME = "X4D_LibAntiSpam"
-X4D_LibAntiSpam.VERSION = "1.62"
+X4D_LibAntiSpam.VERSION = "1.63"
 
 X4D_LibAntiSpam.Colors = {
 	X4D = "|cFFAE19",
@@ -90,7 +90,6 @@ for inp,v in pairs(L_charMap) do
 		X4D_LibAntiSpam.CharMap[string.format("%x", b1)] = v
 	end
 	X4D_LibAntiSpam.CharMap[inp] = v
-	d(X4D_LibAntiSpam.CharMap[inp] .. "=" .. v)
 end
 
 local function DefaultEmitCallback(color, text)
@@ -119,7 +118,7 @@ local function InvokeEmitCallbackSafe(color, text)
 		color = "|cFF0000"
 	end
 	if (color:len() < 8) then
-		d("bad color color=" .. color:gsub("|", "!"))
+		X4D.Log:Error("bad color color=" .. color:gsub("|", "!"))
 		color = "|cFF0000"
 	end
 	if (callback ~= nil) then	
@@ -587,7 +586,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
         "X4D_LibAntiSpam_CPL", 
         {
             type = "panel",
-            name = "X4D |cFFAE19AntiSpam",        
+            name = "X4D |cFFAE19AntiSpam |c4D4D4D" .. X4D_LibAntiSpam.VERSION,
         })	
     
     LAM:RegisterOptionControls(

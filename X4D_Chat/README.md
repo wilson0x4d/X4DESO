@@ -24,6 +24,10 @@ Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+v1.28
+
+- Misc updates for Core v1.10
+
 v1.27
 
 - Fix bug in Chat settings where custom guild abbreviations would be reset at the end of the session.

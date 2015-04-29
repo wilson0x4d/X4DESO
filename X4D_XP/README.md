@@ -5,13 +5,15 @@ X4D XP is LibStub-compatible Add-On that reports XP gains.
 ## Features
 
 - Outputs Experience Gains
+- Shows XP/min
+- Optionally shows Time-To-Level (ttl) 
+- Optionally shows XP til-next-level (tnl)
 - Can be integrated with via LibStub, and a callback can be set via **X4D_XP:RegisterCallback(color, text)**
-- Integrated into **X4D Chat** Add-On which provides timestamp support for **X4D XP** output.
-- Shows XP/min, optionally shows Time-To-Level (ttl) and XP til-next-level (tnl)
+- Supported by **X4D Chat** Add-On
 
 ## Planned
 
-- If user is idle for 5 minutes or more, reset session start time and session count.
+- If user is idle for 5 minutes or more, reset session start time and session count to avoid skew.
 
 ## Installation
 
@@ -20,6 +22,12 @@ Open the Archive and copy the **X4D_XP** folder into **%USERPROFILE%\Documents\E
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+
+v1.8
+
+- Fix bug where quest XP was being reported twice.
+- Misc updates for Core v1.10
+
 v1.7
 
 - Modified gains displayed for veteran ranked players.

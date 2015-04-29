@@ -1,4 +1,4 @@
-local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1018)
+local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1019)
 if (not X4D_Bank) then
     return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Bank = X4D_Bank
 
 X4D_Bank.NAME = "X4D_Bank"
-X4D_Bank.VERSION = "1.18"
+X4D_Bank.VERSION = "1.19"
 
 local constLeaveAlone = "Leave Alone"
 local constDeposit = X4D.Colors.Deposit .. "Deposit"
@@ -435,7 +435,7 @@ local function InitializeSettingsUI()
     local LAM = LibStub("LibAddonMenu-2.0")
     local cplId = LAM:RegisterAddonPanel("X4D_BANK_CPL", {
         type = "panel",
-        name = "X4D |cFFAE19Bank",
+        name = "X4D |cFFAE19Bank |c4D4D4D" .. X4D_Bank.VERSION,
     } )
 
     local panelControls = {

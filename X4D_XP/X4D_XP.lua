@@ -1,4 +1,4 @@
-local X4D_XP = LibStub:NewLibrary("X4D_XP", 1007)
+local X4D_XP = LibStub:NewLibrary("X4D_XP", 1008)
 if (not X4D_XP) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.XP = X4D_XP
 
 X4D_XP.NAME = "X4D_XP"
-X4D_XP.VERSION = "1.7"
+X4D_XP.VERSION = "1.8"
 
 local _pointType = "XP"
 local _currentXP = 0
@@ -168,7 +168,7 @@ local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_XP_CPL", {
         type = "panel",
-        name = "X4D |cFFAE19XP",
+        name = "X4D |cFFAE19XP |c4D4D4D" .. X4D_XP.VERSION,
     })
 
     local panelControls = { }

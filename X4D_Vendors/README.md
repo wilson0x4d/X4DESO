@@ -20,6 +20,12 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.3
+
+- Added option to switch settings between "Account-Wide" and "Per-Character", defaulting to "Per-Character"
+- Fix bug between fence transaction submission and fence transaction counts not being synchronizedS
+- Misc updates for Core v1.10
+
 v1.2
 
 - Will no longer attempt to launder items where there are insufficient funds available, condquently does not show incorrect earnings report for failed launder attempts.

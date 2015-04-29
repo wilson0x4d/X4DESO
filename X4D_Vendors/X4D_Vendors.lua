@@ -1,4 +1,4 @@
-local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1002)
+local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1003)
 if (not X4D_Vendors) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Vendors = X4D_Vendors
 
 X4D_Vendors.NAME = "X4D_Vendors"
-X4D_Vendors.VERSION = "1.2"
+X4D_Vendors.VERSION = "1.3"
 
 local constLeaveAlone = "Leave Alone"
 local constKeep = X4D.Colors.Deposit .. "Keep"
@@ -306,7 +306,7 @@ local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_VENDORS_CPL", {
         type = "panel",
-        name = "X4D |cFFAE19Vendors",
+        name = "X4D |cFFAE19Vendor |c4D4D4D" .. X4D_Vendors.VERSION,
     })
 
     local panelControls = { }

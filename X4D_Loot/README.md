@@ -23,6 +23,14 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.13
+
+- Change to use "on-hand" rather than occasionally misinterpreted term "total"
+- Relocated loot-specific behaviour out of Bank addon and into Loot addon.
+- Fix bug where withdrawals from bank were double-reported by loot addon.
+- Added additional event hooks where Loot snapshots "may" require an update, such as when using a crafting table.
+- Misc updates for Core v1.10
+
 v1.12
 
 - Fixed bug where empty slots would process as modified slots and error.

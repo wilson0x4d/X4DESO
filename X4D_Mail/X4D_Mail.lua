@@ -1,4 +1,4 @@
-local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1004)
+local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1005)
 if (not X4D_Mail) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Mail = X4D_Mail
 
 X4D_Mail.NAME = "X4D_Mail"
-X4D_Mail.VERSION = "1.4"
+X4D_Mail.VERSION = "1.5"
 
 -- 1.0
 -- X4D_Mail:IsMailReadable(mailId)
@@ -178,7 +178,7 @@ local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_MAIL_CPL", {
         type = "panel",
-        name = "X4D |cFFAE19Mail",
+        name = "X4D |cFFAE19Mail |c4D4D4D" .. X4D_Mail.VERSION,
     })
 
     local panelControls = { }

@@ -88,6 +88,13 @@ lib/X4D_Core/X4D_Bags.lua
 
 ## Versions
 
+v1.10
+
+- Fix bug where items stored without an item type would cause normalization to error.
+- Fix bug where item names would be overwritten with non-normalized versions
+- Adapted MD5 algo from https://github.com/kikito/md5.lua/blob/master/md5.lua
+- X4D.Debug is now X4D.Log
+
 v1.9
 
 - Fixed bug where FreeCount would desync when slots were repopulated.

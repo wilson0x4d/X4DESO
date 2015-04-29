@@ -1,9 +1,12 @@
-local X4D_Chat = LibStub:NewLibrary("X4D_Chat", 1027)
+local X4D_Chat = LibStub:NewLibrary("X4D_Chat", 1028)
 if (not X4D_Chat) then
 	return
 end
 local X4D = LibStub("X4D")
 X4D.Chat = X4D_Chat
+
+X4D_Chat.NAME = "X4D_Chat"
+X4D_Chat.VERSION = "1.28"
 
 local X4D_LibAntiSpam = nil
 local X4D_Vendors = nil
@@ -11,9 +14,6 @@ local X4D_Loot = nil
 local X4D_XP = nil
 local X4D_Bank = nil
 local X4D_Mail = nil
-
-X4D_Chat.NAME = "X4D_Chat"
-X4D_Chat.VERSION = "1.27"
 
 X4D_Chat.ChannelCategory = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,
@@ -420,7 +420,7 @@ local function OnAddOnLoaded(event, addonName)
         "X4D_Chat_CPL", 
         {
             type = "panel",
-            name = "X4D |cFFAE19Chat",
+            name = "X4D |cFFAE19Chat |c4D4D4D" .. X4D_Chat.VERSION,
         })
     
     LAM:RegisterOptionControls(

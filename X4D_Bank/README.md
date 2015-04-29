@@ -23,6 +23,11 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.19
+
+- Relocated loot-specific behaviour out of Bank addon and into Loot addon.
+- Misc updates for Core v1.10
+
 v1.18
 
 - Fixed bug where partial stacks were sometimes not being filled if target bag was full and prior stack failed to fill.

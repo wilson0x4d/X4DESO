@@ -1,4 +1,4 @@
-local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1012)
+local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1013)
 if (not X4D_Loot) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Loot = X4D_Loot
 
 X4D_Loot.NAME = "X4D_Loot"
-X4D_Loot.VERSION = "1.12"
+X4D_Loot.VERSION = "1.13"
 
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 
@@ -546,7 +546,7 @@ local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_LOOT_CPL", {
         type = "panel",
-        name = "X4D |cFFAE19Loot",
+        name = "X4D |cFFAE19Loot |c4D4D4D" .. X4D_Loot.VERSION,
     })
 
     local panelControls = { }
