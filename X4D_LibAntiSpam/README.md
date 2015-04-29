@@ -17,6 +17,7 @@ Can also be used as a Stand-Alone Chat Mod to filter 'spammers' and 'flooders'.
 ## Planned Features
 
 * Ignore List Editor, and persistence via X4D_DB Module.
+* "Guild Recruitment Spam" filtering, disabled by default.
 
 ## Installation
 

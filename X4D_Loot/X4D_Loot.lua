@@ -127,8 +127,12 @@ local function CheckBagForChange(bagId, reportChanges)
                     end
                     if (reportChanges) then
 		                if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
-                            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
+                            local levelString = ""
+                            if (X4D.Loot.Settings:Get("DisplayLootLevel") and current.ItemLevel ~= nil and current.ItemLevel > 0) then
+                                levelString = "L" ..  current.ItemLevel .. " "
+                            end
+                            local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>>",
+                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
 			                InvokeCallbackSafe(current.ItemColor, message)
 		                end
                     end
@@ -137,8 +141,12 @@ local function CheckBagForChange(bagId, reportChanges)
                     if (reportChanges) then
                         local stackChange = current.StackCount - previous.StackCount
 		                if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
-                            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
-                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange))
+                            local levelString = ""
+                            if (X4D.Loot.Settings:Get("DisplayLootLevel") and current.ItemLevel ~= nil and current.ItemLevel > 0) then
+                                levelString = "L" ..  current.ItemLevel .. " "
+                            end
+                            local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>>",
+                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
 			                InvokeCallbackSafe(current.ItemColor, message)
 		                end
                     end
@@ -310,8 +318,12 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 		condition = AddQuestStepConditionInternal(quest, step, conditionIndex)
 		wasChangeDetected = true
 		if (condition ~= nil and condition.StackCount > 0) then
-            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.StackCount, X4D_Loot.Colors.Subtext)
+            local levelString = ""
+            if (X4D.Loot.Settings:Get("DisplayLootLevel") and quest.Level ~= nil and quest.Level > 0) then
+                levelString = "L" ..  quest.Level .. " "
+            end
+            local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.StackCount, X4D_Loot.Colors.Subtext, levelString)
 			InvokeCallbackSafe(condition.ItemColor, message)
 		end
 	else
@@ -325,8 +337,12 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 			local stackChange = stackCount - condition.StackCount
 			if (stackChange > 0) then
 				wasChangeDetected = true
-                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                    X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext)
+                local levelString = ""
+                if (X4D.Loot.Settings:Get("DisplayLootLevel") and quest.Level ~= nil and quest.Level > 0) then
+                    levelString = "L" ..  quest.Level .. " "
+                end
+                local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                    X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext, levelString)
 			    InvokeCallbackSafe(condition.ItemColor, message)
 			end
 			condition.StackCount = stackCount
@@ -345,8 +361,12 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 		wasChangeDetected = true
 		if (tool ~= nil and tool.StackCount > 0) then
 			wasChangeDetected = true
-            local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.StackCount, X4D_Loot.Colors.Subtext)
+            local levelString = ""
+            if (X4D.Loot.Settings:Get("DisplayLootLevel") and quest.Level ~= nil and quest.Level > 0) then
+                levelString = "L" ..  quest.Level .. " "
+            end
+            local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.StackCount, X4D_Loot.Colors.Subtext, levelString)
 			InvokeCallbackSafe(tool.ItemColor, message)
 		end
 	else
@@ -359,8 +379,12 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 			local stackChange = stackCount - tool.StackCount
 			if (stackChange > 0) then
 				wasChangeDetected = true
-                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
-                    X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext)
+                local levelString = ""
+                if (X4D.Loot.Settings:Get("DisplayLootLevel") and quest.Level ~= nil and quest.Level > 0) then
+                    levelString = "L" ..  quest.Level .. " "
+                end
+                local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
+                    X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext, levelString)
 			    InvokeCallbackSafe(tool.ItemColor, message)
 			end
 			tool.StackCount = stackCount
@@ -457,7 +481,7 @@ local function CheckInventorySpaceInternal()
 	if (not CheckInventorySpaceSilently(10)) then
 		if (not CheckInventorySpaceSilently(BAG_BACKPACK)) then
 			if (_wasLow or _nextInventoryCheckTime <= GetGameTimeMilliseconds()) then
-				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 20000
+				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 47000
 				_wasLow = false
 				_wasFull = true
 				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceFull, "Out of Bag Space")
@@ -465,7 +489,7 @@ local function CheckInventorySpaceInternal()
 			end
 		else
 			if (_wasFull or _nextInventoryCheckTime <= GetGameTimeMilliseconds()) then
-				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 20000
+				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 47000
 				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceLow, "Low Bag Space")
                 --TODO: play sound
 				_wasLow = true
@@ -645,6 +669,7 @@ local function OnAddOnLoaded(event, addonName)
             DisplayMoneyUpdates = true,
 			DisplayPartyLoot = false,
 			DisplayLootWorth = true,
+            DisplayLootLevel = false,
         }, 
         2)
 
