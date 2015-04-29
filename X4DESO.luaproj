@@ -48,6 +48,8 @@
     <Folder Include="X4D_Mail\" />
     <Folder Include="X4D_Mail\lib\" />
     <Folder Include="X4D_Mail\lib\LibStub\" />
+    <Folder Include="X4D_Vendors\lib\" />
+    <Folder Include="X4D_Vendors\lib\LibStub\" />
     <Folder Include="X4D_XP\" />
     <Folder Include="X4D_XP\lib\" />
     <Folder Include="X4D_XP\lib\LibStub\" />
@@ -97,11 +99,13 @@
     <Compile Include="X4D_Loot\X4D_Loot.lua" />
     <Compile Include="X4D_Mail\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Mail\X4D_Mail.lua" />
+    <Compile Include="X4D_Vendors\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Vendors\X4D_Vendors.lua" />
     <Compile Include="X4D_XP\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_XP\X4D_XP.lua" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="LICENSE.md" />
     <Content Include="README.md" />
     <Content Include="X4D_Bank\LICENSE.md" />
