@@ -1,0 +1,12 @@
+## APIVersion: 100011
+## Title: X4D |cFFAE19UI |c4D4D4D1.0
+## Author: @wilson0x4d
+## Description: A UI Framework for creating Add-ons, used by all X4D Add-ons.
+## Version: 1.0
+## SavedVariables: X4D_UI_SV
+## DependsOn: X4D_Core
+
+lib/LibStub/LibStub.lua
+
+X4D_UI.lua
+X4D_UI.xml
