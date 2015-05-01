@@ -62,7 +62,7 @@ function X4D_Loot.UnregisterCallback(self, callback)
 	end
 end
 
-local function InvokeCallbackSafe(color, text)
+local function InvokeChatCallback(color, text)
 	local callback = X4D_Loot.Callback
 	if (color == nil) then
 		color = "|cFF0000"
@@ -133,7 +133,7 @@ local function CheckBagForChange(bagId, reportChanges)
                             end
                             local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>>",
                                 current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
-			                InvokeCallbackSafe(current.ItemColor, message)
+			                InvokeChatCallback(current.ItemColor, message)
 		                end
                     end
                 elseif (previous ~= nil and (current == previous or current.InstanceId == previous.InstanceId) and (current.StackCount ~= previous.StackCount)) then
@@ -147,7 +147,7 @@ local function CheckBagForChange(bagId, reportChanges)
                             end
                             local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>>",
                                 current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
-			                InvokeCallbackSafe(current.ItemColor, message)
+			                InvokeChatCallback(current.ItemColor, message)
 		                end
                     end
                 end
@@ -182,7 +182,7 @@ end
 --		    if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
 --                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
 --                    current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
---			    InvokeCallbackSafe(current.ItemColor, message)
+--			    InvokeChatCallback(current.ItemColor, message)
 --		    end
 --        elseif (current ~= nil and previous ~= nil and (current == previous or current.InstanceId == previous.InstanceId) and (current.StackCount ~= previous.StackCount)) then
 --            -- slot contents are not new, but counts may have changed
@@ -190,7 +190,7 @@ end
 --		    if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
 --                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
 --                    current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
---			    InvokeCallbackSafe(current.ItemColor, message)
+--			    InvokeChatCallback(current.ItemColor, message)
 --		    end
 --        elseif ((current == nil or current.IsEmpty) and (previous ~= nil and not previous.IsEmpty)) then
 --            -- slot was not empty, bus now is free
@@ -324,7 +324,7 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
             end
             local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
                 X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, condition.StackCount, X4D_Loot.Colors.Subtext, levelString)
-			InvokeCallbackSafe(condition.ItemColor, message)
+			InvokeChatCallback(condition.ItemColor, message)
 		end
 	else
 		local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
@@ -343,7 +343,7 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
                 end
                 local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
                     X4D.Icons:CreateString(condition.ItemIcon), condition.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext, levelString)
-			    InvokeCallbackSafe(condition.ItemColor, message)
+			    InvokeChatCallback(condition.ItemColor, message)
 			end
 			condition.StackCount = stackCount
 		end
@@ -367,7 +367,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
             end
             local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
                 X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, tool.StackCount, X4D_Loot.Colors.Subtext, levelString)
-			InvokeCallbackSafe(tool.ItemColor, message)
+			InvokeChatCallback(tool.ItemColor, message)
 		end
 	else
 		local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
@@ -385,7 +385,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
                 end
                 local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>> (Quest Item)",
                     X4D.Icons:CreateString(tool.ItemIcon), tool.ItemLink, X4D.Colors.StackCount, stackChange, X4D_Loot.Colors.Subtext, levelString)
-			    InvokeCallbackSafe(tool.ItemColor, message)
+			    InvokeChatCallback(tool.ItemColor, message)
 			end
 			tool.StackCount = stackCount
 		end
@@ -484,13 +484,13 @@ local function CheckInventorySpaceInternal()
 				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 47000
 				_wasLow = false
 				_wasFull = true
-				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceFull, "Out of Bag Space")
+				InvokeChatCallback(X4D_Loot.Colors.BagSpaceFull, "Out of Bag Space")
                 --TODO: play sound
 			end
 		else
 			if (_wasFull or _nextInventoryCheckTime <= GetGameTimeMilliseconds()) then
 				_nextInventoryCheckTime = GetGameTimeMilliseconds() + 47000
-				InvokeCallbackSafe(X4D_Loot.Colors.BagSpaceLow, "Low Bag Space")
+				InvokeChatCallback(X4D_Loot.Colors.BagSpaceLow, "Low Bag Space")
                 --TODO: play sound
 				_wasLow = true
 				_wasFull = false
@@ -517,7 +517,7 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
             local receivingPlayer = X4D.Players:GetPlayer(receivedBy)
             local message = zo_strformat("<<1>>: <<t:2>> <<3>> x<<4>>",
                 receivingPlayer, objectName, X4D.Colors.StackCount, stackCount)                
-			InvokeCallbackSafe(X4D.Colors.XP, message) -- TODO: fix color to use item color or 'group chat' color
+			InvokeChatCallback(X4D.Colors.XP, message) -- TODO: fix color to use item color or 'group chat' color
         end
     else
 	    if (lootType == LOOT_TYPE_ITEM) then
@@ -558,9 +558,9 @@ function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
 	local reason = GetMoneyReason(reasonId)
 	local amount = newMoney - oldMoney
 	if (amount >= 0) then
-		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[1], formatnum(amount), _goldIcon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
+		InvokeChatCallback(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[1], formatnum(amount), _goldIcon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
 	else
-		InvokeCallbackSafe(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
+		InvokeChatCallback(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
 	end
 end
 

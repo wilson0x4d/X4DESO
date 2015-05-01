@@ -76,7 +76,7 @@ function X4D_XP.UnregisterCallback(self, callback)
 	end
 end
 
-local function InvokeCallbackSafe(color, text)
+local function InvokeChatCallback(color, text)
 	local callback = X4D_XP.Callback
 	if (color == nil) then
 		color = "|cFF0000"
@@ -93,14 +93,14 @@ end
 local function OnQuestCompleteExperience(eventCode, questName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)	
     local xpGained = currentExperience - previousExperience
     _eta:Increment(xpGained)
-	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. X4D.Colors.X4D .. questName)
+	InvokeChatCallback(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. X4D.Colors.X4D .. questName)
     _currentXP = _currentXP + xpGained
 end
 
 local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience
     _eta:Increment(xpGained)
-	InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for Discovery " .. X4D.Colors.X4D .. areaName)
+	InvokeChatCallback(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for Discovery " .. X4D.Colors.X4D .. areaName)
     _currentXP = _currentXP + xpGained
 end
 
@@ -109,9 +109,9 @@ local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previ
     _eta:Increment(xpGained)
 	local objectiveName, objectiveLevel, startDescription, finishedDescription = GetPOIInfo(zoneIndex, poiIndex)
 	if (objectiveName ~= nil and objectiveName:len() > 0) then
-		InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. X4D.Colors.X4D .. objectiveName)
+		InvokeChatCallback(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for " .. X4D.Colors.X4D .. objectiveName)
 	else
-		InvokeCallbackSafe(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for POI ")
+		InvokeChatCallback(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for POI ")
 	end
     _currentXP = _currentXP + xpGained
 end
@@ -158,7 +158,7 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
                 message = message .. ", " .. tnl .. " tnl"
             end
             message = message .. ")"
-		    InvokeCallbackSafe(X4D.Colors.XP, message)
+		    InvokeChatCallback(X4D.Colors.XP, message)
         end
 	end
 	_currentXP = _currentXP + xpGained

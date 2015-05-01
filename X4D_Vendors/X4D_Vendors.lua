@@ -71,7 +71,7 @@ function X4D_Vendors:UnregisterCallback(callback)
 	end
 end
 
-local function InvokeCallbackSafe(color, text)
+local function InvokeChatCallback(color, text)
 	local callback = X4D_Vendors.EmitCallback
 	if (color == nil) then
 		color = "|cFF0000"
@@ -120,7 +120,7 @@ local function GetPatternAction(slot)
                     vendorAction = X4D_VENDORACTION_KEEP
                 end
             end)) then
-                InvokeCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Pattern: |cFF7777" .. pattern)
+                InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Pattern: |cFF7777" .. pattern)
             end
             if (vendorAction ~= X4D_VENDORACTION_NONE) then
                 return vendorAction
@@ -134,7 +134,7 @@ local function GetPatternAction(slot)
                         vendorAction = X4D_VENDORACTION_SELL
                     end
                 end )) then
-                InvokeCallbackSafe(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Sale' Item Pattern: |cFF7777" .. pattern)
+                InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Sale' Item Pattern: |cFF7777" .. pattern)
             end
             if (vendorAction ~= X4D_VENDORACTION_NONE) then
                 return vendorAction
@@ -196,7 +196,7 @@ local function ConductTransactions(vendor)
                                     _debits = _debits + totalPrice
                                     local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
                                         "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
-			                        InvokeCallbackSafe(slot.ItemColor, message)
+			                        InvokeChatCallback(slot.ItemColor, message)
                                 end
                             end
                         end
@@ -221,7 +221,7 @@ local function ConductTransactions(vendor)
                         end
                         local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
                             "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
-			            InvokeCallbackSafe(slot.ItemColor, message)
+			            InvokeChatCallback(slot.ItemColor, message)
                     end
                 end
             end
@@ -238,7 +238,7 @@ local function ReportEarnings()
             delta = X4D.Colors.X4D .. "Total Earnings: " .. X4D.Colors.Gold .. delta .. _goldIcon
         end
         local balance = "" -- TODO: report balance-on-hand? seems a little chatty at that point
-        InvokeCallbackSafe(X4D.Colors.X4D, "Vendor Debits: " .. X4D.Colors.Gold .. _debits .. _goldIcon .. X4D.Colors.X4D .. " Credits: " .. X4D.Colors.Gold .. _credits .. _goldIcon .. " " .. delta .. balance)
+        InvokeChatCallback(X4D.Colors.X4D, "Vendor Debits: " .. X4D.Colors.Gold .. _debits .. _goldIcon .. X4D.Colors.X4D .. " Credits: " .. X4D.Colors.Gold .. _credits .. _goldIcon .. " " .. delta .. balance)
     end
 end
 

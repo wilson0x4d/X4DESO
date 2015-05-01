@@ -52,7 +52,7 @@ function X4D_Bank.UnregisterEmitCallback(self, callback)
     end
 end
 
-local function InvokeCallbackSafe(color, text)
+local function InvokeChatCallback(color, text)
     local callback = X4D_Bank.EmitCallback
     if (color == nil) then
         color = "|cFF0000"
@@ -79,7 +79,7 @@ local function IsSlotIgnoredItem(slot)
                         isIgnored = true
                     end
                 end )) then
-                InvokeCallbackSafe(X4D.Colors.SYSTEM, "(BANK) Bad Item Pattern: |cFF7777" .. pattern)
+                InvokeChatCallback(X4D.Colors.SYSTEM, "(BANK) Bad Item Pattern: |cFF7777" .. pattern)
             end
             if (isIgnored) then
                 return true
@@ -191,7 +191,7 @@ local function TryCombinePartialStacks(bagState, depth)
             CallSecureProtected("PlaceInInventory", bagState.Id, rval.Id)
             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
                 "Restacked", lval.Item:GetItemIcon(), lval.Item:GetItemLink(lval.ItemOptions), X4D.Colors.StackCount, countToMove)
-			InvokeCallbackSafe(lval.ItemColor, message)
+			InvokeChatCallback(lval.ItemColor, message)
         end
     end
     if (combineCount > 0 and depth > 0) then
@@ -262,7 +262,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     if (totalMoved > 0) then
             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
                 directionText, itemIcon, itemLink, X4D.Colors.StackCount, totalMoved)
-			InvokeCallbackSafe(sourceSlot.ItemColor, message)
+			InvokeChatCallback(sourceSlot.ItemColor, message)
     end
     return totalMoved, usedEmptySlot
 end
@@ -383,7 +383,7 @@ local function TryDepositsAndWithdrawals()
             bankFreeColor ..  bankState.FreeCount .. X4D.Colors.X4D, bankState.SlotCount,
             inventoryFreeColor .. inventoryState.FreeCount .. X4D.Colors.X4D, inventoryState.SlotCount)
     end
-    InvokeCallbackSafe(X4D.Colors.X4D, message)
+    InvokeChatCallback(X4D.Colors.X4D, message)
 end
 
 local function OnOpenBank(eventCode)
@@ -678,9 +678,9 @@ local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     local reason = GetMoneyReason(reasonId)
     local amount = newMoney - oldMoney
     if (amount >= 0) then
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[1], formatnum(amount), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeChatCallback(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[1], formatnum(amount), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     else
-        InvokeCallbackSafe(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
+        InvokeChatCallback(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[2], formatnum(math.abs(amount)), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))
     end
 end
 

@@ -112,7 +112,7 @@ function X4D_LibAntiSpam.UnregisterEmitCallback(self, callback)
 	end
 end
 
-local function InvokeEmitCallbackSafe(color, text)
+local function InvokeChatCallback(color, text)
 	local callback = X4D_LibAntiSpam.EmitCallback
 	if (color == nil) then
 		color = "|cFF0000"
@@ -214,7 +214,7 @@ local function UpdateFloodState(playerState, normalized, reason)
 			playerState.Player.IsFlooder = true
             playerState.FloodCount = 1
 			if (X4D.AntiSpam.Settings:Get("NotifyWhenDetected") and (not playerState.Player.IsSpammer)) then
-				InvokeEmitCallbackSafe(X4D.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Flood from: |cFFAE19" .. playerState.Player.Name)
+				InvokeChatCallback(X4D.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Flood from: |cFFAE19" .. playerState.Player.Name)
 			end
 			return true
 		end
@@ -243,7 +243,7 @@ local function CheckPatterns(playerState, normalized, patterns)
 			end
 		end
 		end)) then
-			InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Bad Pattern: |cFF7777" .. patterns[i])
+			InvokeChatCallback(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Bad Pattern: |cFF7777" .. patterns[i])
 		end
 	end
 end
@@ -402,7 +402,7 @@ local function ToASCII(input, fromName)
 		output = stripped:lower()
 	end
 	if (X4D.AntiSpam.Settings:Get("ShowNormalizations") and ustrips:len() > 0) then
-		InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. ustrips .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
+		InvokeChatCallback(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. ustrips .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
 	end
 	return output
 end
@@ -480,7 +480,7 @@ function X4D_LibAntiSpam:Check(text, fromName, reason)
         local wasFlood = p2.IsFlooder
 		if (UpdateFloodState(playerState, normalized, reason) and not (wasFlood or playerState.Player.IsSpammer)) then
 			if (X4D.AntiSpam.Settings:Get("ShowNormalizations")) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. normalized .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
+				InvokeChatCallback(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. normalized .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
 			end	
 		end
 	end
@@ -494,13 +494,13 @@ function X4D_LibAntiSpam:Check(text, fromName, reason)
 				local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
 				if (X4D.AntiSpam.Settings:Get("ShowNormalizations")) then
 					local highlighted = normalized:gsub("(" .. playerState.SpamPattern .. ")", X4D_LibAntiSpam.Colors.X4D .. "%1" .. "|c993333")
-					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. highlighted .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
+					InvokeChatCallback(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. highlighted .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
 				end	
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Spam from |cFFAE19" .. (fromLink or fromName or "") .. "|c5C5C5C [" .. playerState.SpamPattern .. "]")
+				InvokeChatCallback(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Detected " .. reason .. " Spam from |cFFAE19" .. (fromLink or fromName or "") .. "|c5C5C5C [" .. playerState.SpamPattern .. "]")
 			end	
 		else
 			if (X4D.AntiSpam.Settings:Get("ShowNormalizations") and not (playerState.Player.IsSpammer or playerState.Player.IsFlooder)) then
-				InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. normalized .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
+				InvokeChatCallback(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) |c993333" .. normalized .. " |cFFFF00 " .. (fromName or "") .. "|c5C5C5C (v" .. X4D_LibAntiSpam.VERSION .. ")")
 			end	
 		end
 	end
@@ -525,7 +525,7 @@ local function RejectSpammerGuildInvites()
 			if (isSpam or isFlood) then
 				if (X4D.AntiSpam.Settings:Get("NotifyWhenDetected")) then
 					local fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
-					InvokeEmitCallbackSafe(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Detected Spammer Invite from |cFFAE19" .. (fromLink or fromName))
+					InvokeChatCallback(X4D_LibAntiSpam.Colors.SYSTEM, "(LibAntiSpam) Detected Spammer Invite from |cFFAE19" .. (fromLink or fromName))
 				end
 				RejectGuildInvite(guildId)
 				zo_callLater(RejectSpammerGuildInvites, 1000)
