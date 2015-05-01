@@ -608,6 +608,18 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
             type = "checkbox",
+            name = "Display Loot Level", 
+            tooltip = "When enabled, and when available, loot level is displayed.", 
+            getFunc = function() 
+                return X4D.Loot.Settings:Get("DisplayLootLevel")
+            end,
+            setFunc = function()
+                X4D.Loot.Settings:Set("DisplayLootLevel", not X4D.Loot.Settings:Get("DisplayLootLevel"))
+            end,
+        })
+
+    table.insert(panelControls, {
+            type = "checkbox",
             name = "[BETA] Display Party Loot", 
             tooltip = "When enabled, loot received by others is displayed in the Chat Window.", 
             getFunc = function() 
