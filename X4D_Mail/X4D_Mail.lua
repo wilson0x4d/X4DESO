@@ -37,7 +37,7 @@ function X4D_Mail:UnregisterEmitCallback(callback)
 	end
 end
 
-local function InvokeEmitCallbackSafe(color, text)
+local function InvokeChatCallback(color, text)
 	local callback = _emitCallback
 	if (color == nil) then
 		color = "|cFF0000"
@@ -84,18 +84,18 @@ function X4D_Mail:HandleMailAttachments(mailId)
 							local itemColor = X4D.Colors:ExtractLinkColor(itemLink)
                             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>> from <<6>>",
                                 "Accepted", X4D.Icons:CreateString(itemIcon), itemLink, X4D.Colors.StackCount, stackCount, mail.SenderDisplayName)
-			                InvokeCallbackSafe(lval.ItemColor, message)
+			                InvokeChatCallback(itemColor, message)
 						end
 						TakeMailAttachedItems(mailId)
 					else
 						shouldDelete = false
-						InvokeEmitCallbackSafe("|cFFFFFF", "Could not accept Attachments from " .. mail.SenderDisplayName .. ", not enough bag space.")
+						InvokeChatCallback("|cFFFFFF", "Could not accept Attachments from " .. mail.SenderDisplayName .. ", not enough bag space.")
 					end
 				end
 				if (mail.AttachedMoney > 0) then
 					if (X4D.Loot == nil) then
 						local newMoney = GetCurrentMoney() + mail.AttachedMoney
-						InvokeEmitCallbackSafe(X4D.Colors.Gold, string.format("%s %s%s %s  (%s total)", "Accepted", formatnum(mail.AttachedMoney), X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds"), X4D.Colors.Subtext, formatnum(newMoney)))
+						InvokeChatCallback(X4D.Colors.Gold, string.format("%s %s%s %s  (%s total)", "Accepted", formatnum(mail.AttachedMoney), X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds"), X4D.Colors.Subtext, formatnum(newMoney)))
 					end				
 					TakeMailAttachedMoney(mailId)
 				end
