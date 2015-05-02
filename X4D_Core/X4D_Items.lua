@@ -382,7 +382,7 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = "Provisioning"
     },
-    [ITEMTYPE_FLAVORING] = {
+    [ITEMTYPE_FISH] = {
         Id = ITEMTYPE_FISH,
         Canonical = "ITEMTYPE_FISH",
         Name = "Fish",
