@@ -63,6 +63,7 @@ end
 
 function X4D_DB:FirstOrDefault(predicate)
     for key,entity in pairs(self._table) do
+        -- TODO: pcall
         if ((predicate == nil) or predicate(entity, key)) then
             return entity, key
         end
@@ -72,6 +73,7 @@ end
 
 function X4D_DB:ForEach(visitor)
     for key,entity in pairs(self._table) do
+        -- TODO: pcall
         visitor(entity, key)
     end
 end

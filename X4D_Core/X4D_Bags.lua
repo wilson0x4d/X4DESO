@@ -18,10 +18,9 @@ end)
 local X4D_Bag = {}
 
 function X4D_Bag:New(bagId)
-    local numSlots = GetBagSize(bagId)
     local bag = {
         Id = bagId,
-        SlotCount = numSlots,
+        SlotCount = GetBagSize(bagId),
         FreeCount = 0,
         Slots = { },
         PartialStackCount = 0,
@@ -29,7 +28,7 @@ function X4D_Bag:New(bagId)
     }
     setmetatable(bag, { __call = nil, __index = X4D_Bag })
     local freeCount = 0
-    for slotIndex = 0, numSlots  do
+    for slotIndex = 0, (bag.SlotCount - 1) do
         local current = bag:PopulateSlot(slotIndex)
         if (current == nil or current.IsEmpty) then
             freeCount = freeCount + 1
