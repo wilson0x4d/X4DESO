@@ -89,7 +89,7 @@ local function IsSlotIgnoredItem(slot)
     return false
 end
 
-local function TryGetBagState(bagId)
+local function TryGetBag(bagId)
     return X4D.Bags:GetBag(bagId, true)
 end
 
@@ -154,21 +154,23 @@ local function GetItemTypeActions()
     return itemTypeDirections
 end
 
-local function TryCombinePartialStacks(bagState, depth)
+local function TryCombinePartialStacks(bag, depth)
     if (depth == nil) then
         depth = 3
     end
     ClearCursor()
     local combines = { }
     local combineCount = 0
-    for i = 1, bagState.PartialStackCount - 1 do
-        local lval = bagState.PartialStacks[i]
-        if (lval ~= nil) then
-            for j = i + 1, bagState.PartialStackCount do
-                local rval = bagState.PartialStacks[j]
+    for i = 1, bag.PartialStackCount do
+        local lval = bag.PartialStacks[i]
+        if (lval == nil) then
+            X4D.Log:Error{"TryCombinePartialStacks", "INVALID SLOT INDEX " .. i}
+        else
+            for j = i + 1, (bag.PartialStackCount - 1) do
+                local rval = bag.PartialStacks[j]
                 if (rval ~= nil) then
-                    local lslot = bagState.Slots[lval.Id]
-                    local rslot = bagState.Slots[rval.Id]
+                    local lslot = bag.Slots[lval.Id]
+                    local rslot = bag.Slots[rval.Id]
                     if ((lval.Id ~= rval.Id) and(lval.ItemLevel == rval.ItemLevel) and(lval.ItemQuality == rval.ItemQuality) and(lval.Item.Name == rval.Item.Name) and(rval.StackCount ~= 0) and(lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and(not lslot.IsEmpty) and(not rslot.IsEmpty) and(lslot.IsStolen == rslot.IsStolen)) then
                         table.insert(combines, { [1] = lval, [2] = rval })
                         combineCount = combineCount + 1
@@ -178,7 +180,7 @@ local function TryCombinePartialStacks(bagState, depth)
             end
         end
     end
-    for i = 1, combineCount do
+    for i = 0, (combineCount - 1) do
         local lval, rval = combines[i][1], combines[i][2]
         local countToMove = (rval.Item.StackMax - rval.StackCount)
         if (lval.StackCount < countToMove) then
@@ -187,15 +189,15 @@ local function TryCombinePartialStacks(bagState, depth)
         if (countToMove > 0) then
             rval.StackCount = rval.StackCount + countToMove
             lval.StackCount = lval.StackCount - countToMove
-            CallSecureProtected("PickupInventoryItem", bagState.Id, lval.Id, countToMove)
-            CallSecureProtected("PlaceInInventory", bagState.Id, rval.Id)
+            CallSecureProtected("PickupInventoryItem", bag.Id, lval.Id, countToMove)
+            CallSecureProtected("PlaceInInventory", bag.Id, rval.Id)
             local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
                 "Restacked", lval.Item:GetItemIcon(), lval.Item:GetItemLink(lval.ItemOptions), X4D.Colors.StackCount, countToMove)
 			InvokeChatCallback(lval.ItemColor, message)
         end
     end
     if (combineCount > 0 and depth > 0) then
-        TryCombinePartialStacks(bagState, depth - 1)
+        TryCombinePartialStacks(bag, depth - 1)
     end
 end
 
@@ -203,10 +205,10 @@ local function FindTargetSlots(sourceSlot, targetBag)
     local partials = { }
     local empties = { }
     local remaining = sourceSlot.StackCount
-	for slotIndex = 0, targetBag.SlotCount do
+	for slotIndex = 0, (targetBag.SlotCount - 1) do
         local slot = targetBag.Slots[slotIndex]
         if (slot == nil) then
-            X4D.Log:Error{"WTF"}
+            X4D.Log:Error{"FindTargetSlots", "INVALID SLOT INDEX " .. slotIndex}
         elseif (slot.IsEmpty) then
             table.insert(empties, slot)
         elseif ((sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Name == slot.Item.Name) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
@@ -235,6 +237,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         end
         CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
         CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
+        X4D.Log:Warning{"TryMove(topartial)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
         totalMoved = totalMoved + countToMove
         sourceSlot.StackCount = sourceSlot.StackCount - countToMove
         if (sourceSlot.StackCount <= 0) then
@@ -248,6 +251,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 local countToMove = sourceSlot.StackCount
                 CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
                 CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
+                X4D.Log:Warning{"TryMove(toempty)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
                 targetSlot.IsEmpty = false
                 usedEmptySlot = true
                 totalMoved = totalMoved + countToMove
@@ -271,8 +275,8 @@ local function TryDepositsAndWithdrawals()
     local totalDeposits = 0
     local totalWithdrawals = 0
 
-    local inventoryState = TryGetBagState(BAG_BACKPACK)
-    local bankState = TryGetBagState(BAG_BANK)
+    local inventoryState = TryGetBag(BAG_BACKPACK)
+    local bankState = TryGetBag(BAG_BANK)
 
     TryCombinePartialStacks(inventoryState)
     TryCombinePartialStacks(bankState)
