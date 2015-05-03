@@ -237,7 +237,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         end
         CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
         CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
-        X4D.Log:Warning{"TryMove(topartial)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
+        X4D.Log:Verbose{"TryMove(topartial)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
         totalMoved = totalMoved + countToMove
         sourceSlot.StackCount = sourceSlot.StackCount - countToMove
         if (sourceSlot.StackCount <= 0) then
@@ -251,7 +251,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 local countToMove = sourceSlot.StackCount
                 CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
                 CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
-                X4D.Log:Warning{"TryMove(toempty)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
+                X4D.Log:Verbose{"TryMove(toempty)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
                 targetSlot.IsEmpty = false
                 usedEmptySlot = true
                 totalMoved = totalMoved + countToMove

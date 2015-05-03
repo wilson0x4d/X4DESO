@@ -97,9 +97,8 @@ local _snapshots
 local function InitializeSnapshots()
     if (_snapshots == nil) then
         local snapshots = {}
-        for bagId = 0, GetMaxBags() do
+        for bagId = 0, 3 do -- (GetMaxBags() - 1) do
 	        snapshots[bagId] = X4D.Bags:GetBag(bagId, true)
-            --X4D.Bags:GetBag(bagId, true) -- NOTE: only calling this a second time to force the previously returned instance out of the cache (e.g. making a copy for future callers to use so 'our' version isn't tampered with by anyone else)
         end
         _snapshots = snapshots
     end
@@ -113,7 +112,7 @@ local function CheckBagForChange(bagId, reportChanges)
         _snapshots[bagId] = snapshot
     else
         snapshot.SlotCount = GetBagSize(bagId)
-		for slotIndex = 0, snapshot.SlotCount do
+		for slotIndex = 0, (snapshot.SlotCount - 1) do
 	        local current, previous = snapshot:PopulateSlot(slotIndex)
             if (current ~= nil and not current.IsEmpty) then
                 if (current ~= previous and (previous == nil or previous.IsEmpty or current.InstanceId ~= previous.InstanceId)) then
@@ -203,7 +202,7 @@ end
 --region Quest Tools
 
 local function AddQuestStepConditionInternal(quest, step, conditionIndex)
---    X4D.Log:Information{"AddQuestStepConditionInternal",quest, step, conditionIndex}
+    --X4D.Log:Verbose{"AddQuestStepConditionInternal",quest, step, conditionIndex}
 	local conditionText, current, max, isFailCondition, isComplete, isCreditShared = GetJournalQuestConditionInfo(quest.Id, step.Id, conditionIndex)
 	local iconFilename, stackCount, itemName = GetQuestItemInfo(quest.Id, step.Id, conditionIndex)
 	if (iconFilename == nil or iconFilename:len() == 0) then
@@ -228,7 +227,7 @@ local function AddQuestStepConditionInternal(quest, step, conditionIndex)
 end
 
 local function AddQuestStepInternal(quest, stepIndex)
---    X4D.Log:Information{"AddQuestStepInternal",quest, stepIndex}
+    --X4D.Log:Verbose{"AddQuestStepInternal",quest, stepIndex}
 	local stepText, visibility, stepType, trackerOverrideText, numConditions = GetJournalQuestStepInfo(quest.Id, stepIndex)
 	local step = {
 		Id = stepIndex,
@@ -237,7 +236,7 @@ local function AddQuestStepInternal(quest, stepIndex)
 		Conditions = {},
 		ConditionCount = numConditions,
 	}
-	for conditionIndex = 0, numConditions do -- GetJournalQuestNumConditions(quest.Id, stepIndex) do
+	for conditionIndex = 0, (step.ConditionCount - 1) do
 		AddQuestStepConditionInternal(quest, step, conditionIndex)
 	end
 	quest.Steps[stepIndex] = step
@@ -246,7 +245,7 @@ end
 
 local function AddQuestToolInternal(quest, toolIndex)
 	local iconFilename, stackCount, isUsable, toolName = GetQuestToolInfo(quest.Id, toolIndex)
---    X4D.Log:Information{"AddQuestToolInternal",toolIndex,iconFilename, stackCount, isUsable, toolName}
+    --X4D.Log:Verbose{"AddQuestToolInternal",toolIndex,iconFilename, stackCount, isUsable, toolName}
 	if (iconFilename == nil or iconFilename:len() == 0) then
 		iconFilename = "EsoUI/Art/Icons/icon_missing.dds"
 	end
@@ -269,7 +268,7 @@ local _quests = {}
 
 local function AddQuestInternal(questIndex)
     -- called when creating quests for updates (new quests)
---    X4D.Log:Information{"AddQuestInternal",questIndex}
+    --X4D.Log:Verbose{"AddQuestInternal",questIndex}
 	local questName, backgroundText, activeStepText, activeStepType, activeStepTrackerOverrideText, isCompleted, tracked, questLevel, pushed, questType = GetJournalQuestInfo(questIndex)
 	local quest = {
 		Id = questIndex,
@@ -304,14 +303,14 @@ local function PopulateQuestInternal(questIndex)
 end
 
 local function PopulateQuestsInternal()
---    X4D.Log:Information{"PopulateQuestsInternal"}
+    --X4D.Log:Verbose{"PopulateQuestsInternal"}
 	for questIndex = 0, GetNumJournalQuests() do
 		PopulateQuestInternal(questIndex)
 	end
 end
 
 local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
---    X4D.Log:Information{"UpdateQuestStepConditionInternal",quest, step, conditionIndex}
+    --X4D.Log:Verbose{"UpdateQuestStepConditionInternal",quest, step, conditionIndex}
 	local wasChangeDetected = false
 	local condition = step.Conditions[conditionIndex]
 	if (condition == nil) then
@@ -352,7 +351,7 @@ local function UpdateQuestStepConditionInternal(quest, step, conditionIndex)
 end
 
 local function UpdateQuestToolInternal(quest, toolIndex)
---    X4D.Log:Information{"UpdateQuestToolInternal",quest, toolIndex}
+    --X4D.Log:Verbose{"UpdateQuestToolInternal",quest, toolIndex}
 	local wasChangeDetected = false
 
 	local tool = quest.Tools[toolIndex]
@@ -395,7 +394,7 @@ local function UpdateQuestToolInternal(quest, toolIndex)
 end
 
 local function UpdateQuestStepInternal(quest, stepIndex)
---    X4D.Log:Information{"UpdateQuestStepInternal",quest, stepIndex}
+    --X4D.Log:Verbose{"UpdateQuestStepInternal",quest, stepIndex}
 	local wasChangeDetected = false
 	local step = quest.Steps[stepIndex]
 	if (step == nil) then
@@ -418,7 +417,7 @@ local function UpdateQuestStepInternal(quest, stepIndex)
 end
 
 local function UpdateQuestInternal(questIndex)
---    X4D.Log:Information{"UpdateQuestInternal",questIndex}
+    --X4D.Log:Verbose{"UpdateQuestInternal",questIndex}
 	local wasChangeDetected = false
 	local quest = _quests[questIndex]
 	if (quest == nil) then
@@ -451,9 +450,10 @@ local function UpdateQuestInternal(questIndex)
 end
 
 local function UpdateQuestsInternal()
---    X4D.Log:Information{"UpdateQuestsInternal"}
+    --X4D.Log:Verbose{"UpdateQuestsInternal"}
 	local wasChangeDetected = false
-	for questIndex = 0, GetNumJournalQuests() do
+    local numJournalQuests = GetNumJournalQuests()
+	for questIndex = 0, (numJournalQuests - 1) do
 		if (UpdateQuestInternal(questIndex)) then
 			wasChangeDetected = true
 		end
