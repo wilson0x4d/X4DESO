@@ -142,9 +142,11 @@ function X4D_Log:Warning(message, source)
 end
 
 function X4D_Log:Error(message, source)
-        	d(type(message))
-        	d(message)
-        	d(type(source))
+    if (_minTraceLevel <= X4D_Log.TRACE_LEVELS.VERBOSE) then
+        d(type(message))
+        d(message)
+        d(type(source))
+    end
 	X4D_Log:Log(source, X4D_Log.TRACE_LEVELS.ERROR, message)
 end
 
