@@ -268,15 +268,15 @@ end
 
 local function TryUpdatePlayerCharacterName(player, fromName)
 	if (fromName:StartsWith("@")) then
-		for guildIndex = 1,GetNumGuilds() do
+		for guildIndex = 1, GetNumGuilds() do
 			local guildId = GetGuildId(guildIndex)
-			if (guildId ~= nil) then
-				for memberIndex = 1,GetNumGuildMembers(guildId) do
+			if (guildId ~= nil and guildId > 0) then
+				for memberIndex = 1, GetNumGuildMembers(guildId) do
 					local name, note, rankIndex, playerStatus, secsSinceLogoff = GetGuildMemberInfo(guildId, memberIndex)
 					if (name == fromName) then
 						local hasCharacter, characterName, zoneName, classType, alliance, level, veteranRank = GetGuildMemberCharacterInfo(guildId, memberIndex)
 						if (characterName ~= nil and characterName:len() > 0) then
-							player.CharacterName = characterName--:gsub("%^.*", "")
+							player.CharacterName = characterName
 							break
 						end
 					end
