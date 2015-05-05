@@ -74,7 +74,10 @@ function X4D_Timer:Start(interval, state)
 --        X4D.Log:Warning("Timer Interval: nil")
 --    end
 
-	zo_callLater(function() self:Elapsed() end, self._interval)
+	zo_callLater(function() 
+        -- TODO: pcall and log errors on behalf of consumer
+        self:Elapsed() 
+    end, self._interval)
     return self
 end
 
