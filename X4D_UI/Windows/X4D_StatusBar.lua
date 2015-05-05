@@ -24,18 +24,27 @@ function X4D_StatusBarPanel:New(name, onUpdateStatusCallback)
     local panel = {
         OnUpdateStatus = onUpdateStatusCallback,
         Label = CreateControl(name, _statusBarWindow, CT_LABEL),
+        Order = 0,
         Width = 0,
+        Offset = 0,
+        AnchorPoint = BOTTOMRIGHT, -- default layout from bottomright, will also layout from bottomleft
         SetText = function (self, text)
             _private_label:SetText(text)
-            self.Width = _private_label:GetTextWidth()
+            self.Width = _private_label:GetTextWidth() + 8
+            self.Label:SetWidth(self.Width)
             self.Label:SetText(text)
+            self.Label:ClearAnchors()
+            local negate = 1
+            if (self.AnchorPoint == BOTTOMRIGHT) then
+                negate = -1
+            end
+            self.Label:SetAnchor(self.AnchorPoint, _statusBarWindow, self.AnchorPoint, negate * self.Offset, 0)
         end, 
     }
     panel.Label:SetFont(X4D_STATUSBAR_DEFAULTFONT)
     panel.Label:SetDrawLayer(DL_TEXT)
-    panel.Label:SetColor(1,1,1,0.5)
-    panel.Label:SetAnchor(BOTTOMRIGHT)
-    panel.Label:SetText(name)
+    panel.Label:SetColor(1,1,1,1)
+    panel:SetText(name)
     panel.Label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
     panel.Label:SetHidden(false)
     panel.Label:SetMouseEnabled(true)
@@ -49,6 +58,25 @@ end
 function X4D_StatusBar:CreatePanel(name, onUpdateStatusCallback)
     self:Initialize()
     return X4D_StatusBarPanel:New(name, onUpdateStatusCallback)
+end
+
+local function UpdateStatusBarPanels()
+    local leftOffset = 0
+    local rightOffset = 0
+    for panelName,statusBarPanel in pairs(X4D_StatusBar.Panels) do
+        if (statusBarPanel.OnUpdateStatus ~= nil) then
+            if (statusBarPanel.AnchorPoint == BOTTOMRIGHT) then
+                statusBarPanel.Offset = rightOffset
+                statusBarPanel.OnUpdateStatus()
+                rightOffset = rightOffset + statusBarPanel.Width
+            else
+                statusBarPanel.Offset = leftOffset
+                statusBarPanel.OnUpdateStatus()
+                leftOffset = leftOffset + statusBarPanel.Width
+            end
+            -- TODO: use panel.Order instead of natural order
+        end
+    end            
 end
 
 function X4D_StatusBar:Initialize()
@@ -77,14 +105,10 @@ function X4D_StatusBar:Initialize()
 
         --ZO_AlphaAnimation
 
+        UpdateStatusBarPanels()
         local statusBarUpdateTimer = X4D.Async:CreateTimer(function (timer, state)
             --X4D.Log:Verbose{"X4D_StatusBar", "Updating Status Bar Panels"}
-            for panelName,statusBarPanel in pairs(self.Panels) do
-                if (statusBarPanel.OnUpdateStatus ~= nil) then
-                    statusBarPanel.OnUpdateStatus()
-                    -- TODO: cause statusbar to re-layout panels if panel widths change, using panel.Order as appropriate
-                end
-            end            
+            UpdateStatusBarPanels()
         end, 4700, {}) 
         statusBarUpdateTimer:Start()
     end
