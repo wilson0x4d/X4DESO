@@ -6,21 +6,32 @@ local X4D = LibStub("X4D")
 X4D.UI.StatusBar = X4D_StatusBar
 
 local _statusBarWindow
+local _private_label
 
 X4D_StatusBar.Panels = {}
+
+local X4D_STATUSBAR_DEFAULTFONT = "ZoFontGameSmall"
 
 --region X4D_StatusBarPanel
 
 local X4D_StatusBarPanel = {}
 
+
 --- 
 --- param onUpdateStatusCallback == no args, state management onus of caller
 function X4D_StatusBarPanel:New(name, onUpdateStatusCallback)
+    -- TODO: if _statusBarWinow == nil then throw InvalidOperation
     local panel = {
         OnUpdateStatus = onUpdateStatusCallback,
         Label = CreateControl(name, _statusBarWindow, CT_LABEL),
+        Width = 0,
+        SetText = function (self, text)
+            _private_label:SetText(text)
+            self.Width = _private_label:GetTextWidth()
+            self.Label:SetText(text)
+        end, 
     }
-    panel.Label:SetFont("ZoFontGameSmall")
+    panel.Label:SetFont(X4D_STATUSBAR_DEFAULTFONT)
     panel.Label:SetDrawLayer(DL_TEXT)
     panel.Label:SetColor(1,1,1,0.5)
     panel.Label:SetAnchor(BOTTOMRIGHT)
@@ -36,11 +47,17 @@ end
 --endregion
 
 function X4D_StatusBar:CreatePanel(name, onUpdateStatusCallback)
+    self:Initialize()
     return X4D_StatusBarPanel:New(name, onUpdateStatusCallback)
 end
 
 function X4D_StatusBar:Initialize()
     if (_statusBarWindow == nil) then
+        if (_private_label == nil) then
+            _private_label = CreateControl("X4D_Private_Label", GuiRoot, CT_LABEL)
+            _private_label:SetFont(X4D_STATUSBAR_DEFAULTFONT)
+            _private_label:SetHidden(true)
+        end
         _statusBarWindow = WINDOW_MANAGER:CreateTopLevelWindow("X4D_StatusBar")
         local screenWidth, screenHeight = GuiRoot:GetDimensions()
         _statusBarWindow:SetDimensions(screenWidth, 21) -- TODO: on window resize, update
@@ -65,6 +82,7 @@ function X4D_StatusBar:Initialize()
             for panelName,statusBarPanel in pairs(self.Panels) do
                 if (statusBarPanel.OnUpdateStatus ~= nil) then
                     statusBarPanel.OnUpdateStatus()
+                    -- TODO: cause statusbar to re-layout panels if panel widths change, using panel.Order as appropriate
                 end
             end            
         end, 4700, {}) 
