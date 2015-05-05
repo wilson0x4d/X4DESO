@@ -33,6 +33,7 @@ X4D_Loot.MoneyUpdateReason = {
 	[29] = { "Gained", "Spent" },
 	[42] = { "Withdrew", "Deposited" },
 	[43] = { "Withdrew", "Deposited" },
+    [63] = { "Fenced", "Laundered" },
 }	
 
 local function GetMoneyReason(reasonId)
@@ -547,8 +548,9 @@ local function formatnum(n)
 end
 
 function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
-    --d({eventId, newMoney, oldMoney, reasonId})
-    if ((reasonId == 1 or reasonId == 60) and (X4D.Vendors ~= nil)) then
+    --X4D.Log:Verbose{eventId, newMoney, oldMoney, reasonId}
+    --NOTE: also update loot add-on if updating reasons here
+    if ((reasonId == 1 or reasonId == 60 or reasonId == 63) and (X4D.Vendors ~= nil)) then
         -- leave display of income/expenses to Vendors Addon when present
         return
     end

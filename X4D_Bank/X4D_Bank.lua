@@ -676,7 +676,12 @@ end
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 
 local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
+    --NOTE: Loot addon takes precedence
     if (not X4D.Bank.Settings:Get("DisplayMoneyUpdates")) then
+        return
+    end
+    if ((reasonId == 1 or reasonId == 60 or reasonId == 63) and (X4D.Vendors ~= nil)) then
+        -- leave display of income/expenses to Vendors Addon when present
         return
     end
     local reason = GetMoneyReason(reasonId)
