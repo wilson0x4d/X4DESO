@@ -118,7 +118,7 @@ end
 
 local function GetStatusBarPanelText()
     local xpMinute = math.floor(_eta:GetSessionAverage(60000))
-    local message = X4D.Colors.XP
+    local message = ""
     local tnl = (_eta.TargetCount - _eta.AllTimeCount)
     if (xpMinute >= 1) then
         message = message .. xpMinute .. " " .. _pointType .. "/minute"
@@ -142,13 +142,13 @@ local function GetStatusBarPanelText()
         message = message .. ", " .. ttlString
     end
     end
-    if (X4D_XP.Settings:Get("ShowTNL")) then
+    if (X4D_XP.Settings:Get("ShowTNL") and tnl > 0) then
         if (message:len() > 0) then
             message = message .. ", "
         end
         message = message .. tnl .. " tnl" -- TODO: localize
     end
-    return message
+    return X4D.Colors.XP .. message
 end
 
 local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reasonIndex)    
