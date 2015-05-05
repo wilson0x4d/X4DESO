@@ -38,7 +38,9 @@ X4D_Colors.Magenta = "|cFF00FF"
 X4D_Colors.Orange = "|cFF9900"
 
 X4D_Colors.White = "|cFFFFFF"
-X4D_Colors.Gray = "|cC5C5C5"
+X4D_Colors.LightGray = "|cC5C5C5"
+X4D_Colors.Gray = "|c757575"
+X4D_Colors.DarkGray = "|c353535"
 X4D_Colors.Black = "|c000000"
 
 
