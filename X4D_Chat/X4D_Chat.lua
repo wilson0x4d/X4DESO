@@ -1,4 +1,4 @@
-local X4D_Chat = LibStub:NewLibrary("X4D_Chat", 1028)
+local X4D_Chat = LibStub:NewLibrary("X4D_Chat", 1029)
 if (not X4D_Chat) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Chat = X4D_Chat
 
 X4D_Chat.NAME = "X4D_Chat"
-X4D_Chat.VERSION = "1.28"
+X4D_Chat.VERSION = "1.29"
 
 local X4D_LibAntiSpam = nil
 local X4D_Vendors = nil

@@ -19,7 +19,8 @@ To that end, the following independent modules exist. When it makes sense they w
 - **X4D_LibAntiSpam** - An Anti-Spam Library that can be used to perform basic pattern/flood spam filtering.
 - **X4D_Loot** - Displays looted Items in Chat Window, including Quest Items, Stack Counts, Item Icons and Monetary transactions.
 - **X4D_Mail** - Provides minor Mail enhancements, namely integrating 'LibAntiSpam', performing auto-accepting mail attachments and auto-deleting system-generated mail.
-- **X4D_Vendors** - 
+- **X4D_Vendors** - Launder and Sell items at Merchants and Fences.
+- **X4D_UI** - Provides additional UI elements to the game, such as a Status Bar Window
 - **X4D_XP** - Shows XP Gains in the Chat Window.
 
 All of them are optional, except for X4D_Core, which all other X4D Add-ons depend on and it is thus required.

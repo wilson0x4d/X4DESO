@@ -20,6 +20,10 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.4
+
+- Fixed bug where items would not actually sell to fences when they were supposed to.
+
 v1.3
 
 - Added option to switch settings between "Account-Wide" and "Per-Character", defaulting to "Per-Character"

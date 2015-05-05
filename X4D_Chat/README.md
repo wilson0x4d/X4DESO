@@ -24,6 +24,11 @@ Open the Archive and copy the **X4D_Chat** folder into **%USERPROFILE%\Documents
 If ESO is already running, execute **/reloadui** command.
 
 ## Versions
+
+v1.29
+
+- Fix bug invalid check for non-existent guild.
+
 v1.28
 
 - Misc updates for Core v1.10

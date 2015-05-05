@@ -23,6 +23,12 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.14
+
+- New option to display Level of looted items.
+- Fixed invalid use of GetMaxBags()
+- Additional money update reason override when Vendors addon is present.
+
 v1.13
 
 - Change to use "on-hand" rather than occasionally misinterpreted term "total"

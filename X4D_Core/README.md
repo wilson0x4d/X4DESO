@@ -88,6 +88,15 @@ lib/X4D_Core/X4D_Bags.lua
 
 ## Versions
 
+v1.11
+
+- fix 'fish bug', add missing ITEMTYPE_FISH, it has been placed in the "Provisioning" group
+- X4D.Log:Error only displays type info when Verbose trace level has been set (e.g. no longer the default)
+- fixed off-by-one bug in bags module which would make it appear as though and item couldn't be deposited into the bank
+- added new 'X4D_Currency' module
+- added quality colors to item qualities table
+- added some basic colors (RGB,CYM,BWG) to Colors module
+
 v1.10
 
 - Fix bug where items stored without an item type would cause normalization to error.

@@ -23,6 +23,12 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.20
+
+- Fixed off-by-one bug in slot iterators.
+- Added new 'Bank Status Panel' (depends on optional X4D UI Addon)
+- Additional money update reason override when Vendors addon is present.
+
 v1.19
 
 - Relocated loot-specific behaviour out of Bank addon and into Loot addon.

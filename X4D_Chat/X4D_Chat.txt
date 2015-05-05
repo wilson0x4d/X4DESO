@@ -1,8 +1,8 @@
 ## APIVersion: 100011
-## Title: X4D |cFFAE19Chat |c4D4D4D1.28
+## Title: X4D |cFFAE19Chat |c4D4D4D1.29
 ## Author: @wilson0x4d
 ## Description: Modifies Chat to show Character Names in Guild Chat, and adds timestamps to all chat messages, supports color stripping, text clean-up. All features optional.
-## Version: 1.28
+## Version: 1.29
 ## SavedVariables: X4D_Chat_SV
 ## DependsOn: X4D_Core
 ## OptionalDependsOn: X4D_Loot

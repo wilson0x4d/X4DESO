@@ -4,7 +4,8 @@ X4D UI is LibStub-compatible UI Framework for creating Add-ons
 
 ## Features
 
-- TODO
+- Status Bar Window - Displays current time, FPS, Latency
+- Used by X4D XP and Bank Add-ons to display details in Status Bar Window.
 
 ## Planned
 

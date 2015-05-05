@@ -23,6 +23,10 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Versions
 
+v1.9
+
+- Added new 'XP Status Panel' (depends on optional X4D UI Addon)
+
 v1.8
 
 - Fix bug where quest XP was being reported twice.
