@@ -28,7 +28,20 @@ X4D_Colors.XP = "|cAA33FF"
 X4D_Colors.AP = "|cAA33FF"
 
 X4D_Colors.Red = "|cFF3333"
+X4D_Colors.Green = "|c33FF33"
+X4D_Colors.Blue = "|c3333FF"
+
+X4D_Colors.Yellow = "|cFFFF00"
+X4D_Colors.Cyan = "|c00FFFF"
+X4D_Colors.Magenta = "|cFF00FF"
+
+X4D_Colors.Orange = "|cFF9900"
+
+X4D_Colors.White = "|cFFFFFF"
 X4D_Colors.Gray = "|cC5C5C5"
+X4D_Colors.Black = "|c000000"
+
+
 
 function X4D_Colors:Create(r, g, b, a)
 	return "|c" .. X4D.Convert.DEC2HEX(r * 255) .. X4D.Convert.DEC2HEX(g * 255) .. X4D.Convert.DEC2HEX(b * 255)
