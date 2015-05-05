@@ -11,42 +11,72 @@ X4D_Currency.CurrencyTypes = {
         Color = X4D.Colors.Gold,
         Canonical = "CURRENCY_TYPE_MONEY",
         Icon58 = X4D.Icons:ToIcon58("EsoUI/Art/currency/currency_gold.dds"),
+        GetCurrentAmount = function(self)
+            return GetCurrentMoney()
+        end,
     },
     [CURRENCY_TYPE_ALLIANCE_POINTS] = { --2
         Name = GetString(SI_CURRENCY_ALLIANCE_POINTS),
         Color = X4D.Colors.AlliancePoints,
         Canonical = "CURRENCY_TYPE_ALLIANCE_POINTS",
         Icon58 = X4D.Icons:ToIcon58("EsoUI/Art/currency/alliancePoints.dds"),
+        GetCurrentAmount = function(self)
+            return GetAlliancePoints()
+        end,
     },
     [CURRENCY_TYPE_BATTLE_TOKENS] = { --3
         Name = GetString(SI_CURRENCY_BATTLE_TOKENS),
         Color = X4D.Colors.BattleTokens,
         Canonical = "CURRENCY_TYPE_BATTLE_TOKENS",
         Icon58 = X4D.Icons:ToIcon58("EsoUI/Art/currency/battleToken.dds"),
+        GetCurrentAmount = function(self)
+            return 0 -- TODO: unsure where to pull from
+        end,
     },
     [CURRENCY_TYPE_ITEM] = { --4
         Name = GetString(SI_CURRENCY_ITEM),
         Color = X4D.Colors.Items,
         Canonical = "CURRENCY_TYPE_ITEM",
         Icon58 = X4D.Icons:ToIcon58("EsoUI/Art/Icons/icon_missing.dds"),
+        GetCurrentAmount = function(self)
+            return 0 -- TODO: unsure where to pull from
+        end,
     },
     [CURRENCY_TYPE_RANK_POINTS] = { --5
         Name = GetString(SI_CURRENCY_RANK_POINTS),
         Color = X4D.Colors.RankPoints,
         Canonical = "CURRENCY_TYPE_RANK_POINTS",
         Icon58 = X4D.Icons:ToIcon58("EsoUI/Art/Icons/icon_missing.dds"),
+        GetCurrentAmount = function(self)
+            return GetUnitAvARankPoints("player")
+        end,
     },
     [CURRENCY_TYPE_INSPIRATION] = { --6
         Name = GetString(SI_CURRENCY_INSPIRATION),
         Color = X4D.Colors.RankPoints,
         Canonical = "CURRENCY_TYPE_INSPIRATION",
         Icon58 = X4D.Icons:ToIcon58("EsoUI/Art/currency/currency_inspiration.dds"),
+        GetCurrentAmount = function(self)
+            return GetLastCraftingResultTotalInspiration()
+        end,
     },
     [CURRENCY_TYPE_CROWNS] = { --7
         Name = GetString(SI_CURRENCY_CROWN),
         Color = X4D.Colors.Crowns,
         Canonical = "CURRENCY_TYPE_CROWNS",
         Icon58 = X4D.Icons:ToIcon58("EsoUI/Art/currency/currency_crown.dds"),
+        GetCurrentAmount = function(self)
+            return GetMarketCurrency()
+        end,
     },
 }
+
+X4D_Currency.Gold = X4D_Currency.CurrencyTypes[CURRENCY_TYPE_MONEY]
+X4D_Currency.AlliancePoints = X4D_Currency.CurrencyTypes[SI_CURRENCY_ALLIANCE_POINTS]
+X4D_Currency.BattleTokens = X4D_Currency.CurrencyTypes[SI_CURRENCY_BATTLE_TOKENS]
+X4D_Currency.Items = X4D_Currency.CurrencyTypes[SI_CURRENCY_ITEM]
+X4D_Currency.RankPoints = X4D_Currency.CurrencyTypes[SI_CURRENCY_RANK_POINTS]
+X4D_Currency.Inspiration = X4D_Currency.CurrencyTypes[SI_CURRENCY_INSPIRATION]
+X4D_Currency.Crowns = X4D_Currency.CurrencyTypes[SI_CURRENCY_CROWN]
+
 
