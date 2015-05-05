@@ -254,7 +254,7 @@ local function UpdateStatusBarText()
     --X4D.Log:Verbose{"X4D_XP::UpdateStatusBarText"}
     local text = GetStatusBarPanelText()
     if (text == nil) then text = "" end
-    _statusBarPanel.Label:SetText(text)
+    _statusBarPanel:SetText(text)
 end
 
 local function InitializeUI()

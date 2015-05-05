@@ -165,37 +165,37 @@ X4D_Items.ItemQualities = {
         Level = ITEM_QUALITY_TRASH,
         Name = GetString(SI_ITEMQUALITY0),
         Canonical = "ITEM_QUALITY_TRASH",
-        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_TRASH)):UnpackRGBA()),
+        Color = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_TRASH)):UnpackRGBA()),
     },
     [ITEM_QUALITY_NORMAL] = {
         Level = ITEM_QUALITY_NORMAL,
         Name = GetString(SI_ITEMQUALITY1),
         Canonical = "ITEM_QUALITY_NORMAL",
-        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_NORMAL)):UnpackRGBA()),
+        Color = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_NORMAL)):UnpackRGBA()),
     },
     [ITEM_QUALITY_MAGIC] = {
         Level = ITEM_QUALITY_MAGIC,
         Name = GetString(SI_ITEMQUALITY2),
         Canonical = "ITEM_QUALITY_MAGIC",
-        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_MAGIC)):UnpackRGBA()),
+        Color = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_MAGIC)):UnpackRGBA()),
     },
     [ITEM_QUALITY_ARCANE] = {
         Level = ITEM_QUALITY_ARCANE,
         Name = GetString(SI_ITEMQUALITY3),
         Canonical = "ITEM_QUALITY_ARCANE",
-        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_ARCANE)):UnpackRGBA()),
+        Color = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_ARCANE)):UnpackRGBA()),
     },
     [ITEM_QUALITY_ARTIFACT] = {
         Level = ITEM_QUALITY_ARTIFACT,
         Name = GetString(SI_ITEMQUALITY4),
         Canonical = "ITEM_QUALITY_ARTIFACT",
-        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_ARTIFACT)):UnpackRGBA()),
+        Color = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_ARTIFACT)):UnpackRGBA()),
     },
     [ITEM_QUALITY_LEGENDARY] = {
         Level = ITEM_QUALITY_LEGENDARY,
         Name = GetString(SI_ITEMQUALITY5),
         Canonical = "ITEM_QUALITY_LEGENDARY",
-        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_LEGENDARY)):UnpackRGBA()),
+        Color = X4D.Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_LEGENDARY)):UnpackRGBA()),
     }
 }
 
