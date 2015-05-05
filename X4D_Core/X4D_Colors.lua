@@ -109,7 +109,7 @@ local _itemQualityColors = {
     [5] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 5)):UnpackRGBA()),
 }
 
-X4D_Colors.Gold = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_GOLD)):UnpackRGBA())
+X4D_Colors.Gold = "|cEED700" --X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_GOLD)):UnpackRGBA())
 X4D_Colors.AlliancePoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ALLIANCE_POINTS)):UnpackRGBA())
 X4D_Colors.Items = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ITEM)):UnpackRGBA())
 X4D_Colors.BattleTokens = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_BATTLE_TOKENS)):UnpackRGBA())
