@@ -29,13 +29,6 @@ X4D_Colors.AP = "|cAA33FF"
 
 X4D_Colors.Red = "|cFF3333"
 X4D_Colors.Gray = "|cC5C5C5"
-X4D_Colors.Gold = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_GOLD)):UnpackRGBA())
-X4D_Colors.AlliancePoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ALLIANCE_POINTS)):UnpackRGBA())
-X4D_Colors.Items = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ITEM)):UnpackRGBA())
-X4D_Colors.BattleTokens = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_BATTLE_TOKENS)):UnpackRGBA())
-X4D_Colors.RankPoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_RANK_POINTS)):UnpackRGBA())
-X4D_Colors.Inspiration = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_INSPIRATION)):UnpackRGBA())
-X4D_Colors.Crowns = X4D_Colors.Gold
 
 function X4D_Colors:Create(r, g, b, a)
 	return "|c" .. X4D.Convert.DEC2HEX(r * 255) .. X4D.Convert.DEC2HEX(g * 255) .. X4D.Convert.DEC2HEX(b * 255)
@@ -100,6 +93,15 @@ local _itemQualityColors = {
     [4] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 4)):UnpackRGBA()),
     [5] = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, 5)):UnpackRGBA()),
 }
+
+X4D_Colors.Gold = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_GOLD)):UnpackRGBA())
+X4D_Colors.AlliancePoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ALLIANCE_POINTS)):UnpackRGBA())
+X4D_Colors.Items = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ITEM)):UnpackRGBA())
+X4D_Colors.BattleTokens = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_BATTLE_TOKENS)):UnpackRGBA())
+X4D_Colors.RankPoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_RANK_POINTS)):UnpackRGBA())
+X4D_Colors.Inspiration = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_INSPIRATION)):UnpackRGBA())
+X4D_Colors.Crowns = X4D_Colors.Gold
+
 
 function X4D_Colors:ExtractLinkColor(itemLink, defaultColor)
     local itemQuality = GetItemLinkQuality(itemLink)
