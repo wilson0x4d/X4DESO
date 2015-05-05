@@ -30,6 +30,7 @@ X4D_Core.lua
 X4D_Strings.lua
 X4D_Convert.lua
 X4D_Colors.lua
+X4D_Currency.lua
 X4D_Icons.lua
 X4D_Log.lua
 X4D_Async.lua
