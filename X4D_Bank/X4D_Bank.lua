@@ -688,6 +688,49 @@ local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     end
 end
 
+local _statusBarPanel
+
+local function UpdateStatusBarText()
+    --X4D.Log:Verbose{"X4D_Bank::UpdateStatusBarText"}
+
+    local backpack = X4D.Bags:GetBackpackBag()
+    local backpackColor = "|cFFFFFF"
+    if (backpack.FreeCount < (backpack.SlotCount * 0.2)) then
+        backpackColor = X4D.Colors.Red
+    end
+
+    local bank = X4D.Bags:GetBankBag()
+    local bankColor = "|cFFFFFF"
+    if (bank.FreeCount < (bank.SlotCount * 0.2)) then
+        bankColor = X4D.Colors.Red
+    end
+
+    local text = string.format("  %s%s%s  %s%s%s  %s%s/%s%s  %s%s/%s%s  ",
+        X4D.Currency.Gold.Color,
+        X4D.Currency.Gold:GetCurrentAmount(),
+        X4D.Icons:CreateString(X4D.Currency.Gold.Icon),
+        X4D.Currency.AlliancePoints.Color,
+        X4D.Currency.AlliancePoints:GetCurrentAmount(),
+        X4D.Icons:CreateString(X4D.Currency.AlliancePoints.Icon),
+        backpackColor,
+        backpack.SlotCount - backpack.FreeCount,
+        backpack.SlotCount,
+        X4D.Icons:CreateString("/esoui/art/tooltips/icon_bag.dds"),
+        bankColor,
+        bank.SlotCount - bank.FreeCount,
+        bank.SlotCount,
+        X4D.Icons:CreateString("/esoui/art/icons/guildranks/guild_rankicon_misc09_large.dds", 26,26))
+    if (text == nil) then text = "" end
+    _statusBarPanel:SetText(text)
+end
+
+local function InitializeUI()
+    if (X4D.UI ~= nil) then
+        _statusBarPanel = X4D.UI.StatusBar:CreatePanel("X4D_Bank_StatusBarPanel", UpdateStatusBarText)
+        UpdateStatusBarText()
+    end
+end
+
 local function OnAddOnLoaded(eventCode, addonName)
     if (addonName ~= X4D_Bank.NAME) then
         return
@@ -712,6 +755,8 @@ local function OnAddOnLoaded(eventCode, addonName)
         2)
 
     InitializeSettingsUI()
+
+    InitializeUI()
 
     EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_OPEN_BANK, OnOpenBank)
     EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_CLOSE_BANK, OnCloseBank)

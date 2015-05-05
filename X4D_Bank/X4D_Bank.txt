@@ -5,6 +5,7 @@
 ## Version: 1.19
 ## SavedVariables: X4D_Bank_SV
 ## DependsOn: X4D_Core
+## OptionalDependsOn: X4D_UI
 
 lib/LibStub/LibStub.lua
 
