@@ -15,6 +15,17 @@ EVENT_MANAGER:RegisterForEvent("X4D_Icons.DB", EVENT_ADD_ON_LOADED, function(eve
             _icons58 = {}
             X4D_Icons.DB:Add("I58", _icons58)
         end
+        -- try scraping from misc API
+        for i = 1, 16 do
+            local filename = GetGuildRankLargeIcon(i)
+            if (filename ~= nil) then
+                X4D_Icons:ToIcon58(filename)
+            end
+            filename = GetGuildRankSmallIcon(i)
+            if (filename ~= nil) then
+                X4D_Icons:ToIcon58(filename)
+            end
+        end
     end
 end)
 
