@@ -731,7 +731,7 @@ end
 
 local function InitializeUI()
     if (X4D.UI ~= nil) then
-        _statusBarPanel = X4D.UI.StatusBar:CreatePanel("X4D_Bank_StatusBarPanel", UpdateStatusBarText)
+        _statusBarPanel = X4D.UI.StatusBar:CreatePanel("X4D_Bank_StatusBarPanel", UpdateStatusBarText, 7)
         UpdateStatusBarText()
     end
 end

@@ -259,7 +259,7 @@ end
 
 local function InitializeUI()
     if (X4D.UI ~= nil) then
-        _statusBarPanel = X4D.UI.StatusBar:CreatePanel("X4D_XP_StatusBarPanel", UpdateStatusBarText)
+        _statusBarPanel = X4D.UI.StatusBar:CreatePanel("X4D_XP_StatusBarPanel", UpdateStatusBarText, 3)
         UpdateStatusBarText()
     end
 end
