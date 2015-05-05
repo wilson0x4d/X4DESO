@@ -116,6 +116,40 @@ local function OnObjectiveCompleted(eventCode, zoneIndex, poiIndex, level, previ
     _currentXP = _currentXP + xpGained
 end
 
+local function GetStatusBarPanelText()
+    local xpMinute = math.floor(_eta:GetSessionAverage(60000))
+    local message = X4D.Colors.XP
+    local tnl = (_eta.TargetCount - _eta.AllTimeCount)
+    if (xpMinute >= 1) then
+        message = message .. xpMinute .. " " .. _pointType .. "/minute"
+    if (X4D_XP.Settings:Get("ShowTTL")) then
+        local ttl = (tnl / _eta:GetSessionAverage())
+        local ttlDays = math.floor(ttl / 86400)
+        local shave = (ttlDays * 86400)
+        local ttlHours = math.floor((ttl - shave) / 3600)
+        shave = shave + (ttlHours * 3600)
+        local ttlMinutes = math.floor((ttl - shave) / 60)
+        shave = shave + (ttlMinutes * 60)
+        local ttlSeconds = math.floor(ttl - shave)
+        local ttlString = ""
+        if (ttlDays > 0) then
+            ttlString = string.format("%d:%02d:%02d:%02d", ttlDays, ttlHours, ttlMinutes, ttlSeconds)
+        elseif (ttlHours > 0) then
+            ttlString = string.format("%02d:%02d:%02d", ttlHours, ttlMinutes, ttlSeconds)
+        else
+            ttlString = string.format("%02d:%02d", ttlMinutes, ttlSeconds)
+        end
+        message = message .. ", " .. ttlString
+    end
+    end
+    if (X4D_XP.Settings:Get("ShowTNL")) then
+        if (message:len() > 0) then
+            message = message .. ", "
+        end
+        message = message .. tnl .. " tnl" -- TODO: localize
+    end
+    return message
+end
 
 local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reasonIndex)    
 	if (unitTag ~= "player") then
@@ -203,8 +237,34 @@ local function InitializeSettingsUI()
     )
 end
 
+function X4D_XP.Register()
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_QUEST_COMPLETE, OnQuestCompleteExperience)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_DISCOVERY_EXPERIENCE, OnDiscoveryExperienceGain)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_OBJECTIVE_COMPLETED, OnObjectiveCompleted)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_UPDATE, OnExperienceUpdate)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_VETERAN_POINTS_UPDATE, OnExperienceUpdate)
+end
 
-function X4D_XP.OnAddOnLoaded(event, addonName)
+function X4D_XP.Unregister()
+end
+
+local _statusBarPanel
+
+local function UpdateStatusBarText()
+    --X4D.Log:Verbose{"X4D_XP::UpdateStatusBarText"}
+    local text = GetStatusBarPanelText()
+    if (text == nil) then text = "" end
+    _statusBarPanel.Label:SetText(text)
+end
+
+local function InitializeUI()
+    if (X4D.UI ~= nil) then
+        _statusBarPanel = X4D.UI.StatusBar:CreatePanel("X4D_XP_StatusBarPanel", UpdateStatusBarText)
+        UpdateStatusBarText()
+    end
+end
+
+EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(event, addonName)
 	if (addonName ~= X4D_XP.NAME) then
 		return
 	end	
@@ -221,20 +281,10 @@ function X4D_XP.OnAddOnLoaded(event, addonName)
     InitializeSettingsUI()
 
 	X4D_XP.Register()
-end
 
-function X4D_XP.Register()
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_QUEST_COMPLETE, OnQuestCompleteExperience)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_DISCOVERY_EXPERIENCE, OnDiscoveryExperienceGain)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_OBJECTIVE_COMPLETED, OnObjectiveCompleted)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_UPDATE, OnExperienceUpdate)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_VETERAN_POINTS_UPDATE, OnExperienceUpdate)
-end
-
-function X4D_XP.Unregister()
-end
-
-function X4D_XP.OnPlayerActivated()
+    InitializeUI()
+end)
+EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_PLAYER_ACTIVATED, function()
     _playerIsVeteran = IsUnitVeteran("player")
 	if (_playerIsVeteran) then
 		_pointType = "VP"
@@ -244,9 +294,6 @@ function X4D_XP.OnPlayerActivated()
     	_currentXP = GetUnitXP("player")        
 	end
     _eta.AllTimeCount = _currentXP
-end
-
-EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, X4D_XP.OnAddOnLoaded)
-EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_PLAYER_ACTIVATED, X4D_XP.OnPlayerActivated)
+end)
 
 
