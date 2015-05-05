@@ -79,6 +79,56 @@ local function UpdateStatusBarPanels()
     end            
 end
 
+--region performance panel
+
+local _performancePanel
+
+local _latencyMeterIcons = {
+    [0] = X4D.Icons:CreateString("/esoui/art/campaign/campaignbrowser_hipop.dds", 16, 16),
+    [1] = X4D.Icons:CreateString("/esoui/art/campaign/campaignbrowser_medpop.dds", 16, 16),
+    [2] = X4D.Icons:CreateString("/esoui/art/campaign/campaignbrowser_lowpop.dds", 16, 16),
+}
+
+local function UpdatePerformancePanel()
+    local framerate = GetFramerate()
+    --local framerateLevel = 0
+    local framerateColor = X4D.Colors.DarkGray
+    if (framerate <= 14) then
+        --framerateLevel = 1
+        framerateColor = X4D.Colors.Red
+    elseif (framerate < 20) then
+        --framerateLevel = 1
+        framerateColor = X4D.Colors.Orange
+    elseif (framerate < 26) then
+        --framerateLevel = 2
+        framerateColor = X4D.Colors.Yellow
+    end
+    local framerateString = framerateColor .. zo_strformat(SI_FRAMERATE_METER_FORMAT, framerateColor .. math.floor(framerate))
+    local latency = GetLatency()
+    --local latencyLevel = 0
+    local latencyColor = X4D.Colors.DarkGray
+    if (latency > 500) then
+        --latencyLevel = 1
+        latencyColor = X4D.Colors.Red
+    elseif (latency > 350) then
+        --latencyLevel = 1
+        latencyColor = X4D.Colors.Orange
+    elseif (latency > 175) then
+        --latencyLevel = 2
+        latencyColor = X4D.Colors.Yellow
+    end
+    local latencyString = latencyColor .. "PING: " .. latency --.. _latencyMeterIcons[latencyLevel]
+    local text = "   " .. framerateString .. "   " .. latencyString
+    _performancePanel:SetText(text)
+end
+
+local function CreateBuiltInPerformancePanel()
+    _performancePanel = X4D.UI.StatusBar:CreatePanel("X4D_UI_PerformancePanel", UpdatePerformancePanel)
+    _performancePanel.AnchorPoint = BOTTOMLEFT
+end
+
+--endregion
+
 function X4D_StatusBar:Initialize()
     if (_statusBarWindow == nil) then
         if (_private_label == nil) then
@@ -105,11 +155,15 @@ function X4D_StatusBar:Initialize()
 
         --ZO_AlphaAnimation
 
+        CreateBuiltInPerformancePanel()
         UpdateStatusBarPanels()
         local statusBarUpdateTimer = X4D.Async:CreateTimer(function (timer, state)
             --X4D.Log:Verbose{"X4D_StatusBar", "Updating Status Bar Panels"}
-            UpdateStatusBarPanels()
-        end, 4700, {}) 
+            state.Ticks = state.Ticks + 1
+            if (state.Ticks % 3 == 0) then
+                UpdateStatusBarPanels()
+            end
+        end, 1000, { Ticks = 0 }) 
         statusBarUpdateTimer:Start()
     end
 end
