@@ -203,10 +203,8 @@ local function ConductTransactions(vendor)
                     end
                 elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
                     if (vendor.IsFence == slot.IsStolen) then
-                        if (vendor.IsFence) then
-                            if (sellsUsed >= sellsMax) then
-                                return
-                            end
+                        if (vendor.IsFence and (sellsUsed >= sellsMax)) then
+                            return
                         else
                             sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
                             CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
