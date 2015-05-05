@@ -163,33 +163,39 @@ end
 X4D_Items.ItemQualities = {
     [ITEM_QUALITY_TRASH] = {
         Level = ITEM_QUALITY_TRASH,
-        Name = "Trash",
+        Name = GetString(SI_ITEMQUALITY0),
         Canonical = "ITEM_QUALITY_TRASH",
+        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_TRASH)):UnpackRGBA()),
     },
     [ITEM_QUALITY_NORMAL] = {
         Level = ITEM_QUALITY_NORMAL,
-        Name = "Normal",
+        Name = GetString(SI_ITEMQUALITY1),
         Canonical = "ITEM_QUALITY_NORMAL",
+        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_NORMAL)):UnpackRGBA()),
     },
     [ITEM_QUALITY_MAGIC] = {
         Level = ITEM_QUALITY_MAGIC,
-        Name = "Magic",
+        Name = GetString(SI_ITEMQUALITY2),
         Canonical = "ITEM_QUALITY_MAGIC",
+        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_MAGIC)):UnpackRGBA()),
     },
     [ITEM_QUALITY_ARCANE] = {
         Level = ITEM_QUALITY_ARCANE,
-        Name = "Arcane",
+        Name = GetString(SI_ITEMQUALITY3),
         Canonical = "ITEM_QUALITY_ARCANE",
+        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_ARCANE)):UnpackRGBA()),
     },
     [ITEM_QUALITY_ARTIFACT] = {
         Level = ITEM_QUALITY_ARTIFACT,
-        Name = "Artifact",
+        Name = GetString(SI_ITEMQUALITY4),
         Canonical = "ITEM_QUALITY_ARTIFACT",
+        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_ARTIFACT)):UnpackRGBA()),
     },
     [ITEM_QUALITY_LEGENDARY] = {
         Level = ITEM_QUALITY_LEGENDARY,
-        Name = "Legendary",
+        Name = GetString(SI_ITEMQUALITY5),
         Canonical = "ITEM_QUALITY_LEGENDARY",
+        Color = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_LEGENDARY)):UnpackRGBA()),
     }
 }
 
