@@ -70,11 +70,11 @@ function X4D:Test()
     X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.VERBOSE)
 
     -- Debug API
-    X4D.Log:Verbose("Test Verbose")
-    X4D.Log:Information("Test Information")
-    X4D.Log:Warning("Test Warning")
-    X4D.Log:Error({ ["TEST"] = { ["ERROR"] = "yes" } })
-	X4D.Log:Critical({ [{ ["CRITICAL"] = "yes" }] = "TEST"})
+    --X4D.Log:Verbose("Test Verbose")
+    --X4D.Log:Information("Test Information")
+    --X4D.Log:Warning("Test Warning")
+    --X4D.Log:Error({ ["TEST"] = { ["ERROR"] = "yes" } })
+	--X4D.Log:Critical({ [{ ["CRITICAL"] = "yes" }] = "TEST"})
 
     -- Conversion API
     local channelRoundTrip = X4D.Convert:CategoryToChannel(X4D.Convert:ChannelToCategory(CHAT_CHANNEL_OFFICER_1))
@@ -95,8 +95,8 @@ function X4D:Test()
             timer:Stop()
         end
     end
-    local asyncTimer1 = X4D.Async.CreateTimer(callback1, 107, { counter = 0 }):Start()
-    local asyncTimer2 = X4D.Async.CreateTimer(callback2, 47, { counter = 0 }):Start()
+    local asyncTimer1 = X4D.Async:CreateTimer(callback1, 107, { counter = 0 }):Start()
+    local asyncTimer2 = X4D.Async:CreateTimer(callback2, 47, { counter = 0 }):Start()
 
     -- SavedVars API
     -- DB API (indirectly also verifies "Settings API")
@@ -138,6 +138,18 @@ function X4D:Test()
     -- Players API
 
     -- Vendors API
+
+    -- Observables
+    local observable = X4D.Observables("World!")
+    observable:Observe(function (newVal, oldVal)
+        if (newVal == oldVal) then
+            X4D.Log:Error("TEST FAILURE: do not re-notify observers if the value is not changing")
+        end
+        X4D.Log:Verbose{"ObservableBVT", newVal, oldVal}
+    end)
+    observable("Hello")
+    observable("Hello")
+    X4D.Log:Verbose{"End"}
 
     return self
 end
