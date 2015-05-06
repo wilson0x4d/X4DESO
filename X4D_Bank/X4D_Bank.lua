@@ -612,7 +612,7 @@ local function InitializeSettingsUI()
     })
     table.insert(panelControls, {
         type = "dropdown",
-        name = "Item Type Settings",
+        name = "All Item Types",
         tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
         choices = _itemTypeChoices,
         getFunc = function() 
