@@ -180,7 +180,8 @@ local function TryCombinePartialStacks(bag, depth)
             end
         end
     end
-    for i = 0, (combineCount - 1) do
+    for i,combine in pairs(combines) do
+        --X4D.Log:Verbose{i,combine}
         local lval, rval = combines[i][1], combines[i][2]
         local countToMove = (rval.Item.StackMax - rval.StackCount)
         if (lval.StackCount < countToMove) then
