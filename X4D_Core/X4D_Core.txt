@@ -9,6 +9,7 @@
 ## third-party
 lib/LibStub/LibStub.lua
 lib/kikito/sha1.lua
+lib/kikito/md5.lua
 lib/badgerman/BigNum.lua
 ## LAM2
 lib/LibAddonMenu-2.0/LibAddonMenu-2.0.lua

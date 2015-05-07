@@ -4,7 +4,6 @@ X4D Core is a LibStub-compatible Framework of shared code used throughout <a hre
 
 All X4D Add-Ons depend on this Framework.
 
-Accepting BTC Donations 1DADjeJf3NE1Z8Zu8kPEjbjaZkuSd9fDws
 
 ## Features
 
@@ -43,11 +42,13 @@ Accepting BTC Donations 1DADjeJf3NE1Z8Zu8kPEjbjaZkuSd9fDws
 * Guilds Module
     * Guild DB (work in progress)
 
+
 ## Installation
 
 Open the Archive and copy the **X4D_Core** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
 
 If ESO is already running, execute **/reloadui** command.
+
 
 ## Integration
 
@@ -72,12 +73,15 @@ Including X4D_Core along with your add-on is **NOT** recommended, but it is poss
 ## OptionalDependsOn: X4D_Core
 lib/LibStub/LibStub.lua
 lib/kikito/sha1.lua
+lib/kikito/md5.lua
 lib/badgerman/BigNum.lua
 lib/X4D_Core/X4D_Core.lua
+lib/X4D_Core/X4D_Observables.lua
 lib/X4D_Core/X4D_Strings.lua
 lib/X4D_Core/X4D_Convert.lua
 lib/X4D_Core/X4D_Colors.lua
 lib/X4D_Core/X4D_Icons.lua
+lib/X4D_Core/X4D_Currency.lua
 lib/X4D_Core/X4D_Log.lua
 lib/X4D_Core/X4D_Async.lua
 lib/X4D_Core/X4D_ETA.lua
@@ -88,6 +92,7 @@ lib/X4D_Core/X4D_Players.lua
 lib/X4D_Core/X4D_Guilds.lua
 lib/X4D_Core/X4D_Bags.lua
 </pre>
+
 
 ## Support, Assistance, and Bug Reports
 
