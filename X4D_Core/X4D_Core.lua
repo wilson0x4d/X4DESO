@@ -1,10 +1,10 @@
-local X4D = LibStub:NewLibrary("X4D", 1011)
+local X4D = LibStub:NewLibrary("X4D", 1012)
 if (not X4D) then
     return
 end
 
 X4D.NAME = "X4D"
-X4D.VERSION = "1.11"
+X4D.VERSION = "1.12"
 
 EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)
     if (name == "X4D_Core") then
@@ -17,45 +17,6 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, 
             4)
     end
 end)
-
-local _oneTimeVersionReport = false
-
-EVENT_MANAGER:RegisterForEvent(X4D.NAME, EVENT_PLAYER_ACTIVATED,
-    function(event, name)
-        if (name == "X4D_Core") then
-            if ( _oneTimeVersionReport) then
-                return
-            end
-            _oneTimeVersionReport = true
-            X4D.Async.CreateTimer(function(timer, state)
-                timer:Stop()
-                local versions = "Core/" .. X4D.VERSION .. " "
-                if (X4D.Bank ~= nil) then
-                    versions = versions .. "Bank/" .. X4D.Bank.VERSION .. " "
-                end
-                if (X4D.Chat ~= nil) then
-                    versions = versions .. "Chat/" .. X4D.Chat.VERSION .. " "
-                end
-                if (X4D.AntiSpam ~= nil) then
-                    versions = versions .. "AntiSpam/" .. X4D.AntiSpam.VERSION .. " "
-                end
-                if (X4D.Loot ~= nil) then
-                    versions = versions .. "Loot/" .. X4D.Loot.VERSION .. " "
-                end
-                if (X4D.Mail ~= nil) then
-                    versions = versions .. "Mail/" .. X4D.Mail.VERSION .. " "
-                end
-                if (X4D.Vendors ~= nil) then
-                    versions = versions .. "Vendors/" .. X4D.Vendors.VERSION .. " "
-                end
-                if (X4D.XP ~= nil) then
-                    versions = versions .. "XP/" .. X4D.XP.VERSION .. " "
-                end
-                X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.INFORMATION)
-                X4D.Log:Verbose(versions, "X4D")
-            end, 1977, {}):Start()
-        end
-    end)
 
 --[[
 
@@ -159,3 +120,36 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core_OOM", EVENT_LUA_LOW_MEMORY, function()
     local message = GetString(SI_LUA_LOW_MEMORY) .. X4D.Colors.Subtext .. " (" .. (math.ceil(collectgarbage("count") / 1024)) .. "MB used)"
     X4D.Log:Warning(message)
 end)
+
+SLASH_COMMANDS["/x4d"] = function (...)
+--    local versions = "Core/" .. X4D.VERSION .. " "
+--    if (X4D.Bank ~= nil) then
+--        versions = versions .. "Bank/" .. X4D.Bank.VERSION .. " "
+--    end
+--    if (X4D.Chat ~= nil) then
+--        versions = versions .. "Chat/" .. X4D.Chat.VERSION .. " "
+--    end
+--    if (X4D.AntiSpam ~= nil) then
+--        versions = versions .. "AntiSpam/" .. X4D.AntiSpam.VERSION .. " "
+--    end
+--    if (X4D.Loot ~= nil) then
+--        versions = versions .. "Loot/" .. X4D.Loot.VERSION .. " "
+--    end
+--    if (X4D.Mail ~= nil) then
+--        versions = versions .. "Mail/" .. X4D.Mail.VERSION .. " "
+--    end
+--    if (X4D.Vendors ~= nil) then
+--        versions = versions .. "Vendors/" .. X4D.Vendors.VERSION .. " "
+--    end
+--    if (X4D.XP ~= nil) then
+--        versions = versions .. "XP/" .. X4D.XP.VERSION .. " "
+--    end
+--    if (X4D.UI ~= nil) then
+--        versions = versions .. "UI/" .. X4D.UI.VERSION .. " "
+--    end
+--    X4D.Log:Warning(versions, "X4D")
+
+    if (X4D.UI ~= nil) then
+        X4D.UI:View("X4D_About")
+    end
+end
