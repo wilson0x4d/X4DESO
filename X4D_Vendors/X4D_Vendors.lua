@@ -8,12 +8,12 @@ X4D.Vendors = X4D_Vendors
 X4D_Vendors.NAME = "X4D_Vendors"
 X4D_Vendors.VERSION = "1.4"
 
-local constLeaveAlone = "Leave Alone"
+local constUnspecified = X4D.Colors.Gray .. "Unspecified"
 local constKeep = X4D.Colors.Deposit .. "Keep"
 local constSell = X4D.Colors.Withdraw .. "Sell"
 
 local _itemTypeChoices = {
-    constLeaveAlone,
+    constUnspecified,
     constKeep,
     constSell,
 }
@@ -49,7 +49,7 @@ setmetatable(X4D_Vendor, { __call = X4D_Vendor.New })
 
 --endregion
 
---region Emit Callback
+--region Chat Callback
 
 local function DefaultEmitCallback(color, text)
 	d(color .. text)
@@ -86,6 +86,28 @@ end
 
 --endregion
 
+local function IsSlotIgnoredItem(slot)
+    if (not slot.IsEmpty) then
+        local normalized = X4D.Bags:GetNormalizedString(slot)
+        local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
+        for i = 1, #patterns do
+            local pattern = patterns[i]
+            local isIgnored = false
+            if (not pcall( function()
+                    if (normalized:find(pattern)) then
+                        isIgnored = true
+                    end
+                end )) then
+                InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad Ignored Item Pattern: |cFF7777" .. pattern)
+            end
+            if (isIgnored) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 --[[
     EVENT_BUY_RECEIPT= function(eventId, entryName, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory)
     EVENT_SELL_RECEIPT= function(eventId, itemName, quantity, money)
@@ -108,6 +130,9 @@ X4D_VENDORACTION_KEEP = 1
 X4D_VENDORACTION_SELL = 2
 
 local function GetPatternAction(slot)
+    if (IsSlotIgnoredItem(slot)) then
+        return X4D_VENDORACTION_NONE
+    end
     --X4D.Log:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
     local vendorAction = X4D_VENDORACTION_NONE
     if (not slot.IsEmpty) then
@@ -176,50 +201,52 @@ local function ConductTransactions(vendor)
     if (bag ~= nil) then
         for slotIndex = 0, bag.SlotCount do
             local slot = bag.Slots[slotIndex]
-            --if (slot ~= nil and slot.Item ~= nil) then
-            --    X4D.Log:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
-            --end
+                --if (slot ~= nil and slot.Item ~= nil) then
+                --    X4D.Log:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
+                --end
             if (slot ~= nil and not slot.IsEmpty) then
-                local vendorAction = GetPatternAction(slot)
-                local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-                if (vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) then
-                    if (vendor.IsFence and slot.IsStolen) then
-                        if (laundersUsed < laundersMax) then
-                            if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
-                                local totalPrice = (slot.LaunderPrice * slot.StackCount)
-                                if (totalPrice < GetCurrentMoney()) then
-                                    laundersUsed = laundersUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
-                                    LaunderItem(bag.Id, slot.Id, slot.StackCount)
-                                    slot.IsEmpty = false
-                                    slot.IsStolen = false
-                                    local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
-                                    _debits = _debits + totalPrice
-                                    local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                        "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
-			                        InvokeChatCallback(slot.ItemColor, message)
+                if (not IsSlotIgnoredItem(slot)) then
+                    local vendorAction = GetPatternAction(slot)
+                    local itemTypeAction = itemTypeActions[slot.Item.ItemType]
+                    if (vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) then
+                        if (vendor.IsFence and slot.IsStolen) then
+                            if (laundersUsed < laundersMax) then
+                                if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
+                                    local totalPrice = (slot.LaunderPrice * slot.StackCount)
+                                    if (totalPrice < GetCurrentMoney()) then
+                                        laundersUsed = laundersUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
+                                        LaunderItem(bag.Id, slot.Id, slot.StackCount)
+                                        slot.IsEmpty = false
+                                        slot.IsStolen = false
+                                        local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
+                                        _debits = _debits + totalPrice
+                                        local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+                                            "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
+			                            InvokeChatCallback(slot.ItemColor, message)
+                                    end
                                 end
                             end
                         end
-                    end
-                elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
-                    if (vendor.IsFence == slot.IsStolen) then
-                        if (vendor.IsFence and (sellsUsed >= sellsMax)) then
-                            return
-                        else
-                            sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
-                            CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
-                            CallSecureProtected("PlaceInStoreWindow")
+                    elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
+                        if (vendor.IsFence == slot.IsStolen) then
+                            if (vendor.IsFence and (sellsUsed >= sellsMax)) then
+                                return
+                            else
+                                sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
+                                CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
+                                CallSecureProtected("PlaceInStoreWindow")
+                            end
+                            slot.IsEmpty = true
+                            local statement = ""
+                            if (slot.SellPrice ~= nil) then
+                                local totalPrice = (slot.SellPrice * slot.StackCount)
+                                statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
+                                _credits = _credits + totalPrice
+                            end
+                            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+                                "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
+			                InvokeChatCallback(slot.ItemColor, message)
                         end
-                        slot.IsEmpty = true
-                        local statement = ""
-                        if (slot.SellPrice ~= nil) then
-                            local totalPrice = (slot.SellPrice * slot.StackCount)
-                            statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
-                            _credits = _credits + totalPrice
-                        end
-                        local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                            "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
-			            InvokeChatCallback(slot.ItemColor, message)
                     end
                 end
             end
@@ -328,7 +355,7 @@ local function InitializeSettingsUI()
         name = "For Keeps Patterns",
         tooltip = "Line-delimited list of 'For Keeps Patterns', items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.",
         isMultiline = true,
-        width = "full",
+        width = "half",
         getFunc = function()
             local patterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
             if (patterns == nil or type(patterns) == "string") then
@@ -353,7 +380,7 @@ local function InitializeSettingsUI()
         name = "For Sale Patterns",
         tooltip = "Line-delimited list of 'For Sale Patterns', items matching these patterns WILL BE SOLD. |cC7C7C7Note that the 'For Keeps Patterns' list take precedence over 'For Sale Patterns' list.",
         isMultiline = true,
-        width = "full",
+        width = "half",
         getFunc = function()
             local patterns = X4D_Vendors.Settings:Get("ForSaleItemPatterns")
             if (patterns == nil or type(patterns) == "string") then
@@ -372,6 +399,32 @@ local function InitializeSettingsUI()
             X4D_Vendors.Settings:Set("ForSaleItemPatterns", result)
         end,
     })
+
+    table.insert(panelControls, {
+        type = "editbox",
+        name = "Item Ignore List",
+        tooltip = "Line-delimited list of items to ignore using 'lua patterns', item names should be lower-case. Ignored items will NOT be laundered nor sold regardless of any other setting.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+        isMultiline = true,
+        width = "half",
+        getFunc = function()
+            local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
+            if (patterns == nil or type(patterns) == "string") then
+                patterns = { }
+            end
+            return table.concat(patterns, "\n")
+        end,
+        setFunc = function(v)
+            local result = v:Split("\n")
+            -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+            for _, x in pairs(result) do
+                if (x:EndsWith("]")) then
+                    result[_] = x .. "+"
+                end
+            end
+            X4D_Vendors.Settings:Set("IgnoredItemPatterns", result)
+        end,
+    })
+
 
     --region ItemType Options
 
@@ -394,7 +447,7 @@ local function InitializeSettingsUI()
                         elseif (v == 2) then
                             return constSell
                         else
-                            return constLeaveAlone
+                            return constUnspecified
                         end
                     end,
                     setFunc = function(v)
@@ -429,7 +482,7 @@ local function InitializeSettingsUI()
             elseif (v == 2) then
                 return constSell
             else
-                return constLeaveAlone
+                return constUnspecified
             end
         end,
         setFunc = function(v)
@@ -478,6 +531,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
             {
                 -- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered                
                 "lockpick",
+                "MOTIF",
                 "LEGENDARY",
                 "ARTIFACT",
                 "ARCANE",
@@ -489,6 +543,10 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
                 -- laundering (or "Launder") takes precedence over "for sale"
                 "TRASH",
                 "ITEMTYPE_NONE",
+            },
+            IgnoredItemPatterns = 
+            {
+                -- items matching an "ignored" pattern will be left alone regardless of any other pattern or setting, consider this a "safety list" if you will
             },
         })
 
