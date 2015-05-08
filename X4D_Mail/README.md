@@ -10,7 +10,7 @@ X4D Mail is LibStub-compatible Add-On that provides minor Mail enhancements.
 
 ## Installation
 
-Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
+Open the Archive and copy the **X4D_Mail** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
 
 If ESO is already running, execute **/reloadui** command.
 
@@ -26,7 +26,7 @@ about. :)
 
 ## Donations
 
-I hope you enjoy using my add-ons as much as I do creating them. If you want to show 
+I hope you enjoy using my add-ons as much as I enjoy creating them. If you want to show 
 your support and donate :D I can always use in-game gold and items, and they're easy 
 things to come by.
 

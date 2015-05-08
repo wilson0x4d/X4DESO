@@ -56,8 +56,8 @@ In your code:
 <pre>
 local X4D = LibStub('X4D')
 if (X4D) then
-	X4D.Log.Verbose('Hello, World!')
-	X4D.Log.Error({ ['HELLO'] = 'WORLD' })
+	X4D.Log:Verbose('Hello, World!')
+	X4D.Log:Error({ ['HELLO'] = 'WORLD' })
 end
 </pre>
 
@@ -93,6 +93,9 @@ lib/X4D_Core/X4D_Guilds.lua
 lib/X4D_Core/X4D_Bags.lua
 </pre>
 
+At the in-game Chat prompt, you can execute a "/x4d" command with no arguments to run a test and enable 'developer mode'.
+When developer mode is enabled you will see detailed log output. Errors will include type information, and 'Verbose' log output will be displayed.
+
 
 ## Support, Assistance, and Bug Reports
 
@@ -105,7 +108,7 @@ about. :)
 
 ## Donations
 
-I hope you enjoy using my add-ons as much as I do creating them. If you want to show 
+I hope you enjoy using my add-ons as much as I enjoy creating them. If you want to show 
 your support and donate :D I can always use in-game gold and items, and they're easy 
 things to come by.
 

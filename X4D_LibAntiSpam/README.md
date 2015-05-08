@@ -54,7 +54,7 @@ about. :)
 
 ## Donations
 
-I hope you enjoy using my add-ons as much as I do creating them. If you want to show 
+I hope you enjoy using my add-ons as much as I enjoy creating them. If you want to show 
 your support and donate :D I can always use in-game gold and items, and they're easy 
 things to come by.
 
