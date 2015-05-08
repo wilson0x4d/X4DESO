@@ -8,12 +8,17 @@ X4D.Bank = X4D_Bank
 X4D_Bank.NAME = "X4D_Bank"
 X4D_Bank.VERSION = "1.21"
 
-local constLeaveAlone = "Leave Alone"
+X4D_BANKACTION_NONE = 0
+X4D_BANKACTION_DEPOSIT = 1
+X4D_BANKACTION_WITHDRAW = 2
+X4D_BANKACTION_IGNORE = 3
+
+local constUnspecified = X4D.Colors.Gray .. "Unspecified"
 local constDeposit = X4D.Colors.Deposit .. "Deposit"
 local constWithdraw = X4D.Colors.Withdraw .. "Withdraw"
 
 local _itemTypeChoices = {
-    constLeaveAlone,
+    constUnspecified,
     constDeposit,
     constWithdraw,
 }
@@ -89,6 +94,47 @@ local function IsSlotIgnoredItem(slot)
     return false
 end
 
+local function GetPatternAction(slot)
+    --X4D.Log:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
+    local patternAction = X4D_BANKACTION_NONE
+    if (not slot.IsEmpty) then
+        if (IsSlotIgnoredItem(slot)) then
+            patternAction = X4D_BANKACTION_IGNORE
+        else
+            local normalized = X4D.Bags:GetNormalizedString(slot)
+            local withdrawPatterns = X4D_Bank.Settings:Get("WithdrawItemPatterns")
+            for i = 1, #withdrawPatterns do
+                local pattern = withdrawPatterns[i]
+                if (not pcall( function()
+                    if (normalized:find(pattern)) then
+                        patternAction = X4D_BANKACTION_WITHDRAW
+                    end
+                end)) then
+                    InvokeChatCallback(X4D.Colors.SYSTEM, "(Bank) Bad Withdraw Pattern: |cFF7777" .. pattern)
+                end
+                if (patternAction ~= X4D_BANKACTION_NONE) then
+                    return patternAction
+                end
+            end
+            local depositPatterns = X4D_Bank.Settings:Get("DepositItemPatterns")
+            for i = 1, #depositPatterns do
+                local pattern = depositPatterns[i]
+                if (not pcall( function()
+                        if (normalized:find(pattern)) then
+                            patternAction = X4D_BANKACTION_DEPOSIT
+                        end
+                    end )) then
+                    InvokeChatCallback(X4D.Colors.SYSTEM, "(Bank) Bad Deposit Item Pattern: |cFF7777" .. pattern)
+                end
+                if (patternAction ~= X4D_BANKACTION_NONE) then
+                    return patternAction
+                end
+            end
+        end
+    end
+    return patternAction
+end
+
 local function TryGetBag(bagId)
     return X4D.Bags:GetBag(bagId, true)
 end
@@ -128,12 +174,12 @@ local function TryWithdrawReserveAmount()
     end
 end
 
-local function ShouldDepositItem(slot, itemTypeDirections)
-    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.Item.ItemType] == 1)
+local function ShouldDepositItemType(slot, itemTypeActions)
+    return itemTypeActions[slot.Item.ItemType] == X4D_BANKACTION_DEPOSIT
 end
 
-local function ShouldWithdrawItem(slot, itemTypeDirections)
-    return (not IsSlotIgnoredItem(slot)) and (itemTypeDirections[slot.Item.ItemType] == 2)
+local function ShouldWithdrawItemType(slot, itemTypeActions)
+    return itemTypeActions[slot.Item.ItemType] == X4D_BANKACTION_WITHDRAW
 end
 
 local function CreateSettingsName(itemType)
@@ -141,17 +187,17 @@ local function CreateSettingsName(itemType)
 end
 
 local function GetItemTypeActions()
-    local itemTypeDirections = { }
+    local itemTypeActions = { }
     for _,groupName in pairs(X4D.Items.ItemGroups) do
         for _,itemType in pairs(X4D.Items.ItemTypes) do
             if (itemType.Group == groupName) then
                 local dropdownName = CreateSettingsName(itemType)
                 local direction = X4D_Bank.Settings:Get(dropdownName) or 0
-                itemTypeDirections[itemType.Id] = direction
+                itemTypeActions[itemType.Id] = direction
             end
         end
     end
-    return itemTypeDirections
+    return itemTypeActions
 end
 
 local function TryCombinePartialStacks(bag, depth)
@@ -272,7 +318,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     return totalMoved, usedEmptySlot
 end
 
-local function TryDepositsAndWithdrawals()
+local function ConductTransactions()
     local totalDeposits = 0
     local totalWithdrawals = 0
 
@@ -284,7 +330,7 @@ local function TryDepositsAndWithdrawals()
 
     ClearCursor()
 
-    local itemTypeDirections = GetItemTypeActions()
+    local itemTypeActions = GetItemTypeActions()
     local pendingDeposits = { }
     local pendingDepositCount = 0
     local pendingWithdrawals = { }
@@ -295,7 +341,11 @@ local function TryDepositsAndWithdrawals()
 
     for _, slot in pairs(inventoryState.Slots) do
         if (slot ~= nil and not slot.IsEmpty) then
-            if (ShouldDepositItem(slot, itemTypeDirections)) then
+            local slotAction = GetPatternAction(slot)
+            if (slotAction == X4D_BANKACTION_NONE) then
+                slotAction = itemTypeActions[slot.Item.ItemType]
+            end
+            if (slotAction == X4D_BANKACTION_DEPOSIT) then
                 pendingDepositCount = pendingDepositCount + 1
                 table.insert(pendingDeposits, slot)
             end
@@ -306,7 +356,11 @@ local function TryDepositsAndWithdrawals()
 
     for _, slot in pairs(bankState.Slots) do
         if (slot ~= nil and not slot.IsEmpty) then
-            if (ShouldWithdrawItem(slot, itemTypeDirections)) then
+            local slotAction = GetPatternAction(slot)
+            if (slotAction == X4D_BANKACTION_NONE) then
+                slotAction = itemTypeActions[slot.Item.ItemType]
+            end
+            if (slotAction == X4D_BANKACTION_WITHDRAW) then
                 pendingWithdrawalCount = pendingWithdrawalCount + 1
                 table.insert(pendingWithdrawals, slot)
             end
@@ -398,7 +452,7 @@ local function OnOpenBank(eventCode)
         TryDepositPercentage(availableAmount)
     end
     TryWithdrawReserveAmount()
-    TryDepositsAndWithdrawals()
+    ConductTransactions()
 end
 
 local function OnCloseBank()
@@ -544,9 +598,60 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = "Item Ignore List",
-        tooltip = "Line-delimited list of items to ignore using 'lua patterns'. Ignored items will not be withdrawn, deposited nor restacked.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+        name = GetString(SI_BANK_WITHDRAW) .. " Patterns",
+        tooltip = "Line-delimited list of 'Withdraw Patterns', items matching these patterns will be withdrawn from the bank regardless of any item type settings.",
         isMultiline = true,
+        width = "half",
+        getFunc = function()
+            local patterns = X4D_Bank.Settings:Get("WithdrawItemPatterns")
+            if (patterns == nil or type(patterns) == "string") then
+                patterns = { }
+            end
+            return table.concat(patterns, "\n")
+        end,
+        setFunc = function(v)
+            local result = v:Split("\n")
+            -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+            for _, x in pairs(result) do
+                if (x:EndsWith("]")) then
+                    result[_] = x .. "+"
+                end
+            end
+            X4D_Bank.Settings:Set("WithdrawItemPatterns", result)
+        end,
+    })
+
+    table.insert(panelControls, {
+        type = "editbox",
+        name = GetString(SI_BANK_DEPOSIT) .. " Patterns",
+        tooltip = "Line-delimited list of 'Deposit Patterns', items matching these patterns will be deposited into the bank regardless of any item type settings. |cC7C7C7Note that the 'Withdraw Patterns' list takes precedence over the 'Deposit Patterns' list.",
+        isMultiline = true,
+        width = "half",
+        getFunc = function()
+            local patterns = X4D_Bank.Settings:Get("DepositItemPatterns")
+            if (patterns == nil or type(patterns) == "string") then
+                patterns = { }
+            end
+            return table.concat(patterns, "\n")
+        end,
+        setFunc = function(v)
+            local result = v:Split("\n")
+            -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+            for _, x in pairs(result) do
+                if (x:EndsWith("]")) then
+                    result[_] = x .. "+"
+                end
+            end
+            X4D_Bank.Settings:Set("DepositItemPatterns", result)
+        end,
+    })
+
+    table.insert(panelControls, {
+        type = "editbox",
+        name = "Item Ignore List",
+        tooltip = "Line-delimited list of items to ignore using 'lua patterns', item names should be lower-case. Ignored items will NOT be withdrawn, deposited nor restacked regardless of any other setting.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+        isMultiline = true,
+        width = "half",
         getFunc = function()
             local patterns = X4D_Bank.Settings:Get("IgnoredItemPatterns")
             if (patterns == nil or type(patterns) == "string") then
@@ -582,22 +687,22 @@ local function InitializeSettingsUI()
                     tooltip = itemType.Tooltip or itemType.Canonical,
                     choices = _itemTypeChoices,
                     getFunc = function() 
-                        local v = X4D_Bank.Settings:Get(dropdownName) or 0
-                        if (v == 1) then
+                        local v = X4D_Bank.Settings:Get(dropdownName) or X4D_BANKACTION_NONE
+                        if (v == X4D_BANKACTION_DEPOSIT) then
                             return constDeposit
-                        elseif (v == 2) then
+                        elseif (v == X4D_BANKACTION_WITHDRAW) then
                             return constWithdraw
                         else
-                            return constLeaveAlone
+                            return constUnspecified
                         end
                     end,
                     setFunc = function(v)
                         if (v == constDeposit) then
-                            v = 1
+                            v = X4D_BANKACTION_DEPOSIT
                         elseif (v == constWithdraw) then
-                            v = 2
+                            v = X4D_BANKACTION_WITHDRAW
                         else
-                            v = 0
+                            v = X4D_BANKACTION_NONE
                         end
                         X4D_Bank.Settings:Set(dropdownName, v)
                     end,
@@ -623,7 +728,7 @@ local function InitializeSettingsUI()
             elseif (v == 2) then
                 return constWithdraw
             else
-                return constLeaveAlone
+                return constUnspecified
             end
         end,
         setFunc = function(v)
@@ -753,9 +858,20 @@ local function OnAddOnLoaded(eventCode, addonName)
             StartNewStacks = true,
             AutoWithdrawReserve = true,
             DisplayMoneyUpdates = true,
+            WithdrawItemPatterns =
+            {
+                -- items matching a "Withdraw" pattern will be withdrawn from the bank regardles of any itemtype settings
+            },
+            DepositItemPatterns =
+            {
+                -- items matching a "Deposit" pattern will be deposited into the bank regardless of any itemtype settings
+                -- withdraw patterns take precedence over any deposit patterns
+            },
             IgnoredItemPatterns =
             {
+                -- items matching an "ignored" pattern will be left alone regardless of any other pattern or setting, consider this a "safety list"
                 "STOLEN",
+                "ring of mara",
             }
         },
         2)
