@@ -535,7 +535,6 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
                 "LEGENDARY",
                 "ARTIFACT",
                 "ARCANE",
-                "STOLEN",
             },
             ForSaleItemPatterns =
             {
