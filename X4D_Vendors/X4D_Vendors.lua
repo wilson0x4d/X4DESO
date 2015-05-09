@@ -229,23 +229,21 @@ local function ConductTransactions(vendor)
                         end
                     elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
                         if (vendor.IsFence == slot.IsStolen) then
-                            if (vendor.IsFence and (sellsUsed >= sellsMax)) then
-                                return
-                            else
+                            if ((not vendor.IsFence) or (vendor.IsFence and (sellsUsed <= sellsMax))) then
                                 sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
                                 CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
                                 CallSecureProtected("PlaceInStoreWindow")
+                                slot.IsEmpty = true
+                                local statement = ""
+                                if (slot.SellPrice ~= nil) then
+                                    local totalPrice = (slot.SellPrice * slot.StackCount)
+                                    statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
+                                    _credits = _credits + totalPrice
+                                end
+                                local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+                                    "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
+			                    InvokeChatCallback(slot.ItemColor, message)
                             end
-                            slot.IsEmpty = true
-                            local statement = ""
-                            if (slot.SellPrice ~= nil) then
-                                local totalPrice = (slot.SellPrice * slot.StackCount)
-                                statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
-                                _credits = _credits + totalPrice
-                            end
-                            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
-			                InvokeChatCallback(slot.ItemColor, message)
                         end
                     end
                 end
