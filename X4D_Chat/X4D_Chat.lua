@@ -8,13 +8,6 @@ X4D.Chat = X4D_Chat
 X4D_Chat.NAME = "X4D_Chat"
 X4D_Chat.VERSION = "1.29"
 
-local X4D_LibAntiSpam = nil
-local X4D_Vendors = nil
-local X4D_Loot = nil
-local X4D_XP = nil
-local X4D_Bank = nil
-local X4D_Mail = nil
-
 X4D_Chat.ChannelCategory = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,
 	[CHAT_CHANNEL_GUILD_1] = CHAT_CATEGORY_GUILD_1,
@@ -66,10 +59,6 @@ X4D_Chat.Guilds = {
 	[CHAT_CATEGORY_OFFICER_5] = nil,
 }
 
-X4D_Chat.Colors = {
-	SYSTEM = "|cFFFF00",
-}
-
 local function GetTimestampPrefix(color)
     local timestampOption = X4D_Chat.Settings:Get('TimestampOption')
 	if (timestampOption == "Disabled") then
@@ -109,12 +98,12 @@ local function GetTimestampPrefix(color)
 end
 
 function X4D_Chat.OnChatMessageReceived(messageType, fromName, text)
-	if (X4D_LibAntiSpam) then
+	if (X4D.LibAntiSpam) then
 		local isSpam, isFlood = false, false
-		if (X4D_LibAntiSpam.Check) then
-			isSpam, isFlood = X4D_LibAntiSpam:Check(text, fromName)
-		elseif (X4D_LibAntiSpam.IsSpam) then
-			isSpam, isFlood = X4D_LibAntiSpam:IsSpam(text, fromName)
+		if (X4D.LibAntiSpam.Check) then
+			isSpam, isFlood = X4D.LibAntiSpam:Check(text, fromName)
+		elseif (X4D.LibAntiSpam.IsSpam) then
+			isSpam, isFlood = X4D.LibAntiSpam:IsSpam(text, fromName)
 		end
 		if (isSpam or isFlood) then
 			return
@@ -395,7 +384,7 @@ local function OnAddOnLoaded(event, addonName)
         X4D_Chat.NAME .. "_SV",
         {
 	        GuildCharNames = true,
-	        GuildPlayerNames = false,
+	        GuildPlayerNames = true,
 	        UseGuildAbbr = true,
 	        GuildAbbr = {
 		        [1] = "",
@@ -594,11 +583,76 @@ local function OnAddOnLoaded(event, addonName)
             },
         })
 
+    --region Hooks
+	if (X4D.LibAntiSpam and X4D.LibAntiSpam.RegisterEmitCallback) then
+		X4D.LibAntiSpam:RegisterEmitCallback(X4D_Chat.AntiSpamEmitCallback)
+	end
+	if (X4D.Vendors and X4D.Vendors.RegisterCallback ~= nil) then
+		X4D.Vendors:RegisterCallback(X4D_Chat.VendorsEmitCallback)
+	end
+	if (X4D.Loot and X4D.Loot.RegisterCallback) then
+		X4D.Loot:RegisterCallback(X4D_Chat.LootCallback)
+	end
+	if (X4D.Mail and X4D.Mail.RegisterEmitCallback) then
+		X4D.Mail:RegisterEmitCallback(X4D_Chat.LootCallback)
+	end
+	if (X4D.XP and X4D.XP.RegisterCallback) then
+		X4D.XP:RegisterCallback(X4D_Chat.XPCallback)
+	end
+	if (X4D.Bank and X4D.Bank.RegisterEmitCallback) then
+		X4D.Bank:RegisterEmitCallback(X4D_Chat.BankEmitCallback)
+	end
+
+	local handlers = ZO_ChatSystem_GetEventHandlers()
+	if (handlers ~= nil) then
+		local friendPlayerStatusHandler = handlers[EVENT_FRIEND_PLAYER_STATUS_CHANGED]
+		if (friendPlayerStatusHandler ~= nil) then
+			handlers[EVENT_FRIEND_PLAYER_STATUS_CHANGED] = OnFriendPlayerStatusChanged
+		end
+		if (_onServerShutdownInfo == nil) then
+			_onServerShutdownInfo = handlers[EVENT_SERVER_SHUTDOWN_INFO]
+			if (_onServerShutdownInfo ~= nil) then
+				handlers[EVENT_SERVER_SHUTDOWN_INFO] = OnServerShutdownInfo
+			end
+		end
+		if (_onIgnoreAdded == nil) then
+			_onIgnoreAdded = handlers[EVENT_IGNORE_ADDED]
+			if (_onIgnoreAdded ~= nil) then
+				handlers[EVENT_IGNORE_ADDED] = OnIgnoreAdded
+			end
+		end
+		if (_onIgnoreRemoved == nil) then
+			_onIgnoreRemoved = handlers[EVENT_IGNORE_REMOVED]
+			if (_onIgnoreRemoved ~= nil) then
+				handlers[EVENT_IGNORE_REMOVED] = OnIgnoreRemoved
+			end
+		end
+		if (_onGroupMemberJoined == nil) then
+			_onGroupMemberJoined = handlers[EVENT_GROUP_MEMBER_JOINED]
+			if (_onGroupMemberJoined ~= nil) then
+				handlers[EVENT_GROUP_MEMBER_JOINED] = OnGroupMemberJoined
+			end
+		end
+		if (_onGroupMemberLeft == nil) then
+			_onGroupMemberLeft = handlers[EVENT_GROUP_MEMBER_LEFT]
+			if (_onGroupMemberLeft ~= nil) then
+				handlers[EVENT_GROUP_MEMBER_LEFT] = OnGroupMemberLeft
+			end
+		end
+		if (_onGroupTypeChanged == nil) then
+			_onGroupTypeChanged = handlers[EVENT_GROUP_TYPE_CHANGED]
+			if (_onGroupTypeChanged ~= nil) then
+				handlers[EVENT_GROUP_TYPE_CHANGED] = OnGroupTypeChanged
+			end
+		end
+	end	
+    --endregion
+
 	-- TODO: these really should initialize to values relative to the current game window size/resolution - these values are approximations based on a 1920x1080 (Full HD) resolution
 	CHAT_SYSTEM["maxContainerHeight"] = 1000
 	CHAT_SYSTEM["maxContainerWidth"] = 1800
 	
-	EVENT_MANAGER:RegisterForUpdate("X4D_Chat_Update", 1000, OnUpdate)
+    X4D.Async:CreateTimer(OnUpdate, 1000, {}):Start(nil, nil, "X4D_Chat")
 end
 
 function X4D_Chat.VendorsEmitCallback(color, text)
@@ -669,7 +723,7 @@ local function OnFriendPlayerStatusChanged(displayName, characterName, oldStatus
 		return
 	end
     local characterLink = X4D_Chat.CreateCharacterLink(displayName)
-	local timestamp = GetTimestampPrefix(X4D_Chat.Colors.SYSTEM)
+	local timestamp = GetTimestampPrefix(X4D.Colors.SYSTEM)
     if (newStatus == PLAYER_STATUS_OFFLINE) then
 	    return timestamp .. zo_strformat(SI_FRIENDS_LIST_FRIEND_LOGGED_OFF, characterLink)
     else
@@ -680,129 +734,41 @@ end
 local _onServerShutdownInfo = nil
 
 local function OnServerShutdownInfo(action, timeRemaining)
-	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onServerShutdownInfo(action, timeRemaining)
+	return GetTimestampPrefix(X4D.Colors.SYSTEM) .. _onServerShutdownInfo(action, timeRemaining)
 end
 
 local _onIgnoreAdded = nil
 
 local function OnIgnoreAdded(displayName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onIgnoreAdded(displayName)
+	return GetTimestampPrefix(X4D.Colors.SYSTEM) .. _onIgnoreAdded(displayName)
 end
 
 local _onIgnoreRemoved = nil
 
 local function OnIgnoreRemoved(displayName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onIgnoreRemoved(displayName)
+	return GetTimestampPrefix(X4D.Colors.SYSTEM) .. _onIgnoreRemoved(displayName)
 end
 
 local _onGroupMemberJoined = nil
 
 local function OnGroupMemberJoined(characterName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onGroupMemberJoined(characterName)
+	return GetTimestampPrefix(X4D.Colors.SYSTEM) .. _onGroupMemberJoined(characterName)
 end
 
 local _onGroupMemberLeft = nil
 
 local function OnGroupMemberLeft(characterName)
-	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onGroupMemberLeft(characterName)
+	return GetTimestampPrefix(X4D.Colors.SYSTEM) .. _onGroupMemberLeft(characterName)
 end
 
 local _onGroupTypeChanged = nil
 
 local function OnGroupTypeChanged(largeGroup)
-	return GetTimestampPrefix(X4D_Chat.Colors.SYSTEM) .. _onGroupTypeChanged(largeGroup)
+	return GetTimestampPrefix(X4D.Colors.SYSTEM) .. _onGroupTypeChanged(largeGroup)
 end
 
 function X4D_Chat.Register()
 	ZO_ChatSystem_AddEventHandler(EVENT_CHAT_MESSAGE_CHANNEL, X4D_Chat.OnChatMessageReceived)
-    if (not X4D) then 
-        X4D = LibStub("X4D", true)
-    end
-	if (not X4D_LibAntiSpam) then
-		X4D_LibAntiSpam = LibStub("LibAntiSpam", true)
-		if (X4D_LibAntiSpam and X4D_LibAntiSpam.RegisterEmitCallback) then
-			X4D_LibAntiSpam:RegisterEmitCallback(X4D_Chat.AntiSpamEmitCallback)
-		end
-	end
-	if (not X4D_Vendors) then
-		X4D_Vendors = LibStub("X4D_Vendors", true)
-		if (X4D_Vendors and X4D_Vendors.RegisterCallback ~= nil) then
-			X4D_Vendors:RegisterCallback(X4D_Chat.VendorsEmitCallback)
-		end
-	end
-	if (not X4D_Loot) then
-		X4D_Loot = LibStub("X4D_Loot", true)
-		if (X4D_Loot and X4D_Loot.RegisterCallback) then
-			X4D_Loot:RegisterCallback(X4D_Chat.LootCallback)
-		end
-	end
-	if (not X4D_Mail) then
-		X4D_Mail = LibStub("X4D_Mail", true)
-		if (X4D_Mail and X4D_Mail.RegisterEmitCallback) then
-			X4D_Mail:RegisterEmitCallback(X4D_Chat.LootCallback)
-		end
-	end
-	if (not X4D_XP) then
-		X4D_XP = LibStub("X4D_XP", true)
-		if (X4D_XP and X4D_XP.RegisterCallback) then
-			X4D_XP:RegisterCallback(X4D_Chat.XPCallback)
-		end
-	end
-	if (not X4D_Bank) then
-		X4D_Bank = LibStub("X4D_Bank", true)
-		if (X4D_Bank and X4D_Bank.RegisterEmitCallback) then
-			X4D_Bank:RegisterEmitCallback(X4D_Chat.BankEmitCallback)
-		end
-	end
-
-	local r, g, b = GetChatCategoryColor(CHAT_CATEGORY_SYSTEM)
-	if (r ~= nil) then
-		X4D_Chat.Colors.SYSTEM = X4D_Chat.CreateColorCode(r, g, b)
-	end
-
-	local handlers = ZO_ChatSystem_GetEventHandlers()
-	if (handlers ~= nil) then
-		local friendPlayerStatusHandler = handlers[EVENT_FRIEND_PLAYER_STATUS_CHANGED]
-		if (friendPlayerStatusHandler ~= nil) then
-			handlers[EVENT_FRIEND_PLAYER_STATUS_CHANGED] = OnFriendPlayerStatusChanged
-		end
-		if (_onServerShutdownInfo == nil) then
-			_onServerShutdownInfo = handlers[EVENT_SERVER_SHUTDOWN_INFO]
-			if (_onServerShutdownInfo ~= nil) then
-				handlers[EVENT_SERVER_SHUTDOWN_INFO] = OnServerShutdownInfo
-			end
-		end
-		if (_onIgnoreAdded == nil) then
-			_onIgnoreAdded = handlers[EVENT_IGNORE_ADDED]
-			if (_onIgnoreAdded ~= nil) then
-				handlers[EVENT_IGNORE_ADDED] = OnIgnoreAdded
-			end
-		end
-		if (_onIgnoreRemoved == nil) then
-			_onIgnoreRemoved = handlers[EVENT_IGNORE_REMOVED]
-			if (_onIgnoreRemoved ~= nil) then
-				handlers[EVENT_IGNORE_REMOVED] = OnIgnoreRemoved
-			end
-		end
-		if (_onGroupMemberJoined == nil) then
-			_onGroupMemberJoined = handlers[EVENT_GROUP_MEMBER_JOINED]
-			if (_onGroupMemberJoined ~= nil) then
-				handlers[EVENT_GROUP_MEMBER_JOINED] = OnGroupMemberJoined
-			end
-		end
-		if (_onGroupMemberLeft == nil) then
-			_onGroupMemberLeft = handlers[EVENT_GROUP_MEMBER_LEFT]
-			if (_onGroupMemberLeft ~= nil) then
-				handlers[EVENT_GROUP_MEMBER_LEFT] = OnGroupMemberLeft
-			end
-		end
-		if (_onGroupTypeChanged == nil) then
-			_onGroupTypeChanged = handlers[EVENT_GROUP_TYPE_CHANGED]
-			if (_onGroupTypeChanged ~= nil) then
-				handlers[EVENT_GROUP_TYPE_CHANGED] = OnGroupTypeChanged
-			end
-		end
-	end	
 end 
 
 function X4D_Chat.Unregister()

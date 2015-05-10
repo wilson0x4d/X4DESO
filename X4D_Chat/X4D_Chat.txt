@@ -5,8 +5,12 @@
 ## Version: 1.29
 ## SavedVariables: X4D_Chat_SV
 ## DependsOn: X4D_Core
-## OptionalDependsOn: X4D_Loot
 ## OptionalDependsOn: X4D_LibAntiSpam
+## OptionalDependsOn: X4D_Vendors
+## OptionalDependsOn: X4D_Loot
+## OptionalDependsOn: X4D_XP
+## OptionalDependsOn: X4D_Bank
+## OptionalDependsOn: X4D_Mail
 
 lib/LibStub/LibStub.lua
 
