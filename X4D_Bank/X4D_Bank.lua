@@ -598,8 +598,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = GetString(SI_BANK_WITHDRAW) .. " Patterns",
-        tooltip = "Line-delimited list of 'Withdraw Patterns', items matching these patterns will be withdrawn from the bank regardless of any item type settings.",
+        name = "'For " .. GetString(SI_BANK_WITHDRAW) .. "' Items",
+        tooltip = "Line-delimited list of 'Withdraw' item patterns, items matching these patterns will be withdrawn from the bank regardless of any item type settings. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case.",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -623,8 +623,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = GetString(SI_BANK_DEPOSIT) .. " Patterns",
-        tooltip = "Line-delimited list of 'Deposit Patterns', items matching these patterns will be deposited into the bank regardless of any item type settings. |cC7C7C7Note that the 'Withdraw Patterns' list takes precedence over the 'Deposit Patterns' list.",
+        name = "'For " .. GetString(SI_BANK_DEPOSIT) .. "' Items",
+        tooltip = "Line-delimited list of 'Deposit' item patterns, items matching these patterns will be deposited into the bank regardless of any item type settings. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. |cFFFFC7Note that the 'Withdraw' item patterns list takes precedence over the 'Deposit Patterns' list.",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -648,8 +648,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = "Item Ignore List",
-        tooltip = "Line-delimited list of items to ignore using 'lua patterns', item names should be lower-case. Ignored items will NOT be withdrawn, deposited nor restacked regardless of any other setting.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+        name = "'Ignored' Items",
+        tooltip = "Line-delimited list of items to ignore using 'lua patterns'. Ignored items will NOT be withdrawn, deposited nor restacked regardless of any other setting. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. \n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
         isMultiline = true,
         width = "half",
         getFunc = function()
