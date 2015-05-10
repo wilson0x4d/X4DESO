@@ -39,6 +39,9 @@ X4D_Async.lua
 X4D_ETA.lua
 X4D_Settings.lua
 X4D_DB.lua
+
+X4D_Cartography.lua
+
 X4D_Items.lua
 X4D_Players.lua
 X4D_Guilds.lua
