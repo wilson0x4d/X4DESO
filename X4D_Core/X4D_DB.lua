@@ -92,6 +92,10 @@ function X4D_DB:Remove(key)
     self._table[key] = nil
 end
 
+function X4D_DB:Count()
+    return #(self._table)
+end
+
 --setmetatable(X4D_DB, { __call = X4D_DB.Open })
 
 X4D_DB.Create = X4D_DB.Open
