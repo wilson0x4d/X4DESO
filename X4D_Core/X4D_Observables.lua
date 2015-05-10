@@ -43,7 +43,8 @@ function X4D_Observables:CreateObservable(initialValue)
             else
                 local v = select(1,...)
                 local pre = _value
-                if (pre ~= _value) then
+                if (pre ~= v) then
+                    --X4D.Log:Verbose({...}, "X4D_Observable")
                     _value = v
                     for _,observer in pairs(_observers) do
                         -- TODO: pcall
