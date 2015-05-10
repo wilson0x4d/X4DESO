@@ -517,7 +517,7 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
         if (X4D.Loot.Settings:Get("DisplayPartyLoot")) then
             local receivingPlayer = X4D.Players:GetPlayer(receivedBy)
             local message = zo_strformat("<<1>>: <<t:2>> <<3>> x<<4>>",
-                receivingPlayer, objectName, X4D.Colors.StackCount, stackCount)                
+                receivingPlayer.Name, objectName, X4D.Colors.StackCount, stackCount)                
 			InvokeChatCallback(X4D.Colors.XP, message) -- TODO: fix color to use item color or 'group chat' color
         end
     else
