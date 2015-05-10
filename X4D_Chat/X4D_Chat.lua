@@ -661,7 +661,7 @@ function X4D_Chat.BankEmitCallback(color, text)
 	d(GetTimestampPrefix(color) .. text)
 end
 
-local function OnFriendPlayerStatusChanged(displayName, oldStatus, newStatus)
+local function OnFriendPlayerStatusChanged(displayName, characterName, oldStatus, newStatus)
 	if (oldStatus == newStatus) then
 		return
 	end
