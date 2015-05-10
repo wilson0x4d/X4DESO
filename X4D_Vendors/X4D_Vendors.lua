@@ -208,7 +208,7 @@ local function ConductTransactions(vendor)
                 if (not IsSlotIgnoredItem(slot)) then
                     local vendorAction = GetPatternAction(slot)
                     local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-                    if (vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) then
+                    if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) or ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
                         if (vendor.IsFence and slot.IsStolen) then
                             if (laundersUsed < laundersMax) then
                                 if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
@@ -329,7 +329,7 @@ local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_VENDORS_CPL", {
         type = "panel",
-        name = "X4D |cFFAE19Vendor |c4D4D4D" .. X4D_Vendors.VERSION,
+        name = "X4D |cFFAE19Vendors |c4D4D4D" .. X4D_Vendors.VERSION,
     })
 
     local panelControls = { }
@@ -350,8 +350,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = "For Keeps Patterns",
-        tooltip = "Line-delimited list of 'For Keeps Patterns', items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.",
+        name = "'For Keeps' Items",
+        tooltip = "Line-delimited list of 'For Keeps' patterns, items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case.",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -375,8 +375,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = "For Sale Patterns",
-        tooltip = "Line-delimited list of 'For Sale Patterns', items matching these patterns WILL BE SOLD. |cC7C7C7Note that the 'For Keeps Patterns' list take precedence over 'For Sale Patterns' list.",
+        name = "'For Sale' Items",
+        tooltip = "Line-delimited list of 'For Sale' item patterns, items matching these patterns WILL BE SOLD. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. |cFFFFC7Note that the 'For Keeps' item list will take precedence over the 'For Sale' list.",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -400,8 +400,8 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
         type = "editbox",
-        name = "Item Ignore List",
-        tooltip = "Line-delimited list of items to ignore using 'lua patterns', item names should be lower-case. Ignored items will NOT be laundered nor sold regardless of any other setting.\n|cFFFFFFSpecial patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+        name = "'Ignored' Items",
+        tooltip = "Line-delimited list of items to ignore using 'lua patterns'case. Ignored items will NOT be laundered nor sold regardless of any other setting. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. \n |cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -422,6 +422,20 @@ local function InitializeSettingsUI()
             X4D_Vendors.Settings:Set("IgnoredItemPatterns", result)
         end,
     })
+
+    table.insert(panelControls, {
+        type = "checkbox",
+        name = "Launder any 'For Sale' worth 0" .. _goldIcon, 
+        tooltip = "When enabled, any stolen 'For Sale' items worth 0" .. _goldIcon .. " will be laundered instead. Once laundered if you visit a merchant they will be sold where you have a buyback option if you actually wanted the item. |cFFFFFFThis often includes recipes/materials/bases/etc. If you attempt to sell a 'worthless item' the game will treat it differently and generate an error, which in turn causes X4D to halt until resolved by the user- this option works around THAT problem, and it only matters when you've added a for-sale pattern that results in the sale of stolen items.", 
+        width = "half",
+        getFunc = function() 
+            return X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold")
+        end,
+        setFunc = function()
+            X4D.Vendors.Settings:Set("LaunderItemsWorth0Gold", not X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold")) 
+        end,
+    })
+
 
 
     --region ItemType Options
@@ -525,6 +539,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
 		X4D_Vendors.NAME .. "_SV",
 		{
             SettingsAre = "Per-Character",
+            LaunderItemsWorth0Gold = true,
             ForKeepsItemPatterns =
             {
                 -- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered                
