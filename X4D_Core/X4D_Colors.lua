@@ -11,6 +11,7 @@ X4D_Colors.Deposit = "|cFFAE19"
 X4D_Colors.Withdraw = "|cAA33FF"
 
 X4D_Colors.SYSTEM = "|cFFFF00"
+X4D_Colors.TRACE_DEBUG = "|cCCFF70"
 X4D_Colors.TRACE_VERBOSE = "|cC0C0C0"
 X4D_Colors.TRACE_INFORMATION = "|c6666FF"
 X4D_Colors.TRACE_WARNING = "|cCC6600"

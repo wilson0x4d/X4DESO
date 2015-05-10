@@ -28,7 +28,7 @@ event handler and also be easily extended/modified by multiple Add-Ons.
 function X4D:Test()
     d("Begin Test of X4D Framework..")
 
-    X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.VERBOSE)
+    X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
 
     -- Debug API
     --X4D.Log:Verbose("Test Verbose")
@@ -56,8 +56,8 @@ function X4D:Test()
             timer:Stop()
         end
     end
-    local asyncTimer1 = X4D.Async:CreateTimer(callback1, 107, { counter = 0 }):Start()
-    local asyncTimer2 = X4D.Async:CreateTimer(callback2, 47, { counter = 0 }):Start()
+    local asyncTimer1 = X4D.Async:CreateTimer(callback1, 107, { counter = 0 }):Start(nil,nil,"X4D_Core::Test")
+    local asyncTimer2 = X4D.Async:CreateTimer(callback2, 47, { counter = 0 }):Start(nil,nil,"X4D_Core::Test")
 
     -- SavedVars API
     -- DB API (indirectly also verifies "Settings API")
@@ -155,6 +155,12 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
     ReportVersions()
     if (parameters ~= nil and parameters:len() > 0) then
         X4D.Log:Information("Parameters: " .. parameters, "X4D")
+    end
+    if (parameters == "-debug") then
+        X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
+        X4D.Async:CreateTimer(function (timer, state)
+            X4D.Log:Debug("Memory: " .. math.ceil(collectgarbage("count") * 1024), "DBG")
+        end):Start(1000,{},"X4D_Core::DEBUG")
     end
     if (parameters == "-test") then
         X4D.Test()
