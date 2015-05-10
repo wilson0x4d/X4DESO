@@ -121,33 +121,45 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core_OOM", EVENT_LUA_LOW_MEMORY, function()
     X4D.Log:Warning(message)
 end)
 
-SLASH_COMMANDS["/x4d"] = function (...)
---    local versions = "Core/" .. X4D.VERSION .. " "
---    if (X4D.Bank ~= nil) then
---        versions = versions .. "Bank/" .. X4D.Bank.VERSION .. " "
---    end
---    if (X4D.Chat ~= nil) then
---        versions = versions .. "Chat/" .. X4D.Chat.VERSION .. " "
---    end
---    if (X4D.AntiSpam ~= nil) then
---        versions = versions .. "AntiSpam/" .. X4D.AntiSpam.VERSION .. " "
---    end
---    if (X4D.Loot ~= nil) then
---        versions = versions .. "Loot/" .. X4D.Loot.VERSION .. " "
---    end
---    if (X4D.Mail ~= nil) then
---        versions = versions .. "Mail/" .. X4D.Mail.VERSION .. " "
---    end
---    if (X4D.Vendors ~= nil) then
---        versions = versions .. "Vendors/" .. X4D.Vendors.VERSION .. " "
---    end
---    if (X4D.XP ~= nil) then
---        versions = versions .. "XP/" .. X4D.XP.VERSION .. " "
---    end
---    if (X4D.UI ~= nil) then
---        versions = versions .. "UI/" .. X4D.UI.VERSION .. " "
---    end
---    X4D.Log:Warning(versions, "X4D")
+local function ReportVersions()
+    -- TODO: iterate 'X4D' instead looking for 'NAME" and 'VERSION' properties (instead of manually updating)
+    local versions = "Core/" .. X4D.VERSION .. " "
+    if (X4D.Bank ~= nil) then
+        versions = versions .. "Bank/" .. X4D.Bank.VERSION .. " "
+    end
+    if (X4D.Chat ~= nil) then
+        versions = versions .. "Chat/" .. X4D.Chat.VERSION .. " "
+    end
+    if (X4D.AntiSpam ~= nil) then
+        versions = versions .. "AntiSpam/" .. X4D.AntiSpam.VERSION .. " "
+    end
+    if (X4D.Loot ~= nil) then
+        versions = versions .. "Loot/" .. X4D.Loot.VERSION .. " "
+    end
+    if (X4D.Mail ~= nil) then
+        versions = versions .. "Mail/" .. X4D.Mail.VERSION .. " "
+    end
+    if (X4D.Vendors ~= nil) then
+        versions = versions .. "Vendors/" .. X4D.Vendors.VERSION .. " "
+    end
+    if (X4D.XP ~= nil) then
+        versions = versions .. "XP/" .. X4D.XP.VERSION .. " "
+    end
+    if (X4D.UI ~= nil) then
+        versions = versions .. "UI/" .. X4D.UI.VERSION .. " "
+    end
+    X4D.Log:Warning(versions, "X4D")
+end
+
+SLASH_COMMANDS["/x4d"] = function (parameters, other)
+    ReportVersions()
+    if (parameters ~= nil and parameters:len() > 0) then
+        X4D.Log:Information("Parameters: " .. parameters, "X4D")
+    end
+    if (parameters == "-test") then
+        X4D.Test()
+        return
+    end
 
     if (X4D.UI ~= nil) then
         X4D.UI:View("X4D_About")
