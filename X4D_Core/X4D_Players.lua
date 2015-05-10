@@ -93,7 +93,7 @@ local function StartDbScavenger()
         memory = (memory - collectgarbage("count"))
         X4D.Log:Verbose("X4D Player DB Memory Delta: " .. memory)
     end, _playerScavengerFrequency, {})
-    _playerScavenger:Start()
+    _playerScavenger:Start(nil,nil,"X4D_Players::PlayerScavenger")
 end
 
 EVENT_MANAGER:RegisterForEvent("X4D_Players.DB", EVENT_ADD_ON_LOADED, function(event, name)

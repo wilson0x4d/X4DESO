@@ -212,7 +212,7 @@ function X4D_StatusBar:Initialize()
             state.Ticks = state.Ticks + 1
             UpdateStatusBarPanels(state.Ticks)
         end, 1000, { Ticks = 0 }) 
-        statusBarUpdateTimer:Start()
+        statusBarUpdateTimer:Start(nil,nil,"X4D_StatusBar")
     end
 end
 

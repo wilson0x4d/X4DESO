@@ -31,6 +31,7 @@ function X4D_Timer:IsEnabled()
 end
 
 function X4D_Timer:Elapsed()
+    X4D.Log:Debug({self.State},"X4D_Timer(" .. (self.CreatedBy or "???") .. ")")
 	local start = GetGameTimeMilliseconds()
 	if (not self._callback) then
 		self:Stop()
@@ -56,7 +57,10 @@ end
 
 -- "state" is passed into timer callback
 -- "interval" is optional, and can be used to change the timer interval during execution
-function X4D_Timer:Start(interval, state)
+function X4D_Timer:Start(interval, state, createdBy)
+    if (createdBy ~= nil) then
+        self.CreatedBy = createdBy
+    end
 	if (state ~= nil) then
 		self._state = state
 	end
