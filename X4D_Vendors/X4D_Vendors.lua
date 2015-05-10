@@ -34,7 +34,7 @@ function X4D_Vendor:New(tag)
         unitName = tag
     end
     local key = "$" .. base58(sha1(unitName):FromHex())
-    local position = { GetMapPlayerPosition("player") }
+    local position = { X4D.Cartography.PlayerX(), X4D.Cartography.PlayerY() }
     local proto = {
         Name = unitName,
         Position = { [1] = 0, [2] = 0, [3] = 0 },
@@ -266,9 +266,9 @@ local function ReportEarnings()
 end
 
 local function UpdateVendorPositionData(vendor)
-    vendor.MapId = GetCurrentMapIndex()
-    vendor.ZoneId = GetCurrentMapZoneIndex()
-    vendor.Position = { GetMapPlayerPosition("player") }
+    vendor.MapId = X4D.Cartography.MapIndex()
+    vendor.ZoneIndex = X4D.Cartography.ZoneIndex()
+    vendor.Position = { X4D.Cartography.PlayerX(), X4D.Cartography.PlayerY() }
     X4D.Log:Verbose(vendor)
 end
 
