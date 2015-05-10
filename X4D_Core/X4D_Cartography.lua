@@ -26,11 +26,10 @@ function X4D_Cartography:GetMap(mapIndex)
         mapName = GetMapName()
         mapIndex = base58(sha1(mapName):FromHex())
         isZoneMap = true
-        --X4D.Log:Warning({"Using ZoneIndex and MapName for Map Identity :(", mapIndex, mapName}, "Cartography")
+        --X4D.Log:Verbose({"Using ZoneIndex and MapName for Map Identity :(", mapIndex, mapName}, "Cartography")
     end
     local map = X4D.Cartography.DB:Find(mapIndex)
     if (map == nil) then
-    X4D.Log:Warning{"new map " .. mapIndex}
         map = {
             MapIndex = mapIndex,
             MapName = zo_strformat("<<1>>", mapName),
@@ -43,8 +42,6 @@ function X4D_Cartography:GetMap(mapIndex)
             IsDungeon = isZoneMap -- *sigh*
         }
         X4D_Cartography.DB:Add(mapIndex, map)
-    else
-        map.IsDungeon = isZoneMap -- TODO: not critical, but, remove before release -- was only added for a local dev fixup while debugging
     end
     local mapZones = X4D.DB:Create(map.Zones)
     if (mapZones:Count() == 0) then
@@ -81,7 +78,7 @@ function X4D_Cartography:GetMap(mapIndex)
                 for i = 1, (map.MapHeight * map.MapWidth) do
                     local tileTexture = GetMapTileTexture(i)
                     if (tileTexture ~= nil) then
-                        X4D.Log:Warning({i, tileTexture}, "Cartography")
+                        --X4D.Log:verbose({i, tileTexture}, "Cartography")
                         mapTiles:Add(i, tileTexture)
                     end
                 end
@@ -99,10 +96,6 @@ function X4D_Cartography:GetCurrentMap()
     return self:GetMap(mapIndex)
 end
 
-EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_SHOW_GUI, function(...)
-    X4D.Log:Warning({...}, "EVENT_SHOW_GUI")
-end)
-
 EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
     X4D.Async:CreateTimer(function (timer, state) 
         if (ZO_WorldMap_IsWorldMapShowing()) then
@@ -116,7 +109,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, fun
             local zoneIndex = GetCurrentMapZoneIndex()
             local playerX, playerY, playerU = GetMapPlayerPosition("player")
             X4D.Cartography.MapIndex(mapIndex)
-            X4D.Cartography.MapName(map.Name)
+            X4D.Cartography.MapName(map.MapName)
             X4D.Cartography.ZoneIndex(zoneIndex)
             X4D.Cartography.PlayerX(playerX)
             X4D.Cartography.PlayerY(playerY)
@@ -138,7 +131,7 @@ end)
 
 X4D.Cartography.MapIndex:Observe(function (v)
     X4D.Log:Verbose({"MapIndex", v}, "Cartography")
-    local map = X4D.Cartography:GetCurrentMap()
+    local map = X4D.Cartography:GetMap(v)
     X4D.Cartography.CurrentMap(map)
 end)
 X4D.Cartography.MapName:Observe(function (v) 
