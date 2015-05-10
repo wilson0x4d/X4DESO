@@ -25,6 +25,12 @@ function X4D_Player:New(tag)
         IsFlooder = false,
         IsSpammer = false,
         LastSeen = GetGameTimeMilliseconds(),
+        --TODO LastMapIndex = nil,
+        --TODO LastZoneIndex = nil,
+        --TODO LastX = nil,
+        --TODO LastY = nil,
+        --TODO LastHeading = nil,
+        --TODO LastVelocity = nil,
     }
 	--setmetatable(proto, { __index = X4D_Player })
     return proto
