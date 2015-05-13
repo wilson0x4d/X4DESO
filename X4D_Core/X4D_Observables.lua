@@ -38,13 +38,10 @@ function X4D_Observables:CreateObservable(initialValue)
             table.insert(_observers, observer)
         end,
         GetOrSet = function (self, ...)
-            if (select("#", ...) == 0) then
-                return _value
-            else
+            if (select("#", ...) > 0) then
                 local v = select(1,...)
                 local pre = _value
-                if (pre ~= v) then
-                    --X4D.Log:Verbose({...}, "X4D_Observable")
+                if (_value ~= v) then
                     _value = v
                     for _,observer in pairs(_observers) do
                         -- TODO: pcall
@@ -52,6 +49,7 @@ function X4D_Observables:CreateObservable(initialValue)
                     end
                 end
             end
+            return _value
         end,
     }
     setmetatable(observable, { __call = observable.GetOrSet })
