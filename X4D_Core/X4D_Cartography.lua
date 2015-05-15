@@ -5,81 +5,82 @@ end
 local X4D = LibStub("X4D")
 X4D.Cartography = X4D_Cartography
 
--- current player zone and position
-X4D_Cartography.MapIndex = X4D.Observables(nil) -- current map index
-X4D_Cartography.MapName = X4D.Observables(nil) -- current map name
-X4D_Cartography.ZoneIndex = X4D.Observables(nil) -- current map zone index
-X4D_Cartography.PlayerX = X4D.Observables(0) -- player position (x-coordinate)
-X4D_Cartography.PlayerY = X4D.Observables(0) -- player position (y-coordinate)
-X4D_Cartography.PlayerHeading = X4D.Observables(0) -- player heading (???)
+-- current player map, zone and position
+X4D_Cartography.IsSubZone = X4D.Observable(nil) -- current is a 'sub zone' (one in which we have to rely on non-standard mechanisms for map determination)
+X4D_Cartography.MapIndex = X4D.Observable(nil) -- current map index
+X4D_Cartography.MapName = X4D.Observable(nil) -- current map name
+X4D_Cartography.LocationName = X4D.Observable(nil) -- current location name
+X4D_Cartography.ZoneIndex = X4D.Observable(nil) -- current map zone index
+X4D_Cartography.PlayerX = X4D.Observable(0) -- player position (x-coordinate)
+X4D_Cartography.PlayerY = X4D.Observable(0) -- player position (y-coordinate)
+X4D_Cartography.PlayerHeading = X4D.Observable(0) -- player heading
+X4D_Cartography.CameraHeading = X4D.Observable(0) -- camera heading
 
-X4D_Cartography.CurrentMap = X4D.Observables(nil) -- reference to current map from Cartography DB
-
--- TODO: Player Speed "ZoneSpeed"
+X4D_Cartography.CurrentMap = X4D.Observable(nil) -- reference to current map from Cartography DB
 
 function X4D_Cartography:GetMap(mapIndex)
-    local isZoneMap = false
-    local mapName, mapType, mapContentType, currentZoneIndex = GetMapInfo(mapIndex)
-    if (mapIndex == nil or mapIndex == 0) then
-        -- if mapIndex is invalid, convert to current map zone index, this may or may not work as expected
-        -- TODO: check if maptype/maptcontentype do not require us to partition mapindex/zoneindex into separate buckets
-        mapName = GetMapName()
-        mapIndex = base58(sha1(mapName):FromHex())
-        isZoneMap = true
-        --X4D.Log:Verbose({"Using ZoneIndex and MapName for Map Identity :(", mapIndex, mapName}, "Cartography")
-    end
+end
+
+local _currentMapTile
+local _currentLocationName
+
+function X4D_Cartography:GetCurrentMap()
+    --[[ 
+        TODO: "zone fencing" to auto-detect the need for a map transition, each can have zero or more fences, each fence being a collection of coordinates in clockwise order which form a closed loop
+    ]]
+    local mapIndex = X4D.Cartography.MapIndex()
+    local mapName = X4D.Cartography.MapName()
+    local isSubZone = X4D.Cartography.IsSubZone()
+
     local map = X4D.Cartography.DB:Find(mapIndex)
     if (map == nil) then
         map = {
             MapIndex = mapIndex,
             MapName = zo_strformat("<<1>>", mapName),
-            MapType = mapType,
-            MapContentType = MapContentType,
             MapWidth = nil,
             MapHeight = nil,
             Tiles = {},
             Zones = {},
-            IsDungeon = isZoneMap -- *sigh*
+            IsSubZone = isSubZone
         }
         X4D_Cartography.DB:Add(mapIndex, map)
-    end
-    local mapZones = X4D.DB:Create(map.Zones)
-    if (mapZones:Count() == 0) then
-        if (isZoneMap) then
-            -- only add single zone, do not enumerate
-            local zoneIndex = GetCurrentMapZoneIndex()
-            local zoneKey = mapIndex .. "-" .. zoneIndex
-            local zone = {
-                MapIndex = mapIndex,
-                ZoneIndex = mapIndex,
-                Description = GetZoneDescription(zoneIndex),
-            }
-            mapZones:Add(zoneKey, zone)
-        else
-            -- attempt to enumerate zones
-            for zoneIndex = 1, GetNumZonesForDifficultyLevel(difficulty) do
+        local mapZones = X4D.DB:Create(map.Zones)
+        if (mapZones:Count() == 0) then
+            if (isSubZone) then
+                -- only add single zone, do not enumerate
+                local zoneIndex = GetCurrentMapZoneIndex()
                 local zoneKey = mapIndex .. "-" .. zoneIndex
                 local zone = {
                     MapIndex = mapIndex,
-                    ZoneIndex = zoneIndex,
+                    ZoneIndex = mapIndex,
                     Description = GetZoneDescription(zoneIndex),
                 }
                 mapZones:Add(zoneKey, zone)
+            else
+                -- attempt to enumerate zones
+                for zoneIndex = 1, GetNumZonesForDifficultyLevel(difficulty) do
+                    local zoneKey = mapIndex .. "-" .. zoneIndex
+                    local zone = {
+                        MapIndex = mapIndex,
+                        ZoneIndex = zoneIndex,
+                        Description = GetZoneDescription(zoneIndex),
+                    }
+                    mapZones:Add(zoneKey, zone)
+                end
             end
         end
-    end
-    if (GetCurrentMapIndex() == mapIndex or isZoneMap) then
-        local mapTiles = X4D.DB:Create(map.Tiles)
-        if (mapTiles:Count() == 0) then
-            local numHorizontalTiles, numVerticalTiles = GetMapNumTiles()
-            if (numHorizontalTiles ~= nil and numVerticalTiles ~= nil) then
-                map.MapHeight = numVerticalTiles
-                map.MapWidth = numHorizontalTiles
-                for i = 1, (map.MapHeight * map.MapWidth) do
-                    local tileTexture = GetMapTileTexture(i)
-                    if (tileTexture ~= nil) then
-                        --X4D.Log:verbose({i, tileTexture}, "Cartography")
-                        mapTiles:Add(i, tileTexture)
+        if (GetCurrentMapIndex() == mapIndex or isSubZone) then
+            local mapTiles = X4D.DB:Create(map.Tiles)
+            if (mapTiles:Count() == 0) then
+                local numHorizontalTiles, numVerticalTiles = GetMapNumTiles()
+                if (numHorizontalTiles ~= nil and numVerticalTiles ~= nil) then
+                    map.MapHeight = numVerticalTiles
+                    map.MapWidth = numHorizontalTiles
+                    for i = 1, (map.MapHeight * map.MapWidth) do
+                        local tileTexture = GetMapTileTexture(i)
+                        if (tileTexture ~= nil) then
+                            mapTiles:Add(i, tileTexture)
+                        end
                     end
                 end
             end
@@ -88,34 +89,70 @@ function X4D_Cartography:GetMap(mapIndex)
     return map
 end
 
-function X4D_Cartography:GetCurrentMap()
-    local mapIndex = GetCurrentMapIndex()
-    if (mapIndex == nil) then
-        mapIndex = 0
+local _zoneMapLookup = {
+}
+
+local function GetMapIndexByZoneIndex(zoneIndex)
+    local gcmi = GetCurrentMapIndex()
+    if (zoneIndex == nil) then
+        X4D.Log:Error("Received nil value for 'zoneIndex', attempting to fallback on GCMI()")
+        return gcmi -- blind attempt to fall back on the game for a valid map index - may fail, this is why we log above - this only exists because i'm not yet sure if it's ever possible to receive a nil value for current map zone index api call and it is NOT an ideal case
     end
-    return self:GetMap(mapIndex)
+    local mapIndex = _zoneMapLookup[zoneIndex]
+    if (mapIndex == nil) then
+        if (gcmi == nil) then
+            mapIndex = _currentMapTile
+        else
+            mapIndex = gcmi
+        end
+    end
+    if (mapIndex ~= _currentMapIndex) then
+        _currentMapIndex = mapIndex
+    end
+    return mapIndex
+end
+
+local function TryUpdateMapState(timer, state)
+    --X4D.Log:Warning("TryUpdateMapState")
+    if (ZO_WorldMap_IsWorldMapShowing()) then
+        --NOP: 
+        --TODO: this doesn't prevent state changes from occurring, since the 'map api calls' exposed by ZO are representative of ZO_WorldMap state prior to closure. le sigh.
+    else
+        -- relying on map tile and location name changes to determine if there was a map/zone change before updating relevant properties - not crucial, just an optimization
+        local locationName = GetPlayerLocationName()
+        local mapTile = GetMapTileTexture()
+        if (mapTile ~= nil) then
+            mapTile = mapTile:match("maps/[%w%-]+/(.-)_0.dds")
+        end
+        if (_currentMapTile ~= mapTile and _currentLocationName ~= locationName) then
+            _currentMapTile = mapTile
+            _currentLocationName = locationName
+            local zoneIndex = GetCurrentMapZoneIndex()
+            local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
+            if (mapIndex == nil) then
+                mapIndex = GetCurrentMapIndex()
+            end
+            mapName = GetMapName()
+            X4D.Cartography.MapIndex(mapIndex)
+            X4D.Cartography.ZoneIndex(zoneIndex)
+            X4D.Cartography.MapName(mapName)
+            X4D.Cartography.LocationName(locationName)
+            local currentMap = X4D.Cartography:GetCurrentMap()
+            X4D.Cartography.CurrentMap(currentMap)
+        end
+
+        local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
+        local cameraHeading = GetPlayerCameraHeading()
+        X4D.Cartography.PlayerX(playerX)
+        X4D.Cartography.PlayerY(playerY)
+        X4D.Cartography.PlayerHeading(playerHeading)
+        X4D.Cartography.CameraHeading(cameraHeading)
+        --X4D.Log:Information({mapIndex,zoneIndex,mapName,locationName,playerX,playerY,playerH,locationName, mapTile}, "Cartography")
+    end
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
-    X4D.Async:CreateTimer(function (timer, state) 
-        if (ZO_WorldMap_IsWorldMapShowing()) then
-            --NOP
-        else
-            local mapIndex = GetCurrentMapIndex()
-            if (mapIndex == nil) then
-                mapIndex = 0
-            end
-            local map = X4D.Cartography:GetMap(mapIndex)
-            local zoneIndex = GetCurrentMapZoneIndex()
-            local playerX, playerY, playerU = GetMapPlayerPosition("player")
-            X4D.Cartography.MapIndex(mapIndex)
-            X4D.Cartography.MapName(map.MapName)
-            X4D.Cartography.ZoneIndex(zoneIndex)
-            X4D.Cartography.PlayerX(playerX)
-            X4D.Cartography.PlayerY(playerY)
-            X4D.Cartography.PlayerHeading(GetPlayerCameraHeading())
-        end
-    end, 50, {}):Start()
+    X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/13, {}, "X4D_Cartography")
 end)
 
 EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, function(event, name)
@@ -123,27 +160,4 @@ EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, functi
         return
     end
     X4D_Cartography.DB = X4D.DB:Open("X4D_Cartography.DB")
-    -- scrape from API
-    for mapIndex = 1, GetNumMaps() do
-        local map = X4D.Cartography:GetMap(mapIndex)
-    end
 end)
-
-X4D.Cartography.MapIndex:Observe(function (v)
-    X4D.Log:Verbose({"MapIndex", v}, "Cartography")
-    local map = X4D.Cartography:GetMap(v)
-    X4D.Cartography.CurrentMap(map)
-end)
-X4D.Cartography.MapName:Observe(function (v) 
-    X4D.Log:Verbose({"MapName", v}, "Cartography")
-end)
-X4D.Cartography.ZoneIndex:Observe(function (v) 
-    X4D.Log:Verbose({"ZoneIndex", v}, "Cartography")
-end)
-X4D.Cartography.PlayerX:Observe(function (v) 
-    X4D.Log:Verbose({"PlayerX", v}, "Cartography")
-end)
-X4D.Cartography.PlayerY:Observe(function (v) 
-    X4D.Log:Verbose({"PlayerY", v}, "Cartography")
-end)
-
