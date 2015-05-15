@@ -9,7 +9,7 @@ X4D_UI.NAME = "X4D_UI"
 X4D_UI.VERSION = "1.0"
 
 X4D.UI.SceneManager = SCENE_MANAGER
-X4D.UI.CurrentScene = X4D.Observables(nil)
+X4D.UI.CurrentScene = X4D.Observable(nil)
 
 function X4D_UI:View(name)
     

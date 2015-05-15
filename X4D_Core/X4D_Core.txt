@@ -28,7 +28,7 @@ lib/LibAddonMenu-2.0/controls/texture.lua
 
 ## X4D 
 X4D_Core.lua
-X4D_Observables.lua
+X4D_Observable.lua
 X4D_Strings.lua
 X4D_Convert.lua
 X4D_Colors.lua

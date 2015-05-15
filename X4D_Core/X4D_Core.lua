@@ -100,8 +100,8 @@ function X4D:Test()
 
     -- Vendors API
 
-    -- Observables
-    local observable = X4D.Observables("World!")
+    -- Observable
+    local observable = X4D.Observable("World!")
     observable:Observe(function (newVal, oldVal)
         if (newVal == oldVal) then
             X4D.Log:Error("TEST FAILURE: do not re-notify observers if the value is not changing")

@@ -22,7 +22,7 @@ All X4D Add-Ons depend on this Framework.
     * Clean, for example: X4D.Log:Verbose('Hello, World!')
 * Async Module
     * Async helpers, currently exposes a Timer via X4D.Async:CreateTimer() call
-* Observables Module
+* Observable Module
     * Observable closure providing basic observer/observable behavior
 * Settings Module
     * Tidy wrapper for 'Saved Variables', providing more consistent and predictable behavior.
@@ -76,7 +76,7 @@ lib/kikito/sha1.lua
 lib/kikito/md5.lua
 lib/badgerman/BigNum.lua
 lib/X4D_Core/X4D_Core.lua
-lib/X4D_Core/X4D_Observables.lua
+lib/X4D_Core/X4D_Observable.lua
 lib/X4D_Core/X4D_Strings.lua
 lib/X4D_Core/X4D_Convert.lua
 lib/X4D_Core/X4D_Colors.lua
@@ -122,9 +122,9 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 v1.12
 
-- Added new 'X4D_Observables' module, check source file for notes/usage.
+- Added new 'X4D_Observable' module, check source file for notes/usage.
 - Using localized "Item Type" Names where possible.
-- Updated Test() method with X4D.Observables showcase.
+- Updated Test() method with X4D.Observable showcase.
 
 v1.11
 

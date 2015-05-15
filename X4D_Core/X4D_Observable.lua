@@ -1,9 +1,9 @@
-local X4D_Observables = LibStub:NewLibrary("X4D_Observables", 1000)
-if (not X4D_Observables) then
+local X4D_Observable = LibStub:NewLibrary("X4D_Observable", 1001)
+if (not X4D_Observable) then
     return
 end
 local X4D = LibStub("X4D")
-X4D.Observables = X4D_Observables
+X4D.Observable = X4D_Observable
 
 --[[
 
@@ -30,7 +30,7 @@ X4D.Observables = X4D_Observables
     end)
 
 ]]
-function X4D_Observables:CreateObservable(initialValue)
+function X4D_Observable:CreateObservable(initialValue)
     local _value = initialValue
     local _observers = {}
     local observable = {
@@ -56,6 +56,6 @@ function X4D_Observables:CreateObservable(initialValue)
     return observable
 end
 
-setmetatable(X4D_Observables, { __call = X4D_Observables.CreateObservable })
+setmetatable(X4D_Observable, { __call = X4D_Observable.CreateObservable })
 
 -- TODO: ObservableTable (create new table converting properties to/from observables)
