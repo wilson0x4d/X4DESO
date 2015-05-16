@@ -24,6 +24,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="X4D_MiniMap\" />
     <Folder Include="X4D_UI\" />
     <Folder Include="X4D_UI\Controls\" />
     <Folder Include="X4D_UI\Menus\" />
@@ -82,6 +83,7 @@
     <Compile Include="X4D_Core\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Core\X4D_Async.lua" />
     <Compile Include="X4D_Core\X4D_Bags.lua" />
+    <Compile Include="X4D_Core\X4D_Cartography.lua" />
     <Compile Include="X4D_Core\X4D_Colors.lua" />
     <Compile Include="X4D_Core\X4D_Convert.lua" />
     <Compile Include="X4D_Core\X4D_Core.lua" />
@@ -104,7 +106,8 @@
     <Compile Include="X4D_Loot\X4D_Loot.lua" />
     <Compile Include="X4D_Mail\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_Mail\X4D_Mail.lua" />
-    <Compile Include="X4D_Core\X4D_Observables.lua" />
+    <Compile Include="X4D_Core\X4D_Observable.lua" />
+    <Compile Include="X4D_MiniMap\X4D_MiniMap.lua" />
     <Compile Include="X4D_UI\Windows\X4D_StatusBar.lua" />
     <Compile Include="X4D_UI\X4D_UI.lua" />
     <Compile Include="X4D_Vendors\lib\LibStub\LibStub.lua" />
@@ -140,6 +143,9 @@
     <Content Include="X4D_Mail\README.md" />
     <Content Include="X4D_Mail\X4D_Mail.txt" />
     <Content Include="X4D_Mail\X4D_Mail.xml" />
+    <Content Include="X4D_MiniMap\LICENSE.md" />
+    <Content Include="X4D_MiniMap\README.md" />
+    <Content Include="X4D_MiniMap\X4D_MiniMap.txt" />
     <Content Include="X4D_UI\FizzBuzz.dds" />
     <Content Include="X4D_UI\LICENSE.md" />
     <Content Include="X4D_UI\README.md" />
