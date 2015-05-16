@@ -32,26 +32,36 @@ X4D.Observable = X4D_Observable
 ]]
 function X4D_Observable:CreateObservable(initialValue)
     local _value = initialValue
+    local _timestamp = GetGameTimeMilliseconds()
+    local _rateLimit = nil
     local _observers = {}
-    local observable = {
-        Observe = function (self, observer)
-            table.insert(_observers, observer)
-        end,
-        GetOrSet = function (self, ...)
-            if (select("#", ...) > 0) then
-                local v = select(1,...)
-                local pre = _value
-                if (_value ~= v) then
-                    _value = v
-                    for _,observer in pairs(_observers) do
-                        -- TODO: pcall
+    local observable = {}
+    observable.SetRateLimit = function (self, rateLimit)
+        _rateLimit = rateLimit -- optional, default is no rate limit, observers are activateed on every update
+        return observable
+    end
+    observable.Observe = function (self, observer)
+        table.insert(_observers, observer)
+        return observable
+    end
+    observable.GetOrSet = function (self, ...)
+        if (select("#", ...) > 0) then
+            local v = select(1,...)
+            local pre = _value
+            if (_value ~= v) then
+                _value = v
+                for _,observer in pairs(_observers) do
+                    -- TODO: pcall
+                    local now = GetGameTimeMilliseconds()
+                    if ((_rateLimit == nil) or ((now - _timestamp) > _rateLimit)) then
+                        _timestamp = now
                         observer(v, pre)
                     end
                 end
             end
-            return _value
-        end,
-    }
+        end
+        return _value
+    end
     setmetatable(observable, { __call = observable.GetOrSet })
     return observable
 end
