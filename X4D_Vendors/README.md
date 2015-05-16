@@ -45,6 +45,13 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.5
+
+- stolen items are no longer auto-laundered on fresh addon installs. however, lockpicks, motifs, legendarys, artifacts and arcane items still are.
+- fixed bug where no items would be laundered once salesmax was reached.
+- added option to launder items which would normally be sold when there would be no profit
+- Misc updates for Core v1.13
+
 v1.4
 
 - Fixed bug where items would not actually sell to fences when they were supposed to.

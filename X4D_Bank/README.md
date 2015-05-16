@@ -48,6 +48,11 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.22
+
+- Add item deposit/withdraw patterns, similar to "for keeps" and "for sales" patterns in the Vendors addon, but applied to banks
+- update descriptions on settings ui
+
 v1.21
 
 - Fixed bug combining partial stacks that would cause UI Error.

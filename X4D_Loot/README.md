@@ -45,6 +45,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.15
+
+- fix bug where 'receiving player' was not being displayed when grouped and group loot option is enabled.
+
 v1.14
 
 - New option to display Level of looted items.

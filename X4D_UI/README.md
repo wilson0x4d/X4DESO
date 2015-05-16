@@ -41,6 +41,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.1 
+
+- Add an observable for detecting scene changes.
+
 v1.0
 
 - Initial release.

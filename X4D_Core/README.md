@@ -30,6 +30,9 @@ All X4D Add-Ons depend on this Framework.
     * Provides a LINQ-like wrapper around Lua tables *(Fx: myDb:Where(predicate) myDb:Select(builder) myDb:ForEach(visitor) myDb:FirstOrDefault() etc)
     * Query results also provide LINQ-like wrapper API
     * Provides 'persistent, named' databases, as well. These databases can be accessed between multiple Addons to share data.
+* Cartography module
+    * Provides Current Map Information (Index, Zone, Name, Location, etc)
+    * Exposes Observables for Map and Player Information
 * Items Module
     * Lookup tables for:
         * Item Qualities
@@ -119,6 +122,14 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 
 ## Versions
+
+v1.13
+- Added new 'X4D_Cartography' module.
+- Several bug fixes for Observables, including a plurality change on all uses, and the introduction of 'Rate Limit' concept.
+- Modified "/x4d" slash-command to accept a -test option, this puts the framework into development mode.
+- Added :Count() method to X4D_DB LINQ-like interface.
+- Callers can now include their identity when creating an async timer, this is a debugging aid.
+- Added new "Debug" trace level (this is lower level than "Verbose")
 
 v1.12
 

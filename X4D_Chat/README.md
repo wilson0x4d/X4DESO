@@ -47,6 +47,11 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.30
+
+- fix bug with online/offline status.
+- Misc updates for Core v1.13
+
 v1.29
 
 - Fix bug invalid check for non-existent guild.
