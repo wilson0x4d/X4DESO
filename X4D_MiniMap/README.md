@@ -8,6 +8,10 @@ X4D MiniMap is a UI Mod which adds a simple MiniMap to the game.
 - Map/Zone Name
 - Player Position 
 
+## Known Issues
+
+- When changing zones without using a wayshrine, sometimes the MiniMap does not detect the zone change. You can work around this by opening and then closing the built-in game map.
+
 ## Planned
 
 - Locations

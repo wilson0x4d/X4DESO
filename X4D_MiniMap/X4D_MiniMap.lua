@@ -90,8 +90,10 @@ local function UpdateZoomPanState(timer, state)
         else
             state.ZoomIncrement = state.ZoomIncrement * 0.73
         end
-        if (X4D.Cartography.IsSubZone()) then
-            _maxZoomLevel = 1
+        if (map.MaxZoomLevel ~= nil) then
+            _maxZoomLevel = map.MaxZoomLevel
+        elseif (X4D.Cartography.IsSubZone()) then
+            _maxZoomLevel = 5
         else
             _maxZoomLevel = 20
         end
@@ -161,22 +163,22 @@ X4D.Cartography.IsSubZone:Observe(function (v)
     -- TODO:
 end)
 
-X4D.Cartography.PlayerX:SetRateLimit(1000/13):Observe(function (v)
+X4D.Cartography.PlayerX:Observe(function (v)
     _playerX = v
-    if (_zoomPanState ~= nil) then
-        UpdateZoomPanState(nil, _zoomPanState)
-    end
+--    if (_zoomPanState ~= nil) then
+--        UpdateZoomPanState(nil, _zoomPanState)
+--    end
     --UpdatePlayerPip()
     UpdatePlayerPositionLabel()
 end)
 
 
-X4D.Cartography.PlayerY:SetRateLimit(1000/13):Observe(function (v)
+X4D.Cartography.PlayerY:Observe(function (v)
     _playerY = v
-    if (_zoomPanState ~= nil) then
-        UpdateZoomPanState(nil, _zoomPanState)
-    end
-    UpdatePlayerPip()
+--    if (_zoomPanState ~= nil) then
+--        UpdateZoomPanState(nil, _zoomPanState)
+--    end
+    --UpdatePlayerPip()
     UpdatePlayerPositionLabel()
 end)
 
