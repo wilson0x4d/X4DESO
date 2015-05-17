@@ -28,12 +28,15 @@ end)
 
 local X4D_Vendor = {}
 
-function X4D_Vendor:New(tag)
+function X4D_Vendor:New(tag, salt)
+    if (salt == nil) then 
+        salt = ""
+    end
     local unitName = GetRawUnitName(tag)
     if (unitName == nil or unitName:len() == 0) then
         unitName = tag
     end
-    local key = "$" .. base58(sha1(unitName):FromHex())
+    local key = "$" .. base58(sha1(unitName .. salt):FromHex())
     local position = { X4D.Cartography.PlayerX(), X4D.Cartography.PlayerY() }
     local proto = {
         Name = unitName,
@@ -275,7 +278,7 @@ end
 local function OnOpenFence()
     _debits = 0
     _credits = 0
-    local vendor = X4D_Vendors:GetVendor("interact")
+    local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
     vendor.IsFence = true
     UpdateVendorPositionData(vendor)
     ConductTransactions(vendor)
@@ -285,7 +288,7 @@ end
 local function OnOpenStore()
     _debits = 0
     _credits = 0
-    local vendor = X4D_Vendors:GetVendor("interact")
+    local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
     vendor.IsFence = false
     UpdateVendorPositionData(vendor)
     ConductTransactions(vendor)
