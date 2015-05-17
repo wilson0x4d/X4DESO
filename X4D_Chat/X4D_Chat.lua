@@ -299,6 +299,7 @@ function X4D_Chat.CreateCharacterLink(fromName, channelInfo)
 			local linkName = ZO_LinkHandler_CreatePlayerLink(fromName)
 			if (linkName) then
 				if (X4D_Chat.Settings:Get("GuildPlayerNames")) then
+                    result = result:gsub('%^.*', '')
 					result = linkName:gsub(rep, result .. fromName)
 				else
 					result = linkName:gsub(rep, result)
@@ -781,3 +782,9 @@ end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Chat.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
 EVENT_MANAGER:RegisterForEvent(X4D_Chat.NAME, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
+
+--SLASH_COMMANDS["/1"] = SLASH_COMMANDS["/g1"]
+--SLASH_COMMANDS["/2"] = SLASH_COMMANDS["/g2"]
+--SLASH_COMMANDS["/3"] = SLASH_COMMANDS["/g3"]
+--SLASH_COMMANDS["/4"] = SLASH_COMMANDS["/g4"]
+--SLASH_COMMANDS["/5"] = SLASH_COMMANDS["/g5"]
