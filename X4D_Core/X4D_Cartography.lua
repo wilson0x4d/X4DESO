@@ -144,6 +144,7 @@ local function TryUpdateMapState(timer, state)
     else
         -- relying on map tile and location name changes to determine if there was a map/zone change before updating relevant properties - not crucial, just an optimization
         local locationName = GetPlayerLocationName()
+        X4D.Cartography.LocationName(locationName)
         local mapTile = GetMapTileTexture()
         if (mapTile ~= nil) then
             mapTile = mapTile:match("maps/[%w%-]+/(.-)_0.dds")
@@ -158,7 +159,6 @@ local function TryUpdateMapState(timer, state)
             X4D.Cartography.MapIndex(mapIndex)
             X4D.Cartography.ZoneIndex(zoneIndex)
             X4D.Cartography.MapName(mapName)
-            X4D.Cartography.LocationName(locationName)
             local currentMap = X4D.Cartography:GetCurrentMap()
             X4D.Cartography.CurrentMap(currentMap)
         end

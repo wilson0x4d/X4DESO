@@ -72,11 +72,11 @@ local function UpdateMapNameLabel()
     end
 end
 
-local function UpdateLocationNameLabel()
-    local map = _currentMap
-    if (map ~= nil and _locationNameLabel ~= nil) then
-        _locationNameLabel:SetText(map.LocationName)
+local function UpdateLocationNameLabel(v)
+    if (v == nil) then
+        v = GetPlayerLocationName()
     end
+    _locationNameLabel:SetText(v)
 end
 
 local _lastPlayerX, _lastPlayerY = 0, 0
@@ -93,7 +93,7 @@ local function UpdateZoomPanState(timer, state)
         if (map.MaxZoomLevel ~= nil) then
             _maxZoomLevel = map.MaxZoomLevel
         elseif (X4D.Cartography.IsSubZone()) then
-            _maxZoomLevel = 5
+            _maxZoomLevel = 4
         else
             _maxZoomLevel = 20
         end
@@ -242,21 +242,8 @@ X4D.Cartography.CurrentMap:Observe(function (map)
     StartZoomPanTimer()
 end)
 
-X4D.Cartography.MapName:Observe(function (v) 
-    UpdateMapNameLabel()
-end)
-X4D.Cartography.LocationName:Observe(function (v)
-    UpdateLocationNameLabel()
-end)
---X4D.Cartography.ZoneIndex:Observe(function (v) 
---    X4D.Log:Verbose({"ZoneIndex", v}, "MiniMap")
---end)
---X4D.Cartography.PlayerX:Observe(function (v) 
---    X4D.Log:Verbose({"PlayerX", v}, "MiniMap")
---end)
---X4D.Cartography.PlayerY:Observe(function (v) 
---    X4D.Log:Verbose({"PlayerY", v}, "MiniMap")
---end)
+X4D.Cartography.MapName:Observe(UpdateMapNameLabel)
+X4D.Cartography.LocationName:Observe(UpdateLocationNameLabel)
 
 local function InitializeMiniMapWindow()
     _minimapWindow = WINDOW_MANAGER:CreateTopLevelWindow("X4D_MiniMap")
@@ -292,18 +279,16 @@ local function InitializeMiniMapWindow()
     _mapNameLabel:SetDrawLayer(DL_TEXT)
     _mapNameLabel:SetDrawTier(DT_LOW)
     _mapNameLabel:SetFont(X4D_MINIMAP_LARGEFONT)
-    _mapNameLabel:SetAnchor(CENTER, _minimapWindow, CENTER, 0, -1 * (_centerY))
-    _mapNameLabel:SetText("")
+    _mapNameLabel:SetText("|")
     local mapNameHeight = _mapNameLabel:GetTextHeight()
-    UpdateMapNameLabel()
+    _mapNameLabel:SetAnchor(CENTER, _minimapWindow, CENTER, 0, -1 * (_centerY + (mapNameHeight / 2)))
 
     _locationNameLabel = WINDOW_MANAGER:CreateControl("X4D_MiniMap_LocationName", _minimapWindow, CT_LABEL)
     _locationNameLabel:SetDrawLayer(DL_TEXT)
-    _locationNameLabel:SetDrawTier(DT_LOW)
+    _locationNameLabel:SetDrawTier(DT_HIGH)
     _locationNameLabel:SetFont(X4D_MINIMAP_SMALLFONT)
-    _locationNameLabel:SetAnchor(CENTER, _minimapWindow, CENTER, 0, -1 * (_centerY - mapNameHeight))
-    _locationNameLabel:SetText("")
-    UpdateLocationNameLabel()
+    _locationNameLabel:SetAnchor(CENTER, _minimapWindow, CENTER, 0, -1 * (_centerY - 7))
+    _locationNameLabel:SetText("|")
 
     _playerPositionLabel = WINDOW_MANAGER:CreateControl("X4D_MiniMap_PlayerPosition", _minimapWindow, CT_LABEL)
     _playerPositionLabel:SetDrawLayer(DL_TEXT)
