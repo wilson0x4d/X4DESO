@@ -28,7 +28,7 @@ event handler and also be easily extended/modified by multiple Add-Ons.
 function X4D:Test()
     d("Begin Test of X4D Framework..")
 
-    X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
+    X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.VERBOSE)
 
     -- Debug API
     --X4D.Log:Verbose("Test Verbose")
