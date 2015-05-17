@@ -215,13 +215,13 @@ end
 X4D_Items.ItemGroups = {
     "Equipment",
     "Consumables",
+    "Crafting", -- new category for crafting items that aren't exactly profession-specific
     "Alchemy",
     "Blacksmithing",
     "Clothing",
     "Enchanting",
     "Provisioning",
     "Woodworking",
-    "Styles",
     "Misc",
     "AvA",
 }
@@ -484,14 +484,14 @@ X4D_Items.ItemTypes = {
         Canonical = "ITEMTYPE_RACIAL_STYLE_MOTIF",
         Name = GetString("SI_ITEMTYPE", ITEMTYPE_RACIAL_STYLE_MOTIF), --"Motifs",
         Tooltip = nil,
-        Group = "Styles"
+        Group = "Crafting"
     },
     [ITEMTYPE_RAW_MATERIAL] = {
         Id = ITEMTYPE_RAW_MATERIAL,
         Canonical = "ITEMTYPE_RAW_MATERIAL",
         Name = GetString("SI_ITEMTYPE", ITEMTYPE_RAW_MATERIAL), --"Raw Materials",
         Tooltip = nil,
-        Group = "Provisioning"
+        Group = "Crafting"
     },
     [ITEMTYPE_REAGENT] = {
         Id = ITEMTYPE_REAGENT,
@@ -540,7 +540,7 @@ X4D_Items.ItemTypes = {
         Canonical = "ITEMTYPE_STYLE_MATERIAL",
         Name = GetString("SI_ITEMTYPE", ITEMTYPE_STYLE_MATERIAL), --"Style Materials",
         Tooltip = nil,
-        Group = "Styles"
+        Group = "Crafting"
     },
     [ITEMTYPE_TABARD] = {
         Id = ITEMTYPE_TABARD,
