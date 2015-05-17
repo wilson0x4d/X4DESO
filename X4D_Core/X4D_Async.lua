@@ -31,7 +31,7 @@ function X4D_Timer:IsEnabled()
 end
 
 function X4D_Timer:Elapsed()
-    X4D.Log:Debug({self.State},"X4D_Timer(" .. (self.CreatedBy or "???") .. ")")
+    --X4D.Log:Debug({self.State},"X4D_Timer(" .. (self.CreatedBy or "???") .. ")")
 	local start = GetGameTimeMilliseconds()
 	if (not self._callback) then
 		self:Stop()
