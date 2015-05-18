@@ -15,25 +15,24 @@ local _minimapWindow
 local _tileScroll
 local _tileContainer
 local _tiles
+local _tileWidth, _tileHeight = 0, 0
 local _mapNameLabel
 local _locationNameLabel
 local _playerPositionLabel
 local _playerPip
 
-local _centerX
-local _centerY
+local _centerX, _centerY = 0, 0
 
 local _currentMap
-local _playerX
-local _playerY
-local _playerH
+local _lastPlayerX, _lastPlayerY = 0, 0
+local _playerX, _playerY, _playerH = 0, 0, 0
 local _cameraH
 
 local _zoomPanTimer
 local _zoomPanState
 
-local _maxZoomLevel = 20
-local _userZoomLevel = 20
+local _minZoomLevel = 0.1 -- TODO: theoretical max, actual max is determined by ability to keep minimap window entirely covered with map contents
+local _maxZoomLevel = 1
 local _maxPipWidth = 14
 
 local function UpdatePlayerPip(heading)
@@ -41,23 +40,23 @@ local function UpdatePlayerPip(heading)
     if (X4D_MiniMap.Settings:Get("UsePlayerHeading")) then
         heading = _playerH
     end
+
     if (_playerX ~= nil and _playerY ~= nil and _zoomPanState ~= nil) then
         local map = _currentMap
-        if (map ~= nil and _zoomPanState.CurrentZoomedTileSize ~= nil) then
-            local zoomedTileSize = _zoomPanState.CurrentZoomedTileSize
-            local zoomedMapWidth = map.MapWidth * zoomedTileSize
-            local zoomedMapHeight = map.MapHeight * zoomedTileSize
-            local offsetX = (_playerX * zoomedMapWidth) - _centerX
-            local offsetY = (_playerY * zoomedMapHeight) - _centerY
+        if (map ~= nil) then
+--            local zoomedTileSize = _zoomPanState.ZoomLevel * (_tileWidth * map.HorizontalTileCount)
+--            local zoomedWidth = map.HorizontalTileCount * zoomedTileSize
+--            local zoomedHeight = map.VerticalTileCount * zoomedTileSize
+--            local offsetX = (_playerX * zoomedWidth) - _centerX
+--            local offsetY = (_playerY * zoomedHeight) - _centerY
             if (_playerPip ~= nil) then
                 _playerPip:SetTextureRotation(heading)
             end
         end
     end
-end
+end 
 
 local function UpdatePlayerPositionLabel()
-    local mapSizeForPosition
     if (_playerX ~= nil and _playerY ~= nil and _playerPositionLabel ~= nil) then
         local playerPositionString = string.format("(%.02f,%.02f)",
             _playerX*100, _playerY*100)
@@ -79,74 +78,59 @@ local function UpdateLocationNameLabel(v)
     _locationNameLabel:SetText(v)
 end
 
-local _lastPlayerX, _lastPlayerY = 0, 0
 local function UpdateZoomPanState(timer, state)
         local map = _currentMap
-        if (map == nil or state == nil) then
+        if (map == nil or state == nil or _tiles == nil) then
             return
         end
+        state.ZoomIncrement = state.ZoomIncrement * 0.73
         if (state.ZoomIncrement <= 0.1) then 
             state.ZoomIncrement = 0.1
-        else
-            state.ZoomIncrement = state.ZoomIncrement * 0.73
         end
+        local maxZoomLevel = _maxZoomLevel
         if (map.MaxZoomLevel ~= nil) then
-            _maxZoomLevel = map.MaxZoomLevel
+            maxZoomLevel = map.MaxZoomLevel
         elseif (X4D.Cartography.IsSubZone()) then
-            _maxZoomLevel = 4
-        else
-            _maxZoomLevel = 20
+            maxZoomLevel = 1
         end
         state.ZoomLevel = state.ZoomLevel + state.ZoomIncrement
-        if (state.ZoomLevel >= _maxZoomLevel) then
-            state.ZoomLevel = _maxZoomLevel
+        if (state.ZoomLevel >= maxZoomLevel) then
+            state.ZoomLevel = maxZoomLevel
         end
-        local tileSize = _tileScroll:GetWidth() / map.MapWidth -- tile-size when zoomed out all the way
-        state.CurrentZoomedTileSize = tileSize * state.ZoomLevel -- tile-size for current zoom level
+
         _zoomPanState = state
         
         -- NOTE: everything beyond this point is presentation related
-        local zoomedTileSize = _zoomPanState.CurrentZoomedTileSize
-        local zoomedMapWidth = map.MapWidth * zoomedTileSize
-        local zoomedMapHeight = map.MapHeight * zoomedTileSize -- TODO: what if map.Width ~= map.Height? i think cartographer should pad the map dimension, e.g. if map is 2x3 actual x4d would normalize to 3x3
-        if (_tileContainer ~= nil) then
-            _tileContainer:SetDimensions(zoomedMapWidth, zoomedMapHeight)
-            if (_tiles ~= nil) then
-                for tileRow = 0, (map.MapHeight - 1) do
-                    for tileCol = 0, (map.MapWidth - 1) do
-                        local tileIndex = (tileRow * map.MapWidth) + (tileCol+1)
-                        local tile = _tiles[tileIndex]
-                        -- TODO: ONLY DO THIS WHEN ACTUALLY CHANGED
-                        tile:ClearAnchors()
-                        tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (tileCol * zoomedTileSize), (tileRow * zoomedTileSize))
-                        tile:SetDimensions(zoomedTileSize, zoomedTileSize)
-                    end
-                end
-            end
-        end
+        local mapWidth = (map.HorizontalTileCount * _tileWidth)
+        local zoomedWidth = (mapWidth) * state.ZoomLevel
+        local mapHeight = (map.VerticalTileCount * _tileHeight)
+        local zoomedHeight = (mapHeight) * state.ZoomLevel 
 
-        if ((_playerX ~= nil and _playerY ~= nil) and ((_playerX ~= _lastPlayerX or _playerY ~= _lastPlayerY) or (state.ZoomLevel ~= _maxZoomLevel))) then
+        if (_tileContainer ~= nil) then
+            _tileContainer:SetScale(state.ZoomLevel)
+        end
+        if ((_playerX ~= nil and _playerY ~= nil) and ((_playerX ~= _lastPlayerX or _playerY ~= _lastPlayerY) or (state.ZoomLevel ~= maxZoomLevel))) then
             _lastPlayerX = _playerX 
             _lastPlayerY = _playerY
-            local scrollH, scrollV = _tileScroll:GetScrollExtents()
+            --local scrollH, scrollV = _tileScroll:GetScrollExtents()
 
-            local offsetX = (_playerX * zoomedMapWidth) - _centerX
-            local offsetY = (_playerY * zoomedMapHeight) - _centerY
+            local offsetX = (_playerX * zoomedWidth) - _centerX
+            local offsetY = (_playerY * zoomedHeight) - _centerY
             if (offsetX < 0) then
                 offsetX = 0
-            elseif (offsetX > (zoomedMapWidth - (_centerX * 2))) then
-                offsetX = (zoomedMapWidth - (_centerX * 2))
+            elseif (offsetX > (zoomedWidth - (_centerX * 2))) then
+                offsetX = (zoomedWidth - (_centerX * 2))
             end
             if (offsetY < 0) then
                 offsetY = 0
-            elseif (offsetY > (zoomedMapHeight - (_centerY * 2))) then
-                offsetY = (zoomedMapHeight - (_centerY * 2))
+            elseif (offsetY > (zoomedHeight - (_centerY * 2))) then
+                offsetY = (zoomedHeight - (_centerY * 2))
             end
-            local pipWidth = (_maxPipWidth / _maxZoomLevel) * state.ZoomLevel -- pip size for current zoom level -- TODO: this should be calculated when zoom level changes and cached inside ZoomPanState (optimization)
-            _tileContainer:ClearAnchors()
-            _tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY)
+            local pipWidth = (_maxPipWidth / maxZoomLevel) * state.ZoomLevel -- pip size for current zoom level -- TODO: this should be calculated when zoom level changes and cached inside ZoomPanState (optimization)
             _playerPip:ClearAnchors()
             _playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, offsetX + _centerX - (pipWidth / 2), offsetY + _centerY - (pipWidth / 2))
+            _tileContainer:ClearAnchors()
+            _tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY)
             UpdatePlayerPip()
         end
 end
@@ -156,7 +140,20 @@ local function StartZoomPanTimer()
     if (_zoomPanTimer ~= nil) then
         return
     end
-    _zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState):Start(100, { ZoomLevel = 1, ZoomIncrement = 7 }, "X4D_MiniMap::ZoomPanTimer")
+    _zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState):Start(100, { ZoomLevel = 0.1, ZoomIncrement = 0.7 }, "X4D_MiniMap::ZoomPanTimer")
+end
+
+local function StartWorldMapController()
+    _zoomPanTimer = X4D.Async:CreateTimer(function(timer, state)
+        if (_playerX == 0 or _playerY == 0 or ZO_WorldMap_IsWorldMapShowing()) then
+            return
+        end
+        if ((_playerX <= 0.04 or _playerX >= 0.96) or (_playerY <= 0.04 or _playerY >= 0.96)) then
+            MapZoomOut()
+        else
+            ProcessMapClick(_playerX, _playerY)
+        end
+    end):Start(2000, { }, "X4D_MiniMap::WorldMapController")
 end
 
 X4D.Cartography.IsSubZone:Observe(function (v)
@@ -214,11 +211,11 @@ X4D.Cartography.CurrentMap:Observe(function (map)
     -- allocate new tiles
     _tiles = {}
     if (map ~= nil) then
-        local tileSize = _tileContainer:GetWidth() / map.MapWidth
+        local minTileSize = _tileScroll:GetWidth() / map.HorizontalTileCount
         if (map.Tiles ~= nil) then
-            for tileRow = 0, (map.MapHeight-1) do
-                for tileCol = 0, (map.MapWidth-1) do
-                    local tileIndex = (tileRow * map.MapWidth) + (tileCol+1)
+            for tileRow = 0, (map.VerticalTileCount-1) do
+                for tileCol = 0, (map.HorizontalTileCount-1) do
+                    local tileIndex = (tileRow * map.HorizontalTileCount) + (tileCol+1)
                     local tileFilename = map.Tiles[tileIndex]
                     local tile = WINDOW_MANAGER:GetControlByName("TILE" .. tileIndex)
                     if (tile == nil) then
@@ -227,9 +224,18 @@ X4D.Cartography.CurrentMap:Observe(function (map)
                     tile:SetHidden(false)
                     tile:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
                     tile:SetTexture(tileFilename)
-                    tile:SetDimensions(tileSize,tileSize)
+                    if (tileCol == 0 and tileRow == 0) then
+                        _tileWidth, _tileHeight = tile:GetTextureFileDimensions()
+                        -- TODO: pre-scale/adjust tile size for consistent 'perceived travel speed' in all zones - perhaps this can be derived by assuming that travel speed on any map is 1:1 when the map is scaled to fit the WorldMap dimensions
+                        if (_tileWidth < minTileSize) then
+                            _tileWidth = minTileSize
+                            _tileHeight = minTileSize
+                        end
+                        _tileContainer:SetDimensions(_tileWidth * map.HorizontalTileCount, _tileHeight * map.VerticalTileCount)
+                    end
+                    tile:SetDimensions(_tileWidth,_tileHeight)
                     tile:ClearAnchors()
-                    tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, tileCol * tile:GetWidth(), tileRow * tile:GetHeight())
+                    tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, tileCol * _tileWidth, tileRow * _tileHeight)
                     tile:SetDrawLayer(DL_BACKGROUND)
                     tile:SetDrawTier(DT_LOW)
                     tile:SetDrawLevel(DL_BELOW)
@@ -239,7 +245,6 @@ X4D.Cartography.CurrentMap:Observe(function (map)
             end
         end
     end
-    StartZoomPanTimer()
 end)
 
 X4D.Cartography.MapName:Observe(UpdateMapNameLabel)
@@ -301,6 +306,9 @@ local function InitializeMiniMapWindow()
     local scene = X4D.UI.CurrentScene()
     local isHudScene = scene ~= nil and (scene:GetName() == "hud" or scene:GetName() == "hudui")
     _minimapWindow:SetHidden(not isHudScene)
+
+    StartZoomPanTimer()
+    StartWorldMapController()
 end
 
 local function InitializeSettingsUI()
