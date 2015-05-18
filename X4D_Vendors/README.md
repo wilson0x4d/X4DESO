@@ -45,6 +45,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.6
+
+- Salting vendor keys to avoid name collisions for vendors which have same name, but exist in different zone (for example, AvA Quartermasters.)
+
 v1.5
 
 - stolen items are no longer auto-laundered on fresh addon installs. however, lockpicks, motifs, legendarys, artifacts and arcane items still are.

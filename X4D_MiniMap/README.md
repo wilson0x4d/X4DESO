@@ -5,12 +5,12 @@ X4D MiniMap is a UI Mod which adds a simple MiniMap to the game.
 ## Features
 
 - MiniMap Anchored to bottom-right of display.
-- Map/Zone Name
-- Player Position 
+- Map/Zone and Location Name
+- Player Position
 
 ## Known Issues
 
-- When changing zones without using a wayshrine, sometimes the MiniMap does not detect the zone change. You can work around this by opening and then closing the built-in game map.
+- When using the world map, sometimes exiting the world map causes the minimap to desync. Closing and re-opening the world map will fix the issue.
 
 ## Planned
 
@@ -52,6 +52,12 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 
 ## Versions
+
+v1.1
+
+- Fix bug where Location Name not updating.
+- Misc optimizations to minimap/ui code.
+- Updates for X4D_Core v1.14
 
 v1.0
 

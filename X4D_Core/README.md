@@ -123,6 +123,14 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.14
+
+- Removed unnecessary log lines.
+- Fixed bug where IsSubZone was not being set properly.
+- Optimizations and bug fixes for new (alpha) Cartography code.
+- Created new 'Crafting' item types group to clarify settings in misc addons which depend on it.
+- Salting vendor keys to avoid name collisions for generic-named NPCs.
+
 v1.13
 - Added new 'X4D_Cartography' module.
 - Several bug fixes for Observables, including a plurality change on all uses, and the introduction of 'Rate Limit' concept.

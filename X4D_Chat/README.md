@@ -47,6 +47,11 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.31
+
+- fix bug where player names are not displayed when both playername and character name options were enabled.
+- Updates for 
+
 v1.30
 
 - fix bug with online/offline status.
