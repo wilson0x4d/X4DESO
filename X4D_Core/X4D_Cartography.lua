@@ -36,8 +36,8 @@ function X4D_Cartography:GetCurrentMap()
         map = {
             MapIndex = mapIndex,
             MapName = zo_strformat("<<1>>", mapName),
-            MapWidth = nil,
-            MapHeight = nil,
+            HorizontalTileCount = nil,
+            VerticalTileCount = nil,
             Tiles = {},
             Zones = {},
             Locations = {},
@@ -94,9 +94,9 @@ function X4D_Cartography:GetCurrentMap()
             if (mapTiles:Count() == 0) then
                 local numHorizontalTiles, numVerticalTiles = GetMapNumTiles()
                 if (numHorizontalTiles ~= nil and numVerticalTiles ~= nil) then
-                    map.MapHeight = numVerticalTiles
-                    map.MapWidth = numHorizontalTiles
-                    for i = 1, (map.MapHeight * map.MapWidth) do
+                    map.VerticalTileCount = numVerticalTiles
+                    map.HorizontalTileCount = numHorizontalTiles
+                    for i = 1, (map.VerticalTileCount * map.HorizontalTileCount) do
                         local tileTexture = GetMapTileTexture(i)
                         if (tileTexture ~= nil) then
                             mapTiles:Add(i, tileTexture)
@@ -139,8 +139,9 @@ end
 local function TryUpdateMapState(timer, state)
     --X4D.Log:Warning("TryUpdateMapState")
     if (ZO_WorldMap_IsWorldMapShowing()) then
-        --NOP: 
+        --NOP
         --TODO: this doesn't prevent state changes from occurring, since the 'map api calls' exposed by ZO are representative of ZO_WorldMap state prior to closure. le sigh.
+        --TODO: for example, if the user zooms out all the way to top level minimap will be broken until user re-opens/closes
     else
         -- relying on map tile and location name changes to determine if there was a map/zone change before updating relevant properties - not crucial, just an optimization
         local locationName = GetPlayerLocationName()

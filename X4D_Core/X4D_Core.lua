@@ -14,7 +14,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, 
                 SettingsAre = "Account-Wide",
                 X4DB = nil,
             }, 
-            4)
+            5)
     end
 end)
 
