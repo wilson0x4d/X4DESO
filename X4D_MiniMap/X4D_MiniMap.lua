@@ -40,19 +40,8 @@ local function UpdatePlayerPip(heading)
     if (X4D_MiniMap.Settings:Get("UsePlayerHeading")) then
         heading = _playerH
     end
-
-    if (_playerX ~= nil and _playerY ~= nil and _zoomPanState ~= nil) then
-        local map = _currentMap
-        if (map ~= nil) then
---            local zoomedTileSize = _zoomPanState.ZoomLevel * (_tileWidth * map.HorizontalTileCount)
---            local zoomedWidth = map.HorizontalTileCount * zoomedTileSize
---            local zoomedHeight = map.VerticalTileCount * zoomedTileSize
---            local offsetX = (_playerX * zoomedWidth) - _centerX
---            local offsetY = (_playerY * zoomedHeight) - _centerY
-            if (_playerPip ~= nil) then
-                _playerPip:SetTextureRotation(heading)
-            end
-        end
+    if (_playerPip ~= nil) then
+        _playerPip:SetTextureRotation(heading)
     end
 end 
 
@@ -112,10 +101,13 @@ local function UpdateZoomPanState(timer, state)
         if ((_playerX ~= nil and _playerY ~= nil) and ((_playerX ~= _lastPlayerX or _playerY ~= _lastPlayerY) or (state.ZoomLevel ~= maxZoomLevel))) then
             _lastPlayerX = _playerX 
             _lastPlayerY = _playerY
-            --local scrollH, scrollV = _tileScroll:GetScrollExtents()
 
             local offsetX = (_playerX * zoomedWidth) - _centerX
             local offsetY = (_playerY * zoomedHeight) - _centerY
+            local pipWidth = (_maxPipWidth / maxZoomLevel) * state.ZoomLevel -- pip size for current zoom level -- TODO: this should be calculated when zoom level changes and cached inside ZoomPanState (optimization)
+            local pipX = (offsetX + _centerX - (pipWidth / 2))
+            local pipY = (offsetY + _centerY - (pipWidth / 2))
+            -- clamp map position
             if (offsetX < 0) then
                 offsetX = 0
             elseif (offsetX > (zoomedWidth - (_centerX * 2))) then
@@ -126,11 +118,10 @@ local function UpdateZoomPanState(timer, state)
             elseif (offsetY > (zoomedHeight - (_centerY * 2))) then
                 offsetY = (zoomedHeight - (_centerY * 2))
             end
-            local pipWidth = (_maxPipWidth / maxZoomLevel) * state.ZoomLevel -- pip size for current zoom level -- TODO: this should be calculated when zoom level changes and cached inside ZoomPanState (optimization)
-            _playerPip:ClearAnchors()
-            _playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, offsetX + _centerX - (pipWidth / 2), offsetY + _centerY - (pipWidth / 2))
             _tileContainer:ClearAnchors()
             _tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY)
+            _playerPip:ClearAnchors()
+            _playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, pipX, pipY)
             UpdatePlayerPip()
         end
 end
