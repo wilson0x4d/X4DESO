@@ -26,6 +26,10 @@ function X4D_Cartography:GetCurrentMap()
         TODO: "zone fencing" to auto-detect the need for a map transition, each can have zero or more fences, each fence being a collection of coordinates in clockwise order which form a closed loop
     ]]
     local mapIndex = X4D.Cartography.MapIndex()
+    if (mapIndex == nil) then
+        -- when mapIndex is null, there is no current map 
+        return nil
+    end
     local mapName = X4D.Cartography.MapName()
     local isSubZone = X4D.Cartography.IsSubZone()
 
