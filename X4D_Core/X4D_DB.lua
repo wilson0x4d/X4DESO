@@ -10,9 +10,11 @@ local _databases = nil
 -- NOTE: not valid to call except during addon loaded events, unless the input is a Lua table object, in which case it can be called at any time
 -- "non-persistent" databases can be created by providing a reference to a Lua "table", X4D_DB delegates access to the table
 -- "persistent" databases are opened when a database name (string) is provided
-function X4D_DB:Open(database)
+function X4D_DB:Open(database, version)
     if (database == nil) then
-        database = {}
+        database = {
+            _version = version
+        }
     end
     if (type(database) ~= "table") then
         if (_databases == nil) then
@@ -22,10 +24,14 @@ function X4D_DB:Open(database)
                 X4D.InternalSettings:Set("X4DB", _databases)
             end
         end
-        if (_databases[database] == nil) then
-            _databases[database] = {}
+        local databaseName = database -- yes, assumes is a string, or other valid key, but not a table object
+        database = _databases[databaseName]
+        if (database == nil or (version ~= nil and (database._version == nil or database._version < version))) then
+            database = {
+                _version = version
+            }
+            _databases[database] = database
         end
-        database = _databases[database]
     end
 	local proto = {
 		_table = database
