@@ -31,7 +31,6 @@ function X4D_Timer:IsEnabled()
 end
 
 function X4D_Timer:Elapsed()
-    --X4D.Log:Debug({self.State},"X4D_Timer(" .. (self.CreatedBy or "???") .. ")")
 	local start = GetGameTimeMilliseconds()
 	if (not self._callback) then
 		self:Stop()
@@ -39,19 +38,11 @@ function X4D_Timer:Elapsed()
 	end
 	local success, err = pcall(self._callback, self, self._state)
 	if (not success) then
-		X4D.Log:Error(err)
+		X4D.Log:Error(err, self.CreatedBy)
 		return
 	end
 	if (self._enabled) then
-		--local spent = GetGameTimeMilliseconds() - start
-		local interval = self._interval -- -spent
-
-		--if (interval <= 0) then
-		--	interval = 1
-		--end
-        --d(type(interval)
-        --d(interval)
-		zo_callLater(function() self:Elapsed() end, interval)
+	    zo_callLater(function() self:Elapsed() end, self._interval)
 	end
 end
 
@@ -71,17 +62,7 @@ function X4D_Timer:Start(interval, state, createdBy)
 		return
 	end
 	self._enabled = true
-
---    if (self._interval ~= nil) then
---        X4D.Log:Warning("Timer interval: " .. type(self._interval) .. " " .. tostring(self._interval))
---    else
---        X4D.Log:Warning("Timer Interval: nil")
---    end
-
-	zo_callLater(function() 
-        -- TODO: pcall and log errors on behalf of consumer
-        self:Elapsed() 
-    end, self._interval)
+	zo_callLater(function() self:Elapsed() end, self._interval)
     return self
 end
 
