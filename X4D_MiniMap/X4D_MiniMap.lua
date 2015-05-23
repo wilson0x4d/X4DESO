@@ -70,41 +70,45 @@ end
 local function UpdateZoomPanState(timer, state)
         local map = _currentMap
         if (map == nil or state == nil or _tiles == nil) then
+            X4D.Log:Debug({"map, state or tiles are nil", map == nil, state == nil, _tiles == nil}, "UpdateZoomPanState")
             return
         end
-        state.ZoomIncrement = state.ZoomIncrement * 0.73
-        if (state.ZoomIncrement <= 0.1) then 
-            state.ZoomIncrement = 0.1
-        end
-        local maxZoomLevel = _maxZoomLevel
-        if (map.MaxZoomLevel ~= nil) then
-            maxZoomLevel = map.MaxZoomLevel
-        elseif (X4D.Cartography.IsSubZone()) then
-            maxZoomLevel = 1
-        end
-        state.ZoomLevel = state.ZoomLevel + state.ZoomIncrement
-        if (state.ZoomLevel >= maxZoomLevel) then
-            state.ZoomLevel = maxZoomLevel
-        end
-
+        state.ZoomLevel = 1
+        -- NOTE: no longer dynamically changing zoom-level, this will be made a user-setting instead
+        --state.ZoomIncrement = state.ZoomIncrement * 0.01
+        --if (state.ZoomIncrement <= 0.01) then 
+        --    state.ZoomIncrement = 0.01
+        --end
+        --local maxZoomLevel = _maxZoomLevel
+        --if (map.MaxZoomLevel ~= nil) then
+        --    maxZoomLevel = map.MaxZoomLevel
+        --elseif (X4D.Cartography.IsSubZone()) then
+        --    maxZoomLevel = 1
+        --end
+        --state.ZoomLevel = state.ZoomLevel + state.ZoomIncrement
+        --if (state.ZoomLevel >= maxZoomLevel) then
+        --    state.ZoomLevel = maxZoomLevel
+        --end
         _zoomPanState = state
         
-        -- NOTE: everything beyond this point is presentation related
         local mapWidth = (map.HorizontalTileCount * _tileWidth)
         local zoomedWidth = (mapWidth) * state.ZoomLevel
         local mapHeight = (map.VerticalTileCount * _tileHeight)
         local zoomedHeight = (mapHeight) * state.ZoomLevel 
 
-        if (_tileContainer ~= nil) then
-            _tileContainer:SetScale(state.ZoomLevel)
-        end
         if ((_playerX ~= nil and _playerY ~= nil) and ((_playerX ~= _lastPlayerX or _playerY ~= _lastPlayerY) or (state.ZoomLevel ~= maxZoomLevel))) then
+            if (_tileContainer ~= nil) then
+                _tileContainer:SetScale(state.ZoomLevel)
+                for _,tile in ipairs(_tiles) do
+                    tile:SetScale(state.ZoomLevel)
+                end
+            end
             _lastPlayerX = _playerX 
             _lastPlayerY = _playerY
 
             local offsetX = (_playerX * zoomedWidth) - _centerX
             local offsetY = (_playerY * zoomedHeight) - _centerY
-            local pipWidth = (_maxPipWidth / maxZoomLevel) * state.ZoomLevel -- pip size for current zoom level -- TODO: this should be calculated when zoom level changes and cached inside ZoomPanState (optimization)
+            local pipWidth = (_maxPipWidth / _maxZoomLevel) * state.ZoomLevel -- pip size for current zoom level -- TODO: this should be calculated when zoom level changes and cached inside ZoomPanState (optimization)
             local pipX = (offsetX + _centerX - (pipWidth / 2))
             local pipY = (offsetY + _centerY - (pipWidth / 2))
             -- clamp map position
@@ -131,7 +135,7 @@ local function StartZoomPanTimer()
     if (_zoomPanTimer ~= nil) then
         return
     end
-    _zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState):Start(100, { ZoomLevel = 0.1, ZoomIncrement = 0.7 }, "X4D_MiniMap::ZoomPanTimer")
+    _zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState):Start(100, { ZoomLevel = 1 }, "X4D_MiniMap::ZoomPanTimer")
 end
 
 local function StartWorldMapController()
@@ -146,10 +150,6 @@ local function StartWorldMapController()
         end
     end):Start(2000, { }, "X4D_MiniMap::WorldMapController")
 end
-
-X4D.Cartography.IsSubZone:Observe(function (v)
-    -- TODO:
-end)
 
 X4D.Cartography.PlayerX:Observe(function (v)
     _playerX = v
