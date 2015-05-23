@@ -159,8 +159,14 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
     if (parameters == "-debug") then
         X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
         X4D.Async:CreateTimer(function (timer, state)
-            X4D.Log:Debug("Memory: " .. math.ceil(collectgarbage("count") * 1024), "DBG")
+            X4D.Log:Debug({
+                "Memory: " .. math.ceil(collectgarbage("count") * 1024),
+                "Timers: " .. (#X4D.Async.ActiveTimers),
+                }, "DBG")
         end):Start(1000,{},"X4D_Core::DEBUG")
+        if (Zgoo ~= nil) then
+            Zgoo:Main(1,nil,X4D)
+        end
     end
     if (parameters == "-test") then
         X4D.Test()
