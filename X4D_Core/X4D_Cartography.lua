@@ -182,7 +182,7 @@ local _timer
 
 EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
     if ((_timer == nil) or (_timer._timestamp ~= nil and ((GetGameTimeMilliseconds() - _timer._timestamp) > 5000) )) then
-        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/13, {}, "X4D_Cartography")
+        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/20, {}, "X4D_Cartography")
     end
 end)
 
