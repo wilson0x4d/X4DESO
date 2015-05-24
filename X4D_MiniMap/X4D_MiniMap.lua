@@ -30,6 +30,7 @@ local _cameraH
 
 local _zoomPanTimer
 local _zoomPanState
+local _mapControllerTimer
 
 local _minZoomLevel = 0.1 -- TODO: theoretical max, actual max is determined by ability to keep minimap window entirely covered with map contents
 local _maxZoomLevel = 1
@@ -64,7 +65,9 @@ local function UpdateLocationNameLabel(v)
     if (v == nil) then
         v = GetPlayerLocationName()
     end
-    _locationNameLabel:SetText(v)
+    if (_locationNameLabel ~= nil) then
+        _locationNameLabel:SetText(v)
+    end
 end
 
 local function UpdateZoomPanState(timer, state)
@@ -130,25 +133,29 @@ local function UpdateZoomPanState(timer, state)
         end
 end
 
-local function StartZoomPanTimer()
+local function StartZoomPanController()
     -- auto-zoom/pan map ~10fps
-    if (_zoomPanTimer ~= nil) then
-        return
+    if (_zoomPanTimer == nil) then
+        _zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState)
     end
-    _zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState):Start(100, { ZoomLevel = 1 }, "X4D_MiniMap::ZoomPanTimer")
+    _zoomPanTimer:Start(100, { ZoomLevel = 1 }, "X4D_MiniMap::ZoomPanController")
 end
 
 local function StartWorldMapController()
-    _zoomPanTimer = X4D.Async:CreateTimer(function(timer, state)
-        if (_playerX == 0 or _playerY == 0 or ZO_WorldMap_IsWorldMapShowing()) then
-            return
-        end
-        if ((_playerX <= 0.04 or _playerX >= 0.96) or (_playerY <= 0.04 or _playerY >= 0.96)) then
-            MapZoomOut()
-        else
-            ProcessMapClick(_playerX, _playerY)
-        end
-    end):Start(2000, { }, "X4D_MiniMap::WorldMapController")
+    -- test world map
+    if (_mapControllerTimer == nil) then
+        _mapControllerTimer = X4D.Async:CreateTimer(function(timer, state)
+            if (_playerX == 0 or _playerY == 0 or ZO_WorldMap_IsWorldMapShowing()) then
+                return
+            end
+            if ((_playerX <= 0.04 or _playerX >= 0.96) or (_playerY <= 0.04 or _playerY >= 0.96)) then
+                MapZoomOut()
+            else
+                ProcessMapClick(_playerX, _playerY)
+            end
+        end)
+    end
+    _mapControllerTimer:Start(2000, { }, "X4D_MiniMap::WorldMapController")
 end
 
 X4D.Cartography.PlayerX:Observe(function (v)
@@ -170,14 +177,14 @@ X4D.Cartography.PlayerY:Observe(function (v)
     UpdatePlayerPositionLabel()
 end)
 
-X4D.Cartography.PlayerHeading:SetRateLimit(1000/13):Observe(function (v)
+X4D.Cartography.PlayerHeading:Observe(function (v)
     if (X4D_MiniMap.Settings:Get("UsePlayerHeading")) then
         _playerH = v
         UpdatePlayerPip()
     end
 end, 5000)
 
-X4D.Cartography.CameraHeading:SetRateLimit(1000/13):Observe(function (v)
+X4D.Cartography.CameraHeading:Observe(function (v)
     if (not X4D_MiniMap.Settings:Get("UsePlayerHeading")) then
         _cameraH = v
         UpdatePlayerPip()
@@ -186,8 +193,9 @@ end, 5000)
 
 X4D.Cartography.CurrentMap:Observe(function (map)
     --X4D.Log:Warning(map,"MiniMap")
-    if (_minimapWindow == nil) then
+    if (_minimapWindow == nil or _tileScroll == nil) then
         X4D.Log:Error("Tile Container not initialized", "MiniMap")
+        return
     end 
     _currentMap = map
     UpdateMapNameLabel()
@@ -298,8 +306,6 @@ local function InitializeMiniMapWindow()
     local isHudScene = scene ~= nil and (scene:GetName() == "hud" or scene:GetName() == "hudui")
     _minimapWindow:SetHidden(not isHudScene)
 
-    StartZoomPanTimer()
-    StartWorldMapController()
 end
 
 local function InitializeSettingsUI()
@@ -364,4 +370,9 @@ X4D.UI.CurrentScene:Observe(function (scene)
         local isHudScene = scene ~= nil and (scene:GetName() == "hud" or scene:GetName() == "hudui")
         _minimapWindow:SetHidden(not isHudScene)
     end
+end)
+
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_PLAYER_ACTIVATED, function()
+    StartZoomPanController()
+    StartWorldMapController()
 end)
