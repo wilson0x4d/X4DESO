@@ -54,28 +54,28 @@ setmetatable(X4D_Vendor, { __call = X4D_Vendor.New })
 
 --region Chat Callback
 
-local function DefaultEmitCallback(color, text)
+local function DefaultChatCallback(color, text)
 	d(color .. text)
 end
 
-X4D_Vendors.EmitCallback = DefaultEmitCallback
+X4D_Vendors.ChatCallback = DefaultChatCallback
 
 function X4D_Vendors:RegisterCallback(callback)
 	if (callback ~= nil) then
-		X4D_Vendors.EmitCallback = callback
+		X4D_Vendors.ChatCallback = callback
 	else
-		X4D_Vendors.EmitCallback = DefaultEmitCallback
+		X4D_Vendors.ChatCallback = DefaultChatCallback
 	end
 end
 
 function X4D_Vendors:UnregisterCallback(callback)
-	if (X4D_Vendors.EmitCallback == callback) then
+	if (X4D_Vendors.ChatCallback == callback) then
 		self:RegisterCallback(nil)
 	end
 end
 
 local function InvokeChatCallback(color, text)
-	local callback = X4D_Vendors.EmitCallback
+	local callback = X4D_Vendors.ChatCallback
 	if (color == nil) then
 		color = "|cFF0000"
 	end
@@ -182,12 +182,12 @@ local function GetItemTypeActions()
         for _,itemType in pairs(X4D.Items.ItemTypes) do
             if (itemType.Group == groupName) then
                 local action = X4D_Vendors.Settings:Get(itemType.Id)
-                if (action == constKeep or action == 1) then
-                    itemTypeActions[itemType.Id] = 1
-                elseif (action == constSell or action == 2) then
-                    itemTypeActions[itemType.Id] = 2
+                if (action == constKeep or action == X4D_VENDORACTION_KEEP) then
+                    itemTypeActions[itemType.Id] = X4D_VENDORACTION_KEEP
+                elseif (action == constSell or action == X4D_VENDORACTION_SELL) then
+                    itemTypeActions[itemType.Id] = X4D_VENDORACTION_SELL
                 else
-                    itemTypeActions[itemType.Id] = 0                
+                    itemTypeActions[itemType.Id] = X4D_VENDORACTION_NONE
                 end                    
             end
         end
@@ -211,7 +211,8 @@ local function ConductTransactions(vendor)
                 if (not IsSlotIgnoredItem(slot)) then
                     local vendorAction = GetPatternAction(slot)
                     local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-                    if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == 1) or ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
+                    if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
+                        X4D.Log:Verbose({"Launder Codes", vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                         if (vendor.IsFence and slot.IsStolen) then
                             if (laundersUsed < laundersMax) then
                                 if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
@@ -230,9 +231,10 @@ local function ConductTransactions(vendor)
                                 end
                             end
                         end
-                    elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == 2) then
+                    elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
                         if (vendor.IsFence == slot.IsStolen) then
                             if ((not vendor.IsFence) or (vendor.IsFence and (sellsUsed <= sellsMax))) then
+                                X4D.Log:Verbose({"Sales Codes", vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                                 sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
                                 CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
                                 CallSecureProtected("PlaceInStoreWindow")
