@@ -60,10 +60,11 @@ local function LogInternal(source, level, message)
     if (CHAT_SYSTEM == nil) then
     	return false
     end
-	local L_level = level or 0
+	local L_level = level or X4D_Log.TRACE_LEVELS.VERBOSE
 	if (L_level < _minTraceLevel) then
 		return false
 	end
+    message = message:gsub("\n", "\n" .. TRACE_COLORS[L_level])
 	if (source == nil or source:len() == 0) then
         CHAT_SYSTEM:AddMessage(string.format(TRACE_FORMATS_NOSOURCE[L_level], GetTimeString(), message))
 	else
