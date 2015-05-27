@@ -211,8 +211,8 @@ local function ConductTransactions(vendor)
                 if (not IsSlotIgnoredItem(slot)) then
                     local vendorAction = GetPatternAction(slot)
                     local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-                    if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
-                        X4D.Log:Verbose({"Launder Codes", vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+                    if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
+                        --X4D.Log:Verbose({"Launder Codes for "..slot.Item:GetItemLink(slot.ItemOptions), vendorAction, itemTypeAction, (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                         if (vendor.IsFence and slot.IsStolen) then
                             if (laundersUsed < laundersMax) then
                                 if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
@@ -234,7 +234,7 @@ local function ConductTransactions(vendor)
                     elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
                         if (vendor.IsFence == slot.IsStolen) then
                             if ((not vendor.IsFence) or (vendor.IsFence and (sellsUsed <= sellsMax))) then
-                                X4D.Log:Verbose({"Sales Codes", vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+                                --X4D.Log:Verbose({"Sales Codes for "..slot.Item:GetItemLink(slot.ItemOptions), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                                 sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
                                 CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
                                 CallSecureProtected("PlaceInStoreWindow")
@@ -250,6 +250,8 @@ local function ConductTransactions(vendor)
 			                    InvokeChatCallback(slot.ItemColor, message)
                             end
                         end
+                    --else
+                        --X4D.Log:Verbose({"NonAction Codes for "..slot.Item:GetItemLink(slot.ItemOptions), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                     end
                 end
             end
@@ -293,8 +295,11 @@ local function OnOpenStore()
     local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
     vendor.IsFence = false
     UpdateVendorPositionData(vendor)
-    ConductTransactions(vendor)
-    ReportEarnings()
+    X4D.Async:CreateTimer(function (timer, state)
+        timer:Stop()
+        ConductTransactions(vendor)
+        ReportEarnings()
+    end):Start(337, {}, "X4D_Vendors::ConductTransactions")
 end
 
 local function OnCloseStore()
