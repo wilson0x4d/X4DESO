@@ -63,15 +63,17 @@ end
 
 function X4D_Mail:HandleMailAttachments(mailId)
 	if (not X4D_Mail:IsMailReadable(mailId)) then
-		X4D.Log:Error({ "HandleMailAttachments", "!IsMailReadable", mailId }, "X4D Mail")
+		--X4D.Log:Verbose({ "HandleMailAttachments", "!IsMailReadable", mailId }, "X4D Mail")
 		return
 	end
 	local mail = _readableMail[mailId]
 	if (mail.IsReturnedMail and X4D_Mail.Settings:Get("LeaveReturnedMailAlone")) then
+		--X4D.Log:Verbose({ "HandleMailAttachments", "IsReturnedMail and LeaveReturnedMailAlone", mailId }, "X4D Mail")
 		return
 	end
 	local shouldDelete = false
 	if (X4D_Mail.Settings:Get("AutoAcceptAttachments")) then
+		--X4D.Log:Verbose({ "HandleMailAttachments", "AutoAcceptAttachments", mailId }, "X4D Mail")
 		if (mail.IsFromSystem and (not mail.IsCustomerService)) then
 			shouldDelete = true
 			if (mail.AttachedItemsCount > 0 or mail.AttachedMoney > 0) then
@@ -137,27 +139,33 @@ end
 local function OnMailReadable(eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subjectText, mailIcon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	local bodyText = ReadMail(mailId)
-	local mail = {
-		MailId = mailId,
-		MailIcon = mailIcon,
-		SubjectText = subjectText,
-		BodyText = bodyText,
-		IsUnread = unread,
-		IsFromSystem = fromSystem,
-		SenderDisplayName = senderDisplayName,
-		SenderCharacterName = senderCharacterName,		
-		IsCustomerService = fromCustomerService,
-		IsReturnedMail = returned, 
-		AttachedItemsCount = numAttachments, 
-		AttachedMoney = attachedMoney, 
-		CODAmount = codAmount, 
-		ExpiresInDays = expiresInDays, 
-		SecsSinceReceived = secsSinceReceived,
-		IsSpam = false,
-	}
-	_readableMail[mailId] = mail
-	X4D_Mail:HandleMailAttachments(mailId)
-	X4D_Mail:HandleSpam(mailId)
+    local alreadyHandled = _readableMail[mailId]
+    if (alreadyHandled == nil) then
+	    local mail = {
+		    MailId = mailId,
+		    MailIcon = mailIcon,
+		    SubjectText = subjectText,
+		    BodyText = bodyText,
+		    IsUnread = unread,
+		    IsFromSystem = fromSystem,
+		    SenderDisplayName = senderDisplayName,
+		    SenderCharacterName = senderCharacterName,		
+		    IsCustomerService = fromCustomerService,
+		    IsReturnedMail = returned, 
+		    AttachedItemsCount = numAttachments, 
+		    AttachedMoney = attachedMoney, 
+		    CODAmount = codAmount, 
+		    ExpiresInDays = expiresInDays, 
+		    SecsSinceReceived = secsSinceReceived,
+		    IsSpam = false,
+	    }
+	    _readableMail[mailId] = mail
+        X4D.Async:CreateTimer(function (timer, state)
+                timer:Stop();
+        	    X4D_Mail:HandleMailAttachments(mailId)
+        	    X4D_Mail:HandleSpam(mailId)
+        end):Start(337, {}, "MailHandler")
+    end
 end
 
 local function OnOpenMailbox(eventCode)
@@ -263,7 +271,7 @@ end
 local function OnPlayerActivated()
 end
 
--- esoui fix: prevent nil reference error for deleted mail after taking gold attachements
+-- ZO bug fix: prevent nil reference error for deleted mail
 function MAIL_INBOX:RefreshMoneyControls()
     local mailData = self:GetMailData(self.mailId)
     self.sentMoneyControl:SetHidden(true)
