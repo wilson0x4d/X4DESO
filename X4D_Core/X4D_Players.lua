@@ -70,30 +70,31 @@ function X4D_Players:IsInGuild(player)
 end
 
 local _playerScavenger = nil
-local _playerScavengerFrequency = 1000 * 60 * 2 -- default, 2 minutes between player db maintenance intervals
-local _playerScavengerTimePeriod = 1000 * 60 * 10 -- default, 10 minutes before players are scavenged
+local _playerScavengerFrequency = 1000 * 47 -- default, 2 minutes between player db maintenance intervals
+local _playerScavengerTimePeriod = _playerScavengerFrequency * 10 -- default, 10 'maintenance intervals' before players are scavenged
 
-local function StartDbScavenger() 
+local function ShouldScavengePlayer(player) 
+    local now = GetGameTimeMilliseconds()
+    return
+        player == nil
+        or (not (player.IsWhitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
+        and ((now - player.LastSeen) >= _playerScavengerTimePeriod)) -- only purge 'old' players from database
+end
+
+local function DoScavenge(player, key)
+    if (ShouldScavengePlayer(player)) then
+        X4D_Players.DB:Remove(key)
+    end
+end
+
+local function StartPlayerScavenger() 
     if (_playerScavenger ~= nil) then
         return 
     end
     _playerScavenger = X4D.Async:CreateTimer(function (timer, state)
-        local memory = collectgarbage("count")
-        local now = GetGameTimeMilliseconds()
-        local scavenged = X4D_Players.DB
-            :Where(function(player) 
-                return
-                    player == nil
-                    or (not (player.IsWhitelisted or player.IsBlacklisted or player.IsSpammer) -- do not purge known spammers or anyone explicitly blacklisted/whitelisted
-                    and ((now - player.LastSeen) >= _playerScavengerTimePeriod)) -- only purge 'old' players from database
-            end)
-        scavenged:ForEach(function (player,key) 
-            X4D_Players.DB:Remove(key)
-        end)
-        memory = (memory - collectgarbage("count"))
-        X4D.Log:Verbose("X4D Player DB Memory Delta: " .. memory)
-    end, _playerScavengerFrequency, {})
-    _playerScavenger:Start(nil,nil,"X4D_Players::PlayerScavenger")
+        X4D_Players.DB
+            :ForEach(DoScavenge)
+    end, {}):Start(_playerScavengerFrequency, {}, "X4D_Players::PlayerScavenger")
 end
 
 EVENT_MANAGER:RegisterForEvent("X4D_Players.DB", EVENT_ADD_ON_LOADED, function(event, name)
@@ -103,7 +104,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Players.DB", EVENT_ADD_ON_LOADED, function(e
 end)
 
 EVENT_MANAGER:RegisterForEvent("X4D_Players_SCAVENGER", EVENT_PLAYER_ACTIVATED, function()
-    StartDbScavenger()
+    StartPlayerScavenger()
 end)
 
 function X4D_Players:GetPlayer(tag)
@@ -117,8 +118,7 @@ function X4D_Players:GetPlayer(tag)
     if (player == nil) then
         -- lookup by key failed, perhaps this user is known by name (e.g. cross-channel chat where player-names are not discoverable, but we know this player through some other means such as friends list or guild where their account name is in the clear.)
         player = self.DB
-            :Where(function(player) return player.Name == unitName end)
-            :FirstOrDefault()
+            :FirstOrDefault(function(player) return player.Name == unitName end)
         if (player == nil) then
             player = X4D_Player(tag)
             self.DB:Add(key, player)
