@@ -136,7 +136,7 @@ local function GetPatternAction(slot)
 end
 
 local function TryGetBag(bagId)
-    return X4D.Bags:GetBag(bagId, true)
+    return X4D.Bags:GetBag(bagId, false)
 end
 
 local function TryDepositFixedAmount()
@@ -446,13 +446,16 @@ local function ConductTransactions()
 end
 
 local function OnOpenBank(eventCode)
+    X4D.Async:CreateTimer(function (timer, state)
+        timer:Stop()
+        ConductTransactions()
+    end):Start(337, {}, "X4D_Bank::ConductTransactions")
     if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
         _nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000)
         local availableAmount = TryDepositFixedAmount()
         TryDepositPercentage(availableAmount)
     end
     TryWithdrawReserveAmount()
-    ConductTransactions()
 end
 
 local function OnCloseBank()
