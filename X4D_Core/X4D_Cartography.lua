@@ -146,36 +146,37 @@ local function TryUpdateMapState(timer, state)
         --NOP
         --TODO: this doesn't prevent state changes from occurring, since the 'map api calls' exposed by ZO are representative of ZO_WorldMap state prior to closure. le sigh.
         --TODO: for example, if the user zooms out all the way to top level minimap will be broken until user re-opens/closes
-    else
-        -- relying on map tile and location name changes to determine if there was a map/zone change before updating relevant properties - not crucial, just an optimization
-        local locationName = GetPlayerLocationName()
-        X4D.Cartography.LocationName(locationName)
-        local mapTile = GetMapTileTexture()
-        if (mapTile ~= nil) then
-            mapTile = mapTile:match("maps/[%w%-]+/(.-)_0.dds")
-        end
-        if (_currentMapTile ~= mapTile or _currentLocationName ~= locationName) then
-            _currentMapTile = mapTile
-            _currentLocationName = locationName
-            local zoneIndex = GetCurrentMapZoneIndex()
-            local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
-	        X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil)
-            mapName = GetMapName()
-            X4D.Cartography.MapIndex(mapIndex)
-            X4D.Cartography.ZoneIndex(zoneIndex)
-            X4D.Cartography.MapName(mapName)
-            local currentMap = X4D.Cartography:GetCurrentMap()
-            X4D.Cartography.CurrentMap(currentMap)
-        end
-
-        local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
-        local cameraHeading = GetPlayerCameraHeading()
-        X4D.Cartography.PlayerX(playerX)
-        X4D.Cartography.PlayerY(playerY)
-        X4D.Cartography.PlayerHeading(playerHeading)
-        X4D.Cartography.CameraHeading(cameraHeading)
-        --X4D.Log:Information({mapIndex,zoneIndex,mapName,locationName,playerX,playerY,playerH,locationName, mapTile}, "Cartography")
+        return
     end
+
+    -- relying on map tile and location name changes to determine if there was a map/zone change before updating relevant properties - not crucial, just an optimization
+    local locationName = GetPlayerLocationName()
+    X4D.Cartography.LocationName(locationName)
+    local mapTile = GetMapTileTexture()
+    if (mapTile ~= nil) then
+        mapTile = mapTile:match("maps/[%w%-]+/(.-)_0.dds")
+    end
+    if (_currentMapTile ~= mapTile or _currentLocationName ~= locationName) then
+        _currentMapTile = mapTile
+        _currentLocationName = locationName
+        local zoneIndex = GetCurrentMapZoneIndex()
+        local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
+	    X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil)
+        mapName = GetMapName()
+        X4D.Cartography.MapIndex(mapIndex)
+        X4D.Cartography.ZoneIndex(zoneIndex)
+        X4D.Cartography.MapName(mapName)
+        local currentMap = X4D.Cartography:GetCurrentMap()
+        X4D.Cartography.CurrentMap(currentMap)
+    end
+
+    local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
+    local cameraHeading = GetPlayerCameraHeading()
+    X4D.Cartography.PlayerX(playerX)
+    X4D.Cartography.PlayerY(playerY)
+    X4D.Cartography.PlayerHeading(playerHeading)
+    X4D.Cartography.CameraHeading(cameraHeading)
+    --X4D.Log:Information({mapIndex,zoneIndex,mapName,locationName,playerX,playerY,playerH,locationName, mapTile}, "Cartography")
 end
 
 local _timer
