@@ -11,4 +11,6 @@ lib/LibStub/LibStub.lua
 X4D_UI.lua
 X4D_UI.xml
 
+Windows/X4D_ErrorManager.lua
 Windows/X4D_StatusBar.lua
+
