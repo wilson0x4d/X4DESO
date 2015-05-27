@@ -44,32 +44,8 @@ function X4D_DB:Find(key) -- most efficient way to look up an item is if you alr
     return self._table[key]
 end
 
-function X4D_DB:Where(predicate)
-    local results = {}
-    for key,entity in pairs(self._table) do
-        -- TODO: pcall
-        if (predicate(entity, key)) then
-            local L_key = entity.Id or entity.Key or entity.id or entity.key or entity.ID or key        
-            results[L_key] = entity
-        end
-    end
-    return X4D_DB:Create(results)
-end
-
-function X4D_DB:Select(builder)
-    local results = X4D_DB:Create()
-    for key,entity in pairs(self._table) do
-        -- TODO: pcall
-        local value = builder(entity, key)
-        local L_key = value.Id or value.Key or value.id or value.key or value.ID or key        
-        results:Add(L_key, value)
-    end
-    return results
-end
-
 function X4D_DB:FirstOrDefault(predicate)
     for key,entity in pairs(self._table) do
-        -- TODO: pcall
         if ((predicate == nil) or predicate(entity, key)) then
             return entity, key
         end
@@ -79,7 +55,6 @@ end
 
 function X4D_DB:ForEach(visitor)
     for key,entity in pairs(self._table) do
-        -- TODO: pcall
         visitor(entity, key)
     end
 end
@@ -102,6 +77,31 @@ function X4D_DB:Count()
     return #(self._table)
 end
 
---setmetatable(X4D_DB, { __call = X4D_DB.Open })
+-- discouraged, potential memory hog on very large data sets, may be cheaper to pay for a closure and use :ForEach unless you *really* need to perform a translation (cleaning up data between DB versions, e.g. removing/renaming properties from existing entities)
+function X4D_DB:Select(builder)
+    local results = X4D_DB:Create()
+    for key,entity in pairs(self._table) do
+        local value = builder(entity, key)
+        local L_key = value.Id or value.Key or value.id or value.key or value.ID or key        
+        results:Add(L_key, value)
+    end
+    return results
+end
+
+-- discouraged, memory hog. use :ForEach and :FirstOrDefault instead.
+function X4D_DB:Where(predicate, silence)
+    if (silence ~= true) then
+        -- warning: this method creates a new table even when returning no results, it is a memory hog when used to query large datasets (use :ForEach or :FirstOrDefault instead.)
+        X4D.Log:Warning("Use of 'X4D_DB::Where' function is discouraged, it negatively impacts performance when used incorrectly. (use :ForEach or :FirstOrDefault instead, please read the code comments to understand your options.)")
+    end
+    local results = {}
+    for key,entity in pairs(self._table) do
+        if (predicate(entity, key)) then
+            local L_key = entity.Id or entity.Key or entity.id or entity.key or entity.ID or key        
+            results[L_key] = entity
+        end
+    end
+    return X4D_DB:Create(results)
+end
 
 X4D_DB.Create = X4D_DB.Open
