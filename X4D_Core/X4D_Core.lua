@@ -117,7 +117,10 @@ end
 
 EVENT_MANAGER:RegisterForEvent("X4D_Core_OOM", EVENT_LUA_LOW_MEMORY, function()
     -- log to chat, including how much memory is in use
-    local message = GetString(SI_LUA_LOW_MEMORY) .. X4D.Colors.Subtext .. " (" .. (math.ceil(collectgarbage("count") / 1024)) .. "MB used)"
+    local before = collectgarbage("count")
+    collectgarbage("collect")
+    local after = collectgarbage("count")
+    local message = "(Lua memory usage before " .. (math.ceil(before / 1024)) .. "MB, after " .. (math.ceil(after / 1024)) .. "MB. Freed " .. (math.ceil((before - after) / 1024)) .. "MB)"
     X4D.Log:Warning(message)
 end)
 
@@ -151,6 +154,8 @@ local function ReportVersions()
     X4D.Log:Warning(versions, "X4D")
 end
 
+local _debugTimer
+
 SLASH_COMMANDS["/x4d"] = function (parameters, other)
     ReportVersions()
     if (parameters ~= nil and parameters:len() > 0) then
@@ -158,12 +163,23 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
     end
     if (parameters == "-debug") then
         X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
-        X4D.Async:CreateTimer(function (timer, state)
-            X4D.Log:Debug({
-                "Memory: " .. math.ceil(collectgarbage("count") * 1024),
-                "Timers: " .. (#X4D.Async.ActiveTimers),
-                }, "DBG")
-        end):Start(1000,{},"X4D_Core::DEBUG")
+        if (_debugTimer == nil) then
+            local _lastCount = 0
+            _debugTimer = X4D.Async:CreateTimer(function (timer, state)
+                local garbageCount = math.ceil(collectgarbage("count") * 1024)
+                local countColor = ""
+                if (garbageCount < _lastCount) then
+                    countColor = "|c11AA11"
+                elseif (garbageCount > _lastCount) then
+                    countColor = "|cAA1111"
+                end
+                X4D.Log:Debug({
+                    "Memory: " .. countColor .. tostring(math.ceil(collectgarbage("count") * 1024)) .. X4D.Colors.TRACE_DEBUG,
+                    "Timers: " .. (#X4D.Async.ActiveTimers),
+                    }, "DBG")
+                _lastCount = garbageCount
+            end):Start(5000,{},"X4D_Core::DEBUG")
+        end
         if (Zgoo ~= nil) then
             Zgoo:Main(1,nil,X4D)
         end
