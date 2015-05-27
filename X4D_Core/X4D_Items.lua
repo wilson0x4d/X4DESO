@@ -124,8 +124,7 @@ end
 function X4D_Items:FromName(name)
     name = name:gsub("%^.*", ""):lower()
     local item = self.DB
-        :Where(function (item) return item.Name == name end)
-        :FirstOrDefault()
+        :FirstOrDefault(function (item) return item.Name == name end)
     if (item ~= nil) then
         setmetatable(item, { __index = X4D_Item })
     end
