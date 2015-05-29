@@ -35,10 +35,10 @@ X4D_Colors.lua
 X4D_Icons.lua
 X4D_Currency.lua
 X4D_Log.lua
-X4D_Async.lua
 X4D_ETA.lua
 X4D_Settings.lua
 X4D_DB.lua
+X4D_Async.lua
 
 X4D_Cartography.lua
 
