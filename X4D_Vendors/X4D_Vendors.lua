@@ -303,6 +303,9 @@ local function OnOpenStore()
 end
 
 local function OnCloseStore()
+    -- force update of bag snapshots on close
+    local inventoryState = X4D.Bags:GetBackpackBag(true)
+    local bankState = X4D.Bags:GetBankBag(true)
 end
 
 local function OnItemBuy(eventId, entryName, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory)
@@ -534,7 +537,7 @@ end
 local function Register()
     EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenStore", EVENT_OPEN_STORE, OnOpenStore)
     EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenFence", EVENT_OPEN_FENCE, OnOpenFence)
-    --EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnCloseStore", EVENT_CLOSE_STORE, OnCloseStore)
+    EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnCloseStore", EVENT_CLOSE_STORE, OnCloseStore)
     --TODO: EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnItemBuy", EVENT_BUY_RECEIPT, OnItemBuy)
     --TODO: EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnItemBuyBack", EVENT_BUYBACK_RECEIPT, OnItemBuyBack)
     --TODO: EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnItemSale", EVENT_SELL_RECEIPT, OnItemSale)
