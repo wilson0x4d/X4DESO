@@ -141,48 +141,46 @@ end
 local _dangerMem = 64
 
 local function UpdatePerformancePanel()
-    local framerate = GetFramerate()
-    --local framerateLevel = 0
-    local framerateColor = X4D.Colors.DarkGray
-    if (framerate <= 14) then
-        --framerateLevel = 1
-        framerateColor = X4D.Colors.Red
-    elseif (framerate < 20) then
-        --framerateLevel = 1
-        framerateColor = X4D.Colors.Orange
-    elseif (framerate < 26) then
-        --framerateLevel = 2
-        framerateColor = X4D.Colors.Yellow
+    local text = GetTimestampPrefix(X4D.Colors.Gray)
+    if (X4D.UI.Settings:Get("ShowFPS")) then
+        local framerate = GetFramerate()
+        local framerateColor = X4D.Colors.DarkGray
+        if (framerate <= 14) then
+            framerateColor = X4D.Colors.Red
+        elseif (framerate < 20) then
+            framerateColor = X4D.Colors.Orange
+        elseif (framerate < 26) then
+            framerateColor = X4D.Colors.Yellow
+        end
+        local framerateString = framerateColor .. zo_strformat(SI_FRAMERATE_METER_FORMAT, framerateColor .. math.floor(framerate))
+        text = text .. "   " .. framerateString
     end
-    local framerateString = framerateColor .. zo_strformat(SI_FRAMERATE_METER_FORMAT, framerateColor .. math.floor(framerate))
-    local latency = GetLatency()
-    --local latencyLevel = 0
-    local latencyColor = X4D.Colors.DarkGray
-    if (latency > 500) then
-        --latencyLevel = 1
-        latencyColor = X4D.Colors.Red
-    elseif (latency > 350) then
-        --latencyLevel = 1
-        latencyColor = X4D.Colors.Orange
-    elseif (latency > 175) then
-        --latencyLevel = 2
-        latencyColor = X4D.Colors.Yellow
+    if (X4D.UI.Settings:Get("ShowPing")) then
+        local latency = GetLatency()
+        local latencyColor = X4D.Colors.DarkGray
+        if (latency > 500) then
+            latencyColor = X4D.Colors.Red
+        elseif (latency > 350) then
+            latencyColor = X4D.Colors.Orange
+        elseif (latency > 175) then
+            latencyColor = X4D.Colors.Yellow
+        end
+        local latencyString = latencyColor .. "PING: " .. latency --.. _latencyMeterIcons[latencyLevel]
+        text = text .. "   " .. latencyString
     end
-    local latencyString = latencyColor .. "PING: " .. latency --.. _latencyMeterIcons[latencyLevel]
-    local memory = math.ceil(collectgarbage("count") / 1024)
-    local memoryColor = X4D.Colors.DarkGray
-    if (memory >= (X4D.OOM)) then
-        --latencyLevel = 1
-        memoryColor = X4D.Colors.Red
-    elseif (memory >= (X4D.OOM/100)*85) then
-        --latencyLevel = 1
-        memoryColor = X4D.Colors.Orange
-    elseif (memory >= (X4D.OOM/100)*70) then
-        --latencyLevel = 2
-        memoryColor = X4D.Colors.Yellow
+    if (X4D.UI.Settings:Get("ShowMemory")) then
+        local memory = math.ceil(collectgarbage("count") / 1024)
+        local memoryColor = X4D.Colors.DarkGray
+        if (memory >= (X4D.OOM)) then
+            memoryColor = X4D.Colors.Red
+        elseif (memory >= (X4D.OOM/100)*85) then
+            memoryColor = X4D.Colors.Orange
+        elseif (memory >= (X4D.OOM/100)*70) then
+            memoryColor = X4D.Colors.Yellow
+        end
+        local memoryString = memoryColor .. "ADDONS: " .. memory .. "MB"
+        text = text .. "   " .. memoryString
     end
-    local memoryString = memoryColor .. "ADDONS: " .. memory .. "MB"
-    local text = GetTimestampPrefix(X4D.Colors.Gray) .. "   " .. framerateString .. "   " .. latencyString .. "   " .. memoryString
     _performancePanel:SetText(text)
 end
 
