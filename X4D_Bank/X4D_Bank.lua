@@ -136,7 +136,7 @@ local function GetPatternAction(slot)
 end
 
 local function TryGetBag(bagId)
-    return X4D.Bags:GetBag(bagId, false)
+    return X4D.Bags:GetBag(bagId, true)
 end
 
 local function TryDepositFixedAmount()
@@ -459,7 +459,9 @@ local function OnOpenBank(eventCode)
 end
 
 local function OnCloseBank()
-    -- NOP
+    -- force update of bag snapshots on close
+    local inventoryState = TryGetBag(BAG_BACKPACK)
+    local bankState = TryGetBag(BAG_BANK)
 end
 
 local function SetComboboxValue(controlName, value)
