@@ -15,7 +15,6 @@ local _minimapWindow
 local _tileScroll
 local _tileContainer
 local _tiles
-local _tileWidth, _tileHeight = 0, 0
 local _mapNameLabel
 local _locationNameLabel
 local _playerPositionLabel
@@ -35,6 +34,7 @@ local _mapControllerTimer
 local _minZoomLevel = 0.1 -- TODO: theoretical max, actual max is determined by ability to keep minimap window entirely covered with map contents
 local _maxZoomLevel = 1
 local _maxPipWidth = 14
+
 
 local function UpdatePlayerPip(heading)
     local heading = _cameraH
@@ -94,9 +94,9 @@ local function UpdateZoomPanState(timer, state)
     --end
     _zoomPanState = state
         
-    local mapWidth = (map.HorizontalTileCount * _tileWidth)
+    local mapWidth = (map.HorizontalTileCount * map.TileWidth)
     local zoomedWidth = (mapWidth) * state.ZoomLevel
-    local mapHeight = (map.VerticalTileCount * _tileHeight)
+    local mapHeight = (map.VerticalTileCount * map.TileHeight)
     local zoomedHeight = (mapHeight) * state.ZoomLevel
 
     if ((_playerX ~= nil and _playerY ~= nil) and ((_playerX ~= _lastPlayerX or _playerY ~= _lastPlayerY) or (state.ZoomLevel ~= maxZoomLevel))) then
@@ -228,18 +228,22 @@ X4D.Cartography.CurrentMap:Observe(function (map)
                     tile:SetHidden(false)
                     tile:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
                     tile:SetTexture(tileFilename)
-                    if (_tileWidth <= scaleToFitTileSize) then                    
-                        _tileWidth, _tileHeight = tile:GetTextureFileDimensions()
-                        if (_tileWidth <= scaleToFitTileSize) then
-                            -- assume map could not be sized correctly, so force defaults which scale to fit minimap window
-                            _tileWidth = scaleToFitTileSize
-                            _tileHeight = scaleToFitTileSize
+                    if ((map.TileWidth == nil or map.TileHeight == nil) or (map.TileWidth <= scaleToFitTileSize)) then
+                        map.TileWidth, map.TileHeight = X4D.Cartography:GetTileDimensions(tileTexture)
+                        if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
+                            if (map.TileWidth <= scaleToFitTileSize) then
+                                -- assume map could not be sized correctly, so force defaults which scale to fit minimap window
+                                map.TileWidth = scaleToFitTileSize
+                                map.TileHeight = scaleToFitTileSize
+                            end
+                            map.NativeWidth = map.TileWidth * map.HorizontalTileCount
+                            map.NativeHeight = map.TileHeight * map.VerticalTileCount
                         end
-                        _tileContainer:SetDimensions(_tileWidth * map.HorizontalTileCount, _tileHeight * map.VerticalTileCount)
+                        _tileContainer:SetDimensions(map.NativeWidth, map.NativeHeight)
                     end
-                    tile:SetDimensions(_tileWidth,_tileHeight)
+                    tile:SetDimensions(map.TileWidth, map.TileHeight)
                     tile:ClearAnchors()
-                    tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, tileCol * _tileWidth, tileRow * _tileHeight)
+                    tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, tileCol * map.TileWidth, tileRow * map.TileHeight)
                     tile:SetDrawLayer(DL_BACKGROUND)
                     tile:SetDrawTier(DT_LOW)
                     tile:SetDrawLevel(DL_BELOW)
@@ -367,6 +371,8 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
         })
     InitializeSettingsUI()
     InitializeMiniMapWindow()
+    StartZoomPanController()
+    StartWorldMapController()
 end)
 
 X4D.UI.CurrentScene:Observe(function (scene) 

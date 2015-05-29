@@ -21,6 +21,15 @@ X4D_Cartography.CurrentMap = X4D.Observable(nil) -- reference to current map fro
 local _currentMapTile
 local _currentLocationName
 
+local _private_texture
+function X4D_Cartography:GetTileDimensions(filename)
+     if (_private_texture == nil) then
+        return nil, nil
+     end
+    _private_texture:SetTexture(filename)
+    return _private_texture:GetTextureFileDimensions()
+end
+
 function X4D_Cartography:GetCurrentMap()
     --[[ 
         TODO: "zone fencing" to auto-detect the need for a map transition, each can have zero or more fences, each fence being a collection of coordinates in clockwise order which form a closed loop
@@ -75,23 +84,25 @@ function X4D_Cartography:GetCurrentMap()
         end
         local mapLocations = X4D.DB:Create(map.Locations)
         if (mapLocations:Count() == 0) then
-            -- not tested and/or bugged temporarily removed
-            ---- attempt to enumerate locations
-            --for locationIndex = 1, GetNumMapLocations() do
-            --    X4D.Log:Warning{GetMapLocation(locationIndex)}
-            --    local locationKey = mapIndex .. "-" .. locationIndex
-            --    local iconFilename, iconX, iconY = GetMapLocationIcon(locationIndex)
-            --    local locationName = GetLocationName(locationIndex)
-            --    local location = {
-            --        MapIndex = mapIndex,
-            --        LocationIndex = locationIndex,
-            --        Name = locationName,
-            --        LocationX = iconX,
-            --        LocationY = iconY,
-            --        Icon58 = X4D.Icons:ToIcon58(iconFilename),
-            --    }
-            --    mapLocations:Add(locationKey, location)
-            --end
+--            -- attempt to enumerate locations
+--            for locationIndex = 1, GetNumMapLocations() do
+--                -- location icon
+--                local iconFilename, iconWidth, iconHeight = GetMapLocationIcon(locationIndex)
+
+--            --    X4D.Log:Warning{GetMapLocation(locationIndex)}
+--            --    local locationKey = mapIndex .. "-" .. locationIndex
+--            --    local iconFilename, iconX, iconY = GetMapLocationIcon(locationIndex)
+--            --    local locationName = GetLocationName(locationIndex)
+--            --    local location = {
+--            --        MapIndex = mapIndex,
+--            --        LocationIndex = locationIndex,
+--            --        Name = locationName,
+--            --        LocationX = iconX,
+--            --        LocationY = iconY,
+--            --        Icon58 = X4D.Icons:ToIcon58(iconFilename),
+--            --    }
+--            --    mapLocations:Add(locationKey, location)
+--            end
         end
         if (GetCurrentMapIndex() == mapIndex or isSubZone) then
             local mapTiles = X4D.DB:Create(map.Tiles)
@@ -104,6 +115,13 @@ function X4D_Cartography:GetCurrentMap()
                         local tileTexture = GetMapTileTexture(i)
                         if (tileTexture ~= nil) then
                             mapTiles:Add(i, tileTexture)
+                            if (map.TileWidth == nil or map.TileHeight == nil) then
+                                map.TileWidth, map.TileHeight = X4D_Cartography:GetTileDimensions(tileTexture)
+                                if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
+                                    map.NativeWidth = map.TileWidth * map.HorizontalTileCount
+                                    map.NativeHeight = map.TileHeight * map.VerticalTileCount
+                                end
+                            end
                         end
                     end
                 end
@@ -192,4 +210,13 @@ EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, functi
         return
     end
     X4D_Cartography.DB = X4D.DB:Open("X4D_Cartography.DB")
+    if (_private_texture == nil) then
+        local tex = WINDOW_MANAGER:GetControlByName("X4D_PVT_TEX")
+        if (tex == nil) then
+            tex = WINDOW_MANAGER:CreateControl("X4D_PVT_TEX", GuiRoot, CT_TEXTURE)
+        end
+        tex:SetHidden(true)
+        tex:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
+        _private_texture = tex
+    end
 end)
