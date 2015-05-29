@@ -198,7 +198,10 @@ X4D_Items.ItemQualities = {
     }
 }
 
-function X4D_Items.ToQualityString(v)    
+function X4D_Items.ToQualityString(v)
+    if (v == nil) then
+        return nil
+    end
     return X4D_Items.ItemQualities[v].Name
 end
 

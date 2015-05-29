@@ -120,10 +120,10 @@ local function CheckBagForChange(bagId, reportChanges)
                     -- slot contents are new
                     local stackChange = 0
                     if (current ~= nil and not current.IsEmpty) then
-                        stackChange = current.StackCount
+                        stackChange = (current.StackCount or 0)
                     end
-                    if (previous ~= nil and not previous.IsEmpty) then
-                        stackChange = stackChange - previous.StackCount
+                    if (previous ~= nil and not previous.IsEmpty and previous.StackCount ~= nil) then
+                        stackChange = stackChange - (previous.StackCount or 0)
                     end
                     if (reportChanges) then
 		                if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
