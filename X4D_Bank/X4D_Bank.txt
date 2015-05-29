@@ -1,8 +1,8 @@
 ## APIVersion: 100011
-## Title: X4D |cFFAE19Bank |c4D4D4D1.22
+## Title: X4D |cFFAE19Bank |c4D4D4D1.23
 ## Author: @wilson0x4d
 ## Description: Performs regular bank deposits of items and gold based on user-configured settings.
-## Version: 1.22
+## Version: 1.23
 ## SavedVariables: X4D_Bank_SV
 ## DependsOn: X4D_Core
 ## OptionalDependsOn: X4D_UI
@@ -10,4 +10,3 @@
 lib/LibStub/LibStub.lua
 
 X4D_Bank.lua
-X4D_Bank.xml

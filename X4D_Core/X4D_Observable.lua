@@ -1,4 +1,4 @@
-local X4D_Observable = LibStub:NewLibrary("X4D_Observable", 1001)
+local X4D_Observable = LibStub:NewLibrary("X4D_Observable", 1015)
 if (not X4D_Observable) then
     return
 end

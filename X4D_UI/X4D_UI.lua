@@ -1,4 +1,4 @@
-local X4D_UI = LibStub:NewLibrary("X4D_UI", 1001)
+local X4D_UI = LibStub:NewLibrary("X4D_UI", 1002)
 if (not X4D_UI) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.UI = X4D_UI
 
 X4D_UI.NAME = "X4D_UI"
-X4D_UI.VERSION = "1.1"
+X4D_UI.VERSION = "1.2"
 
 X4D.UI.SceneManager = SCENE_MANAGER
 X4D.UI.CurrentScene = X4D.Observable(nil)

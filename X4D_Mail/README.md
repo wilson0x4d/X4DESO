@@ -38,6 +38,12 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.6
+
+- Allow mail which was previously handled to be handled again (solves problem where no bagspace and must "retry" mail UI)
+- Bug fix for when ZO mail UI desyncs and throws error on deleted mail.
+- Updated to use 'zo_strformat' for proper link formatting when displaying accepted mail attachments.
+
 v1.5
 
 - Misc updates for Core v1.10

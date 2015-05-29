@@ -1,4 +1,4 @@
-local X4D_Cartography = LibStub:NewLibrary("X4D_Cartography", 1000)
+local X4D_Cartography = LibStub:NewLibrary("X4D_Cartography", 1015)
 if (not X4D_Cartography) then
     return
 end

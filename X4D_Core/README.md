@@ -86,10 +86,11 @@ lib/X4D_Core/X4D_Colors.lua
 lib/X4D_Core/X4D_Icons.lua
 lib/X4D_Core/X4D_Currency.lua
 lib/X4D_Core/X4D_Log.lua
-lib/X4D_Core/X4D_Async.lua
 lib/X4D_Core/X4D_ETA.lua
 lib/X4D_Core/X4D_Settings.lua
 lib/X4D_Core/X4D_DB.lua
+lib/X4D_Core/X4D_Async.lua
+lib/X4D_Core/X4D_Cartography.lua
 lib/X4D_Core/X4D_Items.lua
 lib/X4D_Core/X4D_Players.lua
 lib/X4D_Core/X4D_Guilds.lua
@@ -122,6 +123,17 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 
 ## Versions
+
+v1.15
+
+- Refactors to Cartography module for more efficient amp data acquisition, as well as numerous work-arounds to the quirky nature of ZO_WorldMap & Friends.
+- Cartography module now updates at a rate of ~20fps, this affects animations of consumer code (like MiniMap.) The old update rate was ~13fps (bare minimum.)
+- Fixed bug where Cartograpy module would create new coroutine on every map change.
+- Fixed bug where Bags module would error when bag state was modified by multiple coroutines.
+- The Garbage Collector is now auto-tuned over time based on memory growth and OOM events, instead of the OOM-prone default configuration.
+- The "/x4d -debug" command will now load Zgoo to the X4D root, and print colorized memory deltas and timer/coroutine counts every 5 seconds.
+- The DB module now allows authors to version each database independent of any SVs which may be used as a backing store. This way a DB can be reset (by version) without necessarily having to reset all SVs.
+- Many general optimizations to cull back memory and CPU use.
 
 v1.14
 

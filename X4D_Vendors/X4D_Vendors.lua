@@ -1,4 +1,4 @@
-local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1006)
+local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1007)
 if (not X4D_Vendors) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Vendors = X4D_Vendors
 
 X4D_Vendors.NAME = "X4D_Vendors"
-X4D_Vendors.VERSION = "1.6"
+X4D_Vendors.VERSION = "1.7"
 
 local constUnspecified = X4D.Colors.Gray .. "Unspecified"
 local constKeep = X4D.Colors.Deposit .. "Keep"

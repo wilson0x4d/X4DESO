@@ -1,4 +1,4 @@
-local X4D_Currency = LibStub:NewLibrary("X4D_Currency", 1000)
+local X4D_Currency = LibStub:NewLibrary("X4D_Currency", 1015)
 if (not X4D_Currency) then
 	return
 end

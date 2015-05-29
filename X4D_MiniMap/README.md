@@ -53,6 +53,13 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.2
+
+- Code is stabilizing, but still considered Alpha stages of development.
+- Use new 'GetTileDimensions' from Cartography module, retiring use of globals for tracking/determining tile dimensions.
+- Fixed bug where minimap zoom level would become stuck on zone change, MiniMap now uses a fixed zoom level, and performs scaling instead of resizing.
+- Allow pip position to wander, rather than clamp to interior of tile container, this provides a better experience when nearing the edge of a map.
+
 v1.1
 
 - Fix bug where Location Name not updating.

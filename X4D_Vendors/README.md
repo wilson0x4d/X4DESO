@@ -45,6 +45,11 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.7
+
+- When closing vendor, refresh bag state, allowing status bar updates to use cached data rather than constantly refresh bag state itself.
+- Workaround for case where ESO Store scene is still initializing and cannot handle coroutine modification of bag state or ZO's code will throw errors and require a reloadui.
+
 v1.6
 
 - Salting vendor keys to avoid name collisions for vendors which have same name, but exist in different zone (for example, AvA Quartermasters.)

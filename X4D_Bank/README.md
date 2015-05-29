@@ -48,6 +48,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.23
+
+- When closing bank, refresh bag state, allowing status bar updates to use cached data rather than constantly refresh bag state itself.
+
 v1.22
 
 - Add item deposit/withdraw patterns, similar to "for keeps" and "for sales" patterns in the Vendors addon, but applied to banks
