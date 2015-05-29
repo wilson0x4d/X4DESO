@@ -139,8 +139,8 @@ end
 local function OnMailReadable(eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subjectText, mailIcon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	local bodyText = ReadMail(mailId)
-    local alreadyHandled = _readableMail[mailId]
-    if (alreadyHandled == nil) then
+    --local alreadyHandled = _readableMail[mailId]
+    --if (alreadyHandled == nil) then
 	    local mail = {
 		    MailId = mailId,
 		    MailIcon = mailIcon,
@@ -165,7 +165,7 @@ local function OnMailReadable(eventCode, mailId)
         	    X4D_Mail:HandleMailAttachments(mailId)
         	    X4D_Mail:HandleSpam(mailId)
         end):Start(337, {}, "MailHandler")
-    end
+    --end
 end
 
 local function OnOpenMailbox(eventCode)
