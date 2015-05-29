@@ -7,7 +7,7 @@ X4D.Async = X4D_Async
 
 local _nextTimerId = 0
 local _timers = {}
-X4D_Async.ActiveTimers = _timers
+X4D_Async.ActiveTimers = X4D.DB:Create(_timers)
 
 local X4D_Timer = {}
 
@@ -25,7 +25,7 @@ function X4D_Timer:New(callback, interval, state)
 	local proto = {
         _id = timerId,
         _timestamp = 0,
-        _memory = 0,
+--        _memory = 0, -- for diagnostic purposes only, requires retuning of GC to be of any value, and so commented out for Release
 		_enabled = false,
 		_callback = callback or (function(L_timer) self:Stop() end),
 		_interval = interval or 1000,
@@ -40,7 +40,7 @@ function X4D_Timer:IsEnabled()
 end
 
 function X4D_Timer:Elapsed()
-    local memory = collectgarbage("count") -- TODO: only perform this count when debug mode has been set
+--    local memory = collectgarbage("count") -- TODO: only perform this count when debug mode has been set
     self._timestamp = GetGameTimeMilliseconds()
 	if (not self._callback) then
 		self:Stop()
@@ -54,11 +54,11 @@ function X4D_Timer:Elapsed()
 	if (self._enabled) then
 	    zo_callLater(function() self:Elapsed() end, self._interval)
 	end
-    memory = (collectgarbage("count") - memory)
-    if (memory >= 100 or memory <= -100) then
-        X4D.Log:Debug(self.Name .. " memory delta: " .. (memory * 1024))
-    end
-    self._memory = memory
+--    memory = (collectgarbage("count") - memory)
+--    if (memory >= 100 or memory <= -100) then
+--        X4D.Log:Debug(self.Name .. " memory delta: " .. (memory * 1024))
+--    end
+--    self._memory = memory
 end
 
 -- "state" is passed into timer callback
