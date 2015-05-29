@@ -138,6 +138,7 @@ local function GetTimestampPrefix(color)
 	return color .. "  [" .. highlightColor .. timeString .. color .. "] "
 end
 
+local _dangerMem = 64
 
 local function UpdatePerformancePanel()
     local framerate = GetFramerate()
@@ -168,7 +169,20 @@ local function UpdatePerformancePanel()
         latencyColor = X4D.Colors.Yellow
     end
     local latencyString = latencyColor .. "PING: " .. latency --.. _latencyMeterIcons[latencyLevel]
-    local text = GetTimestampPrefix(X4D.Colors.Gray) .. "   " .. framerateString .. "   " .. latencyString
+    local memory = math.ceil(collectgarbage("count") / 1024)
+    local memoryColor = X4D.Colors.DarkGray
+    if (memory >= (X4D.OOM)) then
+        --latencyLevel = 1
+        memoryColor = X4D.Colors.Red
+    elseif (memory >= (X4D.OOM/100)*85) then
+        --latencyLevel = 1
+        memoryColor = X4D.Colors.Orange
+    elseif (memory >= (X4D.OOM/100)*70) then
+        --latencyLevel = 2
+        memoryColor = X4D.Colors.Yellow
+    end
+    local memoryString = memoryColor .. "ADDONS: " .. memory .. "MB"
+    local text = GetTimestampPrefix(X4D.Colors.Gray) .. "   " .. framerateString .. "   " .. latencyString .. "   " .. memoryString
     _performancePanel:SetText(text)
 end
 
