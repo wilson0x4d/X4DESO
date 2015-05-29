@@ -6,15 +6,36 @@ end
 X4D.NAME = "X4D"
 X4D.VERSION = "1.14"
 
+local _mm
+
 EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)
-    if (name == "X4D_Core") then
-        X4D.InternalSettings = X4D.Settings(
-            "X4D_Core_SV",
-            {
-                SettingsAre = "Account-Wide",
-                X4DB = nil,
-            }, 
-            5)
+    if (name ~= "X4D_Core") then
+        return
+    end
+    X4D.InternalSettings = X4D.Settings(
+        "X4D_Core_SV",
+        {
+            SettingsAre = "Account-Wide",
+            X4DB = nil,
+        }, 
+        5)
+
+    if (_mm == nil) then
+        local _lastCount = 0
+        _mm = X4D.Async:CreateTimer(function (timer, state)
+            local garbageCount = math.ceil(collectgarbage("count") * 1024)
+            local countColor = ""
+            if (garbageCount < _lastCount) then
+                countColor = "|c11AA11"
+            elseif (garbageCount > _lastCount) then
+                countColor = "|cAA1111"
+            end
+            X4D.Log:Debug({
+                "Memory: " .. countColor .. tostring(math.ceil(collectgarbage("count") * 1024)) .. X4D.Colors.TRACE_DEBUG,
+                "Timers: " .. X4D.Async.ActiveTimers:Count(),
+                }, "DBG")
+            _lastCount = garbageCount
+        end):Start(5000,{},"X4D_Core::DEBUG")
     end
 end)
 
@@ -115,14 +136,42 @@ function X4D:Test()
     return self
 end
 
+--region Garbage Collection
+
+X4D.OOM = 64
+
+local _oomCount = 0
+local _previousGarbageIdle, _previousGarbageStepMul = 100, 150
+collectgarbage('setpause', _previousGarbageIdle)
+collectgarbage('setstepmul', _previousGarbageStepMul)
+
+EVENT_MANAGER:UnregisterForEvent("ZO_UIErrors_OnEvent", EVENT_LUA_LOW_MEMORY)
 EVENT_MANAGER:RegisterForEvent("X4D_Core_OOM", EVENT_LUA_LOW_MEMORY, function()
+    X4D.OOM = math.ceil((collectgarbage("count") / 1024) * 1.164)
+    _oomCount = _oomCount + 1
     -- log to chat, including how much memory is in use
     local before = collectgarbage("count")
     collectgarbage("collect")
-    local after = collectgarbage("count")
-    local message = "(Lua memory usage before " .. (math.ceil(before / 1024)) .. "MB, after " .. (math.ceil(after / 1024)) .. "MB. Freed " .. (math.ceil((before - after) / 1024)) .. "MB)"
+    if (_oomCount % 5 == 0) then        
+        local after = collectgarbage("count")
+        local message = GetString(SI_LUA_LOW_MEMORY) .. "\nLua memory usage before " .. (math.ceil(before / 1024)) .. "MB, after " .. (math.ceil(after / 1024)) .. "MB. Total reclaimed " .. (math.ceil((before - after) / 1024)) .. "MB)"
+        X4D.Log:Warning(message, "X4D")
+    end
+    -- dynamically adjust gc configuration under the assumption that the default config is not aggressive enough to handle the user's current addons
+    _previousGarbageIdle = _previousGarbageIdle - 15
+    if (_previousGarbageIdle < 85) then
+        _previousGarbageIdle = 85
+    end
+    _previousGarbageStepMul = _previousGarbageStepMul + 25
+    if (_previousGarbageStepMul > 200) then
+        _previousGarbageStepMul = 200
+    end
+    collectgarbage('setpause', _previousGarbageIdle)
+    collectgarbage('setstepmul', _previousGarbageStepMul)
     X4D.Log:Warning(message)
 end)
+
+--endregion
 
 local function ReportVersions()
     -- TODO: iterate 'X4D' instead looking for 'NAME" and 'VERSION' properties (instead of manually updating)
@@ -154,8 +203,6 @@ local function ReportVersions()
     X4D.Log:Warning(versions, "X4D")
 end
 
-local _debugTimer
-
 SLASH_COMMANDS["/x4d"] = function (parameters, other)
     ReportVersions()
     if (parameters ~= nil and parameters:len() > 0) then
@@ -163,25 +210,8 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
     end
     if (parameters == "-debug") then
         X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
-        if (_debugTimer == nil) then
-            local _lastCount = 0
-            _debugTimer = X4D.Async:CreateTimer(function (timer, state)
-                local garbageCount = math.ceil(collectgarbage("count") * 1024)
-                local countColor = ""
-                if (garbageCount < _lastCount) then
-                    countColor = "|c11AA11"
-                elseif (garbageCount > _lastCount) then
-                    countColor = "|cAA1111"
-                end
-                X4D.Log:Debug({
-                    "Memory: " .. countColor .. tostring(math.ceil(collectgarbage("count") * 1024)) .. X4D.Colors.TRACE_DEBUG,
-                    "Timers: " .. (#X4D.Async.ActiveTimers),
-                    }, "DBG")
-                _lastCount = garbageCount
-            end):Start(5000,{},"X4D_Core::DEBUG")
-        end
         if (Zgoo ~= nil) then
-            Zgoo:Main(1,nil,X4D)
+            Zgoo:Main(nil,1,X4D)
         end
     end
     if (parameters == "-test") then
