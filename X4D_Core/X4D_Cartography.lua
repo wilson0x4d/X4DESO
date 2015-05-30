@@ -200,9 +200,6 @@ end
 local _timer
 
 EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
-    if ((_timer == nil) or (_timer._timestamp ~= nil and ((GetGameTimeMilliseconds() - _timer._timestamp) > 5000) )) then
-        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/20, {}, "X4D_Cartography")
-    end
 end)
 
 EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, function(event, name)
@@ -218,5 +215,8 @@ EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, functi
         tex:SetHidden(true)
         tex:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
         _private_texture = tex
+    end
+    if (_timer == nil) then
+        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/20, {}, "X4D_Cartography")
     end
 end)
