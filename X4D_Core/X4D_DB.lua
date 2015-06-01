@@ -28,6 +28,9 @@ function X4D_DB:Open(database, version)
         database = { }
     end
     if (type(database) ~= "table") then
+        if (version == nil) then
+            version = 0
+        end
         if (_databases == nil) then
             _databases = X4D.InternalSettings:Get("X4DB")
             if (_databases == nil) then
@@ -39,7 +42,7 @@ function X4D_DB:Open(database, version)
         database = _databases[databaseName]
         if (database == nil or (version ~= nil and (database._version == nil or database._version < (X4D_DB_VERSION + version)))) then
             database = {
-                _version = X4D_DB_VERSION + version,
+                _version = X4D_DB_VERSION + version
             }
             _databases[database] = database
         end
@@ -135,14 +138,14 @@ X4D_DB.Create = X4D_DB.Open
 X4DB = X4D_DB.Open
 
 SLASH_COMMANDS["/x4db"] = function (parameters, other)
-    X4D.Log:Information("X4DB v" .. X4D.VERSION)
+    X4D.Log:Warning("X4DB v" .. X4D.VERSION)
     local args = nil
     if (parameters ~= nil and parameters:len() > 0) then
         args = parameters:Split(" ")
         X4D.Log:Information("/x4db " .. parameters, "X4DB")
         --region /x4db reset X4D_Items.DB
         if (parameters:StartsWith("reset")) then
-            if ((#args > 2) and (args[2] == args[3])) then
+            if ((#args > 2) and (args[3] == "-accept")) then
                 local databaseName = args[2]
                 if (databaseName ~= nil) then
                     local database = _databases[databaseName]
@@ -157,8 +160,8 @@ SLASH_COMMANDS["/x4db"] = function (parameters, other)
                     end
                 end
             end
-            X4D.Log:Warning("WARNING: Performing a RESET on a DB in this manner may have unintended side-effects, and may further require you to delete savedvars to correct the issue.", "X4DB")
-            X4D.Log:Warning("WARNING: If you understand the implications of using this command, enter '-accept' as the last command parameter. Fx: |cFFFFFF/x4db reset X4D_Items.DB -accept", "X4DB")
+            X4D.Log:Error("ERROR: Performing a RESET on a DB in this manner may have unintended side-effects, and may further require you to delete savedvars to correct the issue.", "X4DB")
+            X4D.Log:Error("WARNING: If you understand the implications of using this command, enter '-accept' as the last command parameter. Fx: |cFFFFFF/x4db reset X4D_Items.DB -accept", "X4DB")
         end
         --endregion
         --region /x4db count [X4D_Items.DB]

@@ -49,6 +49,7 @@ event handler and also be easily extended/modified by multiple Add-Ons.
 function X4D:Test()
     d("Begin Test of X4D Framework..")
 
+    local stopwatch = X4D.Stopwatches:StartNew()
     X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.VERBOSE)
 
     -- Debug API
@@ -68,6 +69,8 @@ function X4D:Test()
         X4D.Log:Verbose("count=" .. state.counter .. " time=" .. GetGameTimeMilliseconds(), "TIMER#1@107ms")
         if (state.counter >= 4) then
             timer:Stop()
+            stopwatch:Stop()
+            X4D.Log:Information("Test() took " .. stopwatch.ElapsedMilliseconds() .. "ms")
         end
     end
     local callback2 = function(timer, state)
