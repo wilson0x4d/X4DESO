@@ -360,6 +360,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
     if (name ~= "X4D_MiniMap") then
         return
     end
+    local stopwatch = X4D.Stopwatches:StartNew()
 	X4D_MiniMap.Settings = X4D.Settings(
 		X4D_MiniMap.NAME .. "_SV",
 		{
@@ -373,6 +374,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
     InitializeMiniMapWindow()
     StartZoomPanController()
     StartWorldMapController()
+    X4D_MiniMap.Took = stopwatch.ElapsedMilliseconds()
 end)
 
 X4D.UI.CurrentScene:Observe(function (scene) 

@@ -268,6 +268,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(event,
 	if (addonName ~= X4D_XP.NAME) then
 		return
 	end	
+    local stopwatch = X4D.Stopwatches:StartNew()
 
     _eta = X4D.ETA('X4D_XP')
 
@@ -283,6 +284,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(event,
 	X4D_XP.Register()
 
     InitializeUI()
+    X4D_XP.Took = stopwatch.ElapsedMilliseconds()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_PLAYER_ACTIVATED, function()
     _playerIsVeteran = IsUnitVeteran("player")

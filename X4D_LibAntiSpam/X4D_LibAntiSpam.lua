@@ -568,6 +568,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_LibAntiSpam.NAME) then
 		return
 	end
+    local stopwatch = X4D.Stopwatches:StartNew()
 
     X4D_LibAntiSpam.Settings = X4D.Settings(
         X4D_LibAntiSpam.NAME .. "_SV",
@@ -667,6 +668,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
         })
 
 	X4D_LibAntiSpam.Register()
+    X4D_LibAntiSpam.Took = stopwatch.ElapsedMilliseconds()
 end
 
 function X4D_LibAntiSpam.OnGuildInviteAdded(id1, id2, guildName, id4, fromName)

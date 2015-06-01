@@ -381,6 +381,7 @@ local function OnAddOnLoaded(event, addonName)
 		return
 	end	
 
+    local stopwatch = X4D.Stopwatches:StartNew()
     X4D_Chat.Settings = X4D.Settings(
         X4D_Chat.NAME .. "_SV",
         {
@@ -654,6 +655,7 @@ local function OnAddOnLoaded(event, addonName)
 	CHAT_SYSTEM["maxContainerWidth"] = 1800
 	
     X4D.Async:CreateTimer(OnUpdate, 1000, {}):Start(nil, nil, "X4D_Chat")
+    X4D_Chat.Took = stopwatch.ElapsedMilliseconds()
 end
 
 function X4D_Chat.VendorsEmitCallback(color, text)

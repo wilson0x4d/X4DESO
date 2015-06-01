@@ -12,6 +12,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, 
     if (name ~= "X4D_Core") then
         return
     end
+    local stopwatch = X4D.Stopwatches:StartNew()
     X4D.InternalSettings = X4D.Settings(
         "X4D_Core_SV",
         {
@@ -37,6 +38,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, 
             _lastCount = garbageCount
         end):Start(5000,{},"X4D_Core::DEBUG")
     end
+    X4D.Took = stopwatch.ElapsedMilliseconds()
 end)
 
 --[[
@@ -206,8 +208,40 @@ local function ReportVersions()
     X4D.Log:Warning(versions, "X4D")
 end
 
+local function ReportLoadTimes()
+    -- TODO: iterate 'X4D' instead looking for 'NAME" and 'VERSION' properties (instead of manually updating)
+    local loadTimes = "Core/" .. X4D.Took .. "ms "
+    if (X4D.Bank ~= nil) then
+        loadTimes = loadTimes .. "Bank/" .. X4D.Bank.Took .. "ms "
+    end
+    if (X4D.Chat ~= nil) then
+        loadTimes = loadTimes .. "Chat/" .. X4D.Chat.Took .. "ms "
+    end
+    if (X4D.AntiSpam ~= nil) then
+        loadTimes = loadTimes .. "AntiSpam/" .. X4D.AntiSpam.Took .. "ms "
+    end
+    if (X4D.Loot ~= nil) then
+        loadTimes = loadTimes .. "Loot/" .. X4D.Loot.Took .. "ms "
+    end
+    if (X4D.Mail ~= nil) then
+        loadTimes = loadTimes .. "Mail/" .. X4D.Mail.Took .. "ms "
+    end
+    if (X4D.Vendors ~= nil) then
+        loadTimes = loadTimes .. "Vendors/" .. X4D.Vendors.Took .. "ms "
+    end
+    if (X4D.XP ~= nil) then
+        loadTimes = loadTimes .. "XP/" .. X4D.XP.Took .. "ms "
+    end
+    if (X4D.UI ~= nil) then
+        loadTimes = loadTimes .. "UI/" .. X4D.UI.Took .. "ms "
+    end
+    X4D.Log:Warning(loadTimes, "X4D")
+end
+
+
 SLASH_COMMANDS["/x4d"] = function (parameters, other)
     ReportVersions()
+    ReportLoadTimes()
     if (parameters ~= nil and parameters:len() > 0) then
         X4D.Log:Information("Parameters: " .. parameters, "X4D")
     end

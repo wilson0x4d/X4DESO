@@ -674,7 +674,8 @@ end
 local function OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Loot.NAME) then
 		return
-	end	
+	end
+    local stopwatch = X4D.Stopwatches:StartNew()
 
 	X4D_Loot.Settings = X4D.Settings(
 		X4D_Loot.NAME .. "_SV",
@@ -690,6 +691,7 @@ local function OnAddOnLoaded(event, addonName)
     InitializeSettingsUI()
 
 	X4D_Loot.Register()
+    X4D_Loot.Took = stopwatch.ElapsedMilliseconds()
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)

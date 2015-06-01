@@ -30,6 +30,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_UI.NAME, EVENT_ADD_ON_LOADED, function(event,
     if (name ~= "X4D_UI") then
         return
     end
+    local stopwatch = X4D.Stopwatches:StartNew()
 	X4D_UI.Settings = X4D.Settings(
 		X4D_UI.NAME .. "_SV",
 		{
@@ -38,6 +39,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_UI.NAME, EVENT_ADD_ON_LOADED, function(event,
             ShowPing = true,
             ShowMemory = true,
         })
+    X4D_UI.Took = stopwatch.ElapsedMilliseconds()
 end)
 
 SLASH_COMMANDS["/fps"] = function (parameters, other)

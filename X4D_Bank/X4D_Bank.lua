@@ -807,8 +807,6 @@ end
 local _statusBarPanel
 
 local function UpdateStatusBarText()
-    --X4D.Log:Verbose{"X4D_Bank::UpdateStatusBarText"}
-
     local backpack = X4D.Bags:GetBackpackBag()
     local backpackColor = "|cFFFFFF"
     if (backpack.FreeCount < (backpack.SlotCount * 0.2)) then
@@ -843,7 +841,6 @@ end
 local function InitializeUI()
     if (X4D.UI ~= nil) then
         _statusBarPanel = X4D.UI.StatusBar:CreatePanel("X4D_Bank_StatusBarPanel", UpdateStatusBarText, 7)
-        UpdateStatusBarText()
     end
 end
 
@@ -851,7 +848,7 @@ local function OnAddOnLoaded(eventCode, addonName)
     if (addonName ~= X4D_Bank.NAME) then
         return
     end
-
+    local stopwatch = X4D.Stopwatches:StartNew()
     X4D_Bank.Settings = X4D.Settings(
         X4D_Bank.NAME .. "_SV",
         {
@@ -890,6 +887,8 @@ local function OnAddOnLoaded(eventCode, addonName)
     if (X4D.Loot == nil) then
         EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_MONEY_UPDATE, OnMoneyUpdate)
     end
+    stopwatch:Stop()
+    X4D_Bank.Took = stopwatch.ElapsedMilliseconds()
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Bank.NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
