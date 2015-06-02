@@ -268,7 +268,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(event,
 	if (addonName ~= X4D_XP.NAME) then
 		return
 	end	
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
 
     _eta = X4D.ETA('X4D_XP')
 

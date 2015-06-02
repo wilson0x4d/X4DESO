@@ -3,7 +3,7 @@ if (not X4D_Stopwatches) then
 	return
 end
 local X4D = LibStub("X4D")
-X4D.Stopwatches = X4D_Stopwatches
+X4D.Stopwatch = X4D_Stopwatches
 
 --region X4D_Stopwatch
 

@@ -19,7 +19,7 @@ local _itemTypeChoices = {
 }
 
 EVENT_MANAGER:RegisterForEvent("X4D_Vendors.DB", EVENT_ADD_ON_LOADED, function(event, name)
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
     if (name == "X4D_Vendors") then
         X4D_Vendors.DB = X4D.DB:Open("X4D_Vendors.DB")
     end

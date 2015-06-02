@@ -30,7 +30,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_UI.NAME, EVENT_ADD_ON_LOADED, function(event,
     if (name ~= "X4D_UI") then
         return
     end
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
 	X4D_UI.Settings = X4D.Settings(
 		X4D_UI.NAME .. "_SV",
 		{

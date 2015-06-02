@@ -360,7 +360,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
     if (name ~= "X4D_MiniMap") then
         return
     end
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
 	X4D_MiniMap.Settings = X4D.Settings(
 		X4D_MiniMap.NAME .. "_SV",
 		{

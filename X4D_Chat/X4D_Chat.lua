@@ -381,7 +381,7 @@ local function OnAddOnLoaded(event, addonName)
 		return
 	end	
 
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
     X4D_Chat.Settings = X4D.Settings(
         X4D_Chat.NAME .. "_SV",
         {

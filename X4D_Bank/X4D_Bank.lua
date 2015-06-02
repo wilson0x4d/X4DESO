@@ -848,7 +848,7 @@ local function OnAddOnLoaded(eventCode, addonName)
     if (addonName ~= X4D_Bank.NAME) then
         return
     end
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
     X4D_Bank.Settings = X4D.Settings(
         X4D_Bank.NAME .. "_SV",
         {

@@ -568,7 +568,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_LibAntiSpam.NAME) then
 		return
 	end
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
 
     X4D_LibAntiSpam.Settings = X4D.Settings(
         X4D_LibAntiSpam.NAME .. "_SV",

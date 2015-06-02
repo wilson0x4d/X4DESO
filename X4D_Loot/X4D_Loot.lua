@@ -675,7 +675,7 @@ local function OnAddOnLoaded(event, addonName)
 	if (addonName ~= X4D_Loot.NAME) then
 		return
 	end
-    local stopwatch = X4D.Stopwatches:StartNew()
+    local stopwatch = X4D.Stopwatch:StartNew()
 
 	X4D_Loot.Settings = X4D.Settings(
 		X4D_Loot.NAME .. "_SV",
