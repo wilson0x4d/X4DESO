@@ -91,7 +91,7 @@ local function StartPlayerScavenger()
     end
     _playerScavenger = X4D.Async:CreateTimer(function (timer, state)
         X4D_Players.DB
-            :Where(ShouldScavengePlayer)
+            :Where(ShouldScavengePlayer, true)
             :ForEach(DoScavenge)
     end, {}):Start(_playerScavengerFrequency, {}, "X4D_Players::PlayerScavenger")
 end
