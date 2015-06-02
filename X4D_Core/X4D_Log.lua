@@ -4,7 +4,6 @@ if (not X4D_Log) then
 end
 local X4D = LibStub("X4D")
 X4D.Log = X4D_Log 
-X4D.Debug = X4D_Log -- TODO: deprecated, remove after a few releases to avoid addon version issues (i'm not interested in re-releasing addons just because of this change)
 
 X4D_Log.TRACE_LEVELS = {
 	DEBUG = 0,
@@ -13,6 +12,7 @@ X4D_Log.TRACE_LEVELS = {
 	WARNING = 3,
 	ERROR = 4,
 	CRITICAL = 5,
+    SYSTEM = 512,
 }
 
 local TRACE_COLORS = {
@@ -22,12 +22,14 @@ local TRACE_COLORS = {
 	[X4D_Log.TRACE_LEVELS.WARNING] = X4D.Colors.TRACE_WARNING,	
 	[X4D_Log.TRACE_LEVELS.ERROR] = X4D.Colors.TRACE_ERROR,	
 	[X4D_Log.TRACE_LEVELS.CRITICAL] = X4D.Colors.TRACE_CRITICAL,	
+	[X4D_Log.TRACE_LEVELS.SYSTEM] = X4D.Colors.SYSTEM,
 	[X4D_Log.TRACE_LEVELS.DEBUG+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_DEBUG),	
 	[X4D_Log.TRACE_LEVELS.VERBOSE+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_VERBOSE),	
 	[X4D_Log.TRACE_LEVELS.INFORMATION+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_INFORMATION),	
 	[X4D_Log.TRACE_LEVELS.WARNING+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_WARNING),	
 	[X4D_Log.TRACE_LEVELS.ERROR+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_ERROR),	
 	[X4D_Log.TRACE_LEVELS.CRITICAL+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_CRITICAL),	
+	[X4D_Log.TRACE_LEVELS.SYSTEM+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_SYSTEM),	
 }
 
 local TRACE_FORMATS = {
@@ -37,6 +39,7 @@ local TRACE_FORMATS = {
 	[X4D_Log.TRACE_LEVELS.WARNING] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.WARNING] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.WARNING+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.WARNING] .. "] (%s) %s",	
 	[X4D_Log.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "] (%s) %s",	
 	[X4D_Log.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "] (%s) %s",	
+	[X4D_Log.TRACE_LEVELS.SYSTEM] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "] (%s) %s",	
 }
 
 local TRACE_FORMATS_NOSOURCE = {
@@ -46,6 +49,7 @@ local TRACE_FORMATS_NOSOURCE = {
 	[X4D_Log.TRACE_LEVELS.WARNING] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.WARNING] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.WARNING+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.WARNING] .. "] %s",	
 	[X4D_Log.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "] %s",	
 	[X4D_Log.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "] %s",	
+	[X4D_Log.TRACE_LEVELS.SYSTEM] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "] %s",	
 }
 
 local _minTraceLevel = X4D_Log.TRACE_LEVELS.INFORMATION
@@ -54,22 +58,44 @@ function X4D_Log:SetTraceLevel(level)
 	_minTraceLevel = level
 end
 
-local _systemHighlightColor = X4D.Colors:DeriveHighlight(X4D.Colors.SYSTEM)
+local _buffer = nil
+local _initialized = false
+
+local function TryFlushMessageBuffer()
+    if (_initialized) then
+        local buf = _buffer
+        _buffer = nil
+        if (buf ~= nil) then
+            for _,msg in pairs(buf) do
+                CHAT_SYSTEM:AddMessage(msg)
+            end
+        end
+    end
+end
 
 local function LogInternal(source, level, message)
-    if (CHAT_SYSTEM == nil) then
-    	return false
-    end
 	local L_level = level or X4D_Log.TRACE_LEVELS.VERBOSE
 	if (L_level < _minTraceLevel) then
 		return false
 	end
     message = message:gsub("\n", "\n" .. TRACE_COLORS[L_level])
 	if (source == nil or source:len() == 0) then
-        CHAT_SYSTEM:AddMessage(string.format(TRACE_FORMATS_NOSOURCE[L_level], GetTimeString(), message))
+        message = string.format(TRACE_FORMATS_NOSOURCE[L_level], GetTimeString(), message)        
 	else
-        CHAT_SYSTEM:AddMessage(string.format(TRACE_FORMATS[L_level], GetTimeString(), source, message))			
+        message = string.format(TRACE_FORMATS[L_level], GetTimeString(), source, message)
 	end
+
+    if ((CHAT_SYSTEM == nil) or (not _initialized)) then
+        if (_buffer == nil) then
+            _buffer = {}
+        end
+        table.insert(_buffer, message)
+    	return false
+    end
+
+    TryFlushMessageBuffer()
+
+    CHAT_SYSTEM:AddMessage(message)
 	return true
 end
 
@@ -164,6 +190,10 @@ function X4D_Log:Critical(message, source)
 	X4D_Log:Log(source, X4D_Log.TRACE_LEVELS.CRITICAL, message)
 end
 
+function X4D_Log:System(message, source)
+	X4D_Log:Log(source, X4D_Log.TRACE_LEVELS.SYSTEM, message)
+end
+
 --[[
 
 Example Usage:
@@ -186,3 +216,20 @@ X4D.Log:Critical("This is a test.", "MyAddon")
 X4D.Log:Critical("This is a test.")
 
 ]]
+
+-- add global hook for 'd()' so we can wrap d() calls with a timestamp, and also queue it during init (when CHAT_SYSTEM is not yet ready)
+function d(...)    
+    for i = 1, select("#", ...) do
+        local value = select(i, ...)
+        if (type(value) == "table") then
+            X4D.Log:System(value)
+        else
+            X4D.Log:System(tostring (value))
+        end
+    end
+end
+
+EVENT_MANAGER:RegisterForEvent("X4D_Log_Activated", EVENT_PLAYER_ACTIVATED, function()
+    _initialized = true
+    TryFlushMessageBuffer()
+end)
