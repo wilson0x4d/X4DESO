@@ -125,7 +125,7 @@ function X4D_DB:Where(predicate, silence)
     end
     local results = {}
     for key,entity in pairs(self._table) do
-        if (predicate(entity, key)) then
+        if ((type(entity) == "table") and predicate(entity, key)) then
             local L_key = entity.Id or entity.Key or entity.id or entity.key or entity.ID or key        
             results[L_key] = entity
         end
