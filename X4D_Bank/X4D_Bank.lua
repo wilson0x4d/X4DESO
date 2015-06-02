@@ -37,28 +37,28 @@ local _nextAutoDepositTime = 0
 
 --region Chat Callback
 
-local function DefaultEmitCallback(color, text)
+local function DefaultChatCallback(color, text)
     d(color .. text)
 end
 
-X4D_Bank.EmitCallback = DefaultEmitCallback
+X4D_Bank.ChatCallback = DefaultChatCallback
 
-function X4D_Bank.RegisterEmitCallback(self, callback)
+function X4D_Bank.RegisterChatCallback(self, callback)
     if (callback ~= nil) then
-        X4D_Bank.EmitCallback = callback
+        X4D_Bank.ChatCallback = callback
     else
-        X4D_Bank.EmitCallback = DefaultEmitCallback
+        X4D_Bank.ChatCallback = DefaultChatCallback
     end
 end
 
-function X4D_Bank.UnregisterEmitCallback(self, callback)
-    if (X4D_Bank.EmitCallback == callback) then
-        self:RegisterEmitCallback(nil)
+function X4D_Bank.UnregisterChatCallback(self, callback)
+    if (X4D_Bank.ChatCallback == callback) then
+        self:RegisterChatCallback(nil)
     end
 end
 
 local function InvokeChatCallback(color, text)
-    local callback = X4D_Bank.EmitCallback
+    local callback = X4D_Bank.ChatCallback
     if (color == nil) then
         color = "|cFF0000"
     end

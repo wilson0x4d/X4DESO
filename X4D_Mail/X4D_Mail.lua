@@ -17,28 +17,28 @@ if (X4D.AntiSpam == nil) then
 	X4D.Log:Warning("No usable AntiSpam Library was detected.", "X4D Mail")
 end
 
-local function DefaultEmitCallback(color, text)
+local function DefaultChatCallback(color, text)
 	X4D.Log:Info(color .. text, "X4D Mail")
 end 
 
-local _emitCallback = DefaultEmitCallback
+local _chatCallback = DefaultChatCallback
 
-function X4D_Mail:RegisterEmitCallback(callback)
+function X4D_Mail:RegisterChatCallback(callback)
 	if (callback ~= nil) then
-		_emitCallback = callback
+		_chatCallback = callback
 	else
-		_emitCallback = DefaultEmitCallback
+		_chatCallback = DefaultChatCallback
 	end
 end
 
-function X4D_Mail:UnregisterEmitCallback(callback)
-	if (_emitCallback == callback) then
-		self:RegisterEmitCallback(nil)
+function X4D_Mail:UnregisterChatCallback(callback)
+	if (_chatCallback == callback) then
+		self:RegisterChatCallback(nil)
 	end
 end
 
 local function InvokeChatCallback(color, text)
-	local callback = _emitCallback
+	local callback = _chatCallback
 	if (color == nil) then
 		color = "|cFF0000"
 	end

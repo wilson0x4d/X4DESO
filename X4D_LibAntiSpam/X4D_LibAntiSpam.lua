@@ -92,28 +92,28 @@ for inp,v in pairs(L_charMap) do
 	X4D_LibAntiSpam.CharMap[inp] = v
 end
 
-local function DefaultEmitCallback(color, text)
+local function DefaultChatCallback(color, text)
 	d(color .. text)
 end
 
-X4D_LibAntiSpam.EmitCallback = DefaultEmitCallback
+X4D_LibAntiSpam.ChatCallback = DefaultChatCallback
 
-function X4D_LibAntiSpam.RegisterEmitCallback(self, callback)
+function X4D_LibAntiSpam.RegisterChatCallback(self, callback)
 	if (callback ~= nil) then
-		X4D_LibAntiSpam.EmitCallback = callback
+		X4D_LibAntiSpam.ChatCallback = callback
 	else
-		X4D_LibAntiSpam.EmitCallback = DefaultEmitCallback
+		X4D_LibAntiSpam.ChatCallback = DefaultChatCallback
 	end
 end
 
-function X4D_LibAntiSpam.UnregisterEmitCallback(self, callback)
-	if (X4D_LibAntiSpam.EmitCallback == callback) then
-		self:RegisterEmitCallback(nil)
+function X4D_LibAntiSpam.UnregisterChatCallback(self, callback)
+	if (X4D_LibAntiSpam.ChatCallback == callback) then
+		self:RegisterChatCallback(nil)
 	end
 end
 
 local function InvokeChatCallback(color, text)
-	local callback = X4D_LibAntiSpam.EmitCallback
+	local callback = X4D_LibAntiSpam.ChatCallback
 	if (color == nil) then
 		color = "|cFF0000"
 	end

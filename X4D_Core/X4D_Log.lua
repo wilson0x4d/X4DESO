@@ -13,6 +13,7 @@ X4D_Log.TRACE_LEVELS = {
 	ERROR = 4,
 	CRITICAL = 5,
     SYSTEM = 512,
+    RAW = 8192,
 }
 
 local TRACE_COLORS = {
@@ -23,6 +24,7 @@ local TRACE_COLORS = {
 	[X4D_Log.TRACE_LEVELS.ERROR] = X4D.Colors.TRACE_ERROR,	
 	[X4D_Log.TRACE_LEVELS.CRITICAL] = X4D.Colors.TRACE_CRITICAL,	
 	[X4D_Log.TRACE_LEVELS.SYSTEM] = X4D.Colors.SYSTEM,
+	[X4D_Log.TRACE_LEVELS.RAW] = "",
 	[X4D_Log.TRACE_LEVELS.DEBUG+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_DEBUG),	
 	[X4D_Log.TRACE_LEVELS.VERBOSE+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_VERBOSE),	
 	[X4D_Log.TRACE_LEVELS.INFORMATION+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_INFORMATION),	
@@ -30,6 +32,7 @@ local TRACE_COLORS = {
 	[X4D_Log.TRACE_LEVELS.ERROR+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_ERROR),	
 	[X4D_Log.TRACE_LEVELS.CRITICAL+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_CRITICAL),	
 	[X4D_Log.TRACE_LEVELS.SYSTEM+100] = X4D.Colors:DeriveHighlight(X4D.Colors.TRACE_SYSTEM),	
+	[X4D_Log.TRACE_LEVELS.RAW+100] = "",	
 }
 
 local TRACE_FORMATS = {
@@ -40,6 +43,7 @@ local TRACE_FORMATS = {
 	[X4D_Log.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "] (%s) %s",	
 	[X4D_Log.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "] (%s) %s",	
 	[X4D_Log.TRACE_LEVELS.SYSTEM] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "] (%s) %s",	
+	[X4D_Log.TRACE_LEVELS.RAW] = "%s",	
 }
 
 local TRACE_FORMATS_NOSOURCE = {
@@ -50,6 +54,7 @@ local TRACE_FORMATS_NOSOURCE = {
 	[X4D_Log.TRACE_LEVELS.ERROR] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.ERROR] .. "] %s",	
 	[X4D_Log.TRACE_LEVELS.CRITICAL] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.CRITICAL] .. "] %s",	
 	[X4D_Log.TRACE_LEVELS.SYSTEM] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "] %s",	
+	[X4D_Log.TRACE_LEVELS.RAW] = "%s",	
 }
 
 local _minTraceLevel = X4D_Log.TRACE_LEVELS.INFORMATION
@@ -78,13 +83,14 @@ local function LogInternal(source, level, message)
 	if (L_level < _minTraceLevel) then
 		return false
 	end
-    message = message:gsub("\n", "\n" .. TRACE_COLORS[L_level])
-	if (source == nil or source:len() == 0) then
-        message = string.format(TRACE_FORMATS_NOSOURCE[L_level], GetTimeString(), message)        
-	else
-        message = string.format(TRACE_FORMATS[L_level], GetTimeString(), source, message)
-	end
-
+    if (level ~= X4D_Log.TRACE_LEVELS.RAW) then
+        message = message:gsub("\n", "\n" .. TRACE_COLORS[L_level])
+	    if (source == nil or source:len() == 0) then
+            message = string.format(TRACE_FORMATS_NOSOURCE[L_level], GetTimeString(), message)        
+	    else
+            message = string.format(TRACE_FORMATS[L_level], GetTimeString(), source, message)
+	    end
+    end
     if ((CHAT_SYSTEM == nil) or (not _initialized)) then
         if (_buffer == nil) then
             _buffer = {}
@@ -192,6 +198,10 @@ end
 
 function X4D_Log:System(message, source)
 	X4D_Log:Log(source, X4D_Log.TRACE_LEVELS.SYSTEM, message)
+end
+
+function X4D_Log:Raw(message, source)
+	X4D_Log:Log(source, X4D_Log.TRACE_LEVELS.RAW, message)
 end
 
 --[[

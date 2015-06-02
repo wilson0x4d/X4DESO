@@ -586,23 +586,23 @@ local function OnAddOnLoaded(event, addonName)
         })
 
     --region Hooks
-	if (X4D.LibAntiSpam and X4D.LibAntiSpam.RegisterEmitCallback) then
-		X4D.LibAntiSpam:RegisterEmitCallback(X4D_Chat.AntiSpamEmitCallback)
+	if (X4D.LibAntiSpam and X4D.LibAntiSpam.RegisterChatCallback) then
+		X4D.LibAntiSpam:RegisterChatCallback(X4D_Chat.AntiSpamChatCallback)
 	end
 	if (X4D.Vendors and X4D.Vendors.RegisterCallback ~= nil) then
-		X4D.Vendors:RegisterCallback(X4D_Chat.VendorsEmitCallback)
+		X4D.Vendors:RegisterCallback(X4D_Chat.VendorsChatCallback)
 	end
 	if (X4D.Loot and X4D.Loot.RegisterCallback) then
 		X4D.Loot:RegisterCallback(X4D_Chat.LootCallback)
 	end
-	if (X4D.Mail and X4D.Mail.RegisterEmitCallback) then
-		X4D.Mail:RegisterEmitCallback(X4D_Chat.LootCallback)
+	if (X4D.Mail and X4D.Mail.RegisterChatCallback) then
+		X4D.Mail:RegisterChatCallback(X4D_Chat.LootCallback)
 	end
 	if (X4D.XP and X4D.XP.RegisterCallback) then
 		X4D.XP:RegisterCallback(X4D_Chat.XPCallback)
 	end
-	if (X4D.Bank and X4D.Bank.RegisterEmitCallback) then
-		X4D.Bank:RegisterEmitCallback(X4D_Chat.BankEmitCallback)
+	if (X4D.Bank and X4D.Bank.RegisterChatCallback) then
+		X4D.Bank:RegisterChatCallback(X4D_Chat.BankChatCallback)
 	end
 
 	local handlers = ZO_ChatSystem_GetEventHandlers()
@@ -658,16 +658,16 @@ local function OnAddOnLoaded(event, addonName)
     X4D_Chat.Took = stopwatch.ElapsedMilliseconds()
 end
 
-function X4D_Chat.VendorsEmitCallback(color, text)
+function X4D_Chat.VendorsChatCallback(color, text)
 	if (color == nil or color:len() < 8) then
-		d("VendorsEmitCallback.. bad color received")
+		d("VendorsChatCallback.. bad color received")
 		color = "|cFFFFFF"
 	end
 	if (text == nil or text:len() == 0) then
-		d("VendorsEmitCallback.. bad text received")
+		d("VendorsChatCallback.. bad text received")
 		text = "item?"
 	end
-	d(GetTimestampPrefix(color) .. text)
+	X4D.Log:Raw((GetTimestampPrefix(color) .. text))
 end
 
 function X4D_Chat.LootCallback(color, text)
@@ -679,7 +679,7 @@ function X4D_Chat.LootCallback(color, text)
 		d("LootCallback.. bad text received")
 		text = "loot?"
 	end
-	d(GetTimestampPrefix(color) .. text)
+	X4D.Log:Raw((GetTimestampPrefix(color) .. text))
 end
 
 function X4D_Chat.XPCallback(color, text)
@@ -691,31 +691,31 @@ function X4D_Chat.XPCallback(color, text)
 		d("XPCallback.. bad text received")
 		text = "xp?"
 	end
-	d(GetTimestampPrefix(color) .. text)
+	X4D.Log:Raw((GetTimestampPrefix(color) .. text))
 end
 
-function X4D_Chat.AntiSpamEmitCallback(color, text)
+function X4D_Chat.AntiSpamChatCallback(color, text)
 	if (color == nil or color:len() < 8) then
-		d("AntiSpamEmitCallback.. bad color received")
+		d("AntiSpamChatCallback.. bad color received")
 		color = "|cFFFFFF"
 	end
 	if (text == nil or text:len() == 0) then
-		d("AntiSpamEmitCallback.. bad text received")
+		d("AntiSpamChatCallback.. bad text received")
 		text = "spam?"
 	end
-	d(GetTimestampPrefix(color) ..  text)
+	X4D.Log:Raw((GetTimestampPrefix(color) .. text))
 end
 
-function X4D_Chat.BankEmitCallback(color, text)
+function X4D_Chat.BankChatCallback(color, text)
 	if (color == nil or color:len() < 8) then
-		d("BankEmitCallback.. bad color received")
+		d("BankChatCallback.. bad color received")
 		color = "|cFFFFFF"
 	end
 	if (text == nil or text:len() == 0) then
-		d("BankEmitCallback.. bad text received")
+		d("BankChatCallback.. bad text received")
 		text = "huh?"
 	end
-	d(GetTimestampPrefix(color) .. text)
+	X4D.Log:Raw((GetTimestampPrefix(color) .. text))
 end
 
 local function OnFriendPlayerStatusChanged(displayName, characterName, oldStatus, newStatus)
