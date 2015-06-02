@@ -83,13 +83,13 @@ function X4D_Timer:Start(interval, state, name)
 		return
 	end
 	self._enabled = true
-    _timers[self._id] = self
+    X4D_Async.ActiveTimers:Add(self._id, self)
 	zo_callLater(function() self:Elapsed() end, self._interval)
     return self
 end
 
 function X4D_Timer:Stop()
-    _timers[self._id] = nil
+    X4D_Async.ActiveTimers:Remove(self._id)
 	self._enabled = false
     return self
 end
