@@ -9,5 +9,5 @@
 
 lib/LibStub/LibStub.lua
 
+X4D_MiniMapPin.lua
 X4D_MiniMap.lua
-

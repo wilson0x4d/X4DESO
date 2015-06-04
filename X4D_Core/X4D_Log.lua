@@ -15,6 +15,7 @@ X4D_Log.TRACE_LEVELS = {
     SYSTEM = 512,
     RAW = 8192,
 }
+local _minTraceLevel = X4D_Log.TRACE_LEVELS.INFORMATION --X4D_Log.TRACE_LEVELS.DEBUG
 
 local TRACE_COLORS = {
 	[X4D_Log.TRACE_LEVELS.DEBUG] = X4D.Colors.TRACE_DEBUG,	
@@ -56,8 +57,6 @@ local TRACE_FORMATS_NOSOURCE = {
 	[X4D_Log.TRACE_LEVELS.SYSTEM] = TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "[" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM+100] .. "%s" .. TRACE_COLORS[X4D_Log.TRACE_LEVELS.SYSTEM] .. "] %s",	
 	[X4D_Log.TRACE_LEVELS.RAW] = "%s",	
 }
-
-local _minTraceLevel = X4D_Log.TRACE_LEVELS.INFORMATION
 
 function X4D_Log:SetTraceLevel(level)
 	_minTraceLevel = level

@@ -13,8 +13,6 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, 
         return
     end
 
---    X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
-
     local stopwatch = X4D.Stopwatch:StartNew()
     X4D.InternalSettings = X4D.Settings(
         "X4D_Core_SV",

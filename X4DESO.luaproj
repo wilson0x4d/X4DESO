@@ -96,6 +96,7 @@
     <Compile Include="X4D_Core\X4D_Items.lua" />
     <Compile Include="X4D_Core\X4D_Settings.lua" />
     <Compile Include="X4D_Core\X4D_Players.lua" />
+    <Compile Include="X4D_Core\X4D_Stopwatch.lua" />
     <Compile Include="X4D_Core\X4D_Strings.lua" />
     <Compile Include="X4D_LibAntiSpam\lib\LibStub\LibStub.lua" />
     <Compile Include="X4D_LibAntiSpam\lib\utf8\utf8.lua" />
@@ -108,6 +109,7 @@
     <Compile Include="X4D_Mail\X4D_Mail.lua" />
     <Compile Include="X4D_Core\X4D_Observable.lua" />
     <Compile Include="X4D_MiniMap\X4D_MiniMap.lua" />
+    <Compile Include="X4D_MiniMap\X4D_MiniMapPin.lua" />
     <Compile Include="X4D_UI\Windows\X4D_ErrorManager.lua" />
     <Compile Include="X4D_UI\Windows\X4D_StatusBar.lua" />
     <Compile Include="X4D_UI\X4D_UI.lua" />
