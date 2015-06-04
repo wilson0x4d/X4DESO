@@ -48,6 +48,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.24
+
+- Integrated Stopwatch module for profiling misc code.
+
 v1.23
 
 - When closing bank, refresh bag state, allowing status bar updates to use cached data rather than constantly refresh bag state itself.

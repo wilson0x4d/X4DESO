@@ -3,7 +3,7 @@
 ----
 -- Spam/Flood library you can use from other addons, or stand-alone.
 --
-local X4D_LibAntiSpam = LibStub:NewLibrary("LibAntiSpam", 1063)
+local X4D_LibAntiSpam = LibStub:NewLibrary("LibAntiSpam", 1064)
 if (not X4D_LibAntiSpam) then
 	return
 end
@@ -11,7 +11,7 @@ local X4D = LibStub("X4D")
 X4D.AntiSpam = X4D_LibAntiSpam
 
 X4D_LibAntiSpam.NAME = "X4D_LibAntiSpam"
-X4D_LibAntiSpam.VERSION = "1.63"
+X4D_LibAntiSpam.VERSION = "1.64"
 
 X4D_LibAntiSpam.Colors = {
 	X4D = "|cFFAE19",

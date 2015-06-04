@@ -53,6 +53,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.3
+
+- Integrated Stopwatch module for profiling misc code.
+
 v1.2
 
 - Code is stabilizing, but still considered Alpha stages of development.

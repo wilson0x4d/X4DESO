@@ -124,6 +124,17 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.16
+
+- Moved Cartography module init into LOAD instead of ACTIVATE event handler (e.g. is now initializing earlier than player init.)
+- Fixed bug with DB module :Count() method returning incorrect counts.
+- Fixed bug with DB module :Where() method iterating over non-entities.
+- Add new 'X4D_Stopwatch' module for profiling/timing arbitrary blocks of code.
+- Integrated Stopwatch module for profiling misc code.
+- Refactored Log module to capture all output even when ESO's CHAT_SYSTEM is not ready yet, thus allowing devs to see logs from when their Addon code first began execution.
+- Added new 'Raw' log level, which bypasses all of X4D_Log's "prettifying" behavior (e.g. functionally equivalent to in-build d(...) function, no timestamps and no color modifications.)
+- Added new 'System' log level, which will always appear if used, and will use the in-built 'System' text color (yellow.)
+
 v1.15
 
 - Refactors to Cartography module for more efficient amp data acquisition, as well as numerous work-arounds to the quirky nature of ZO_WorldMap & Friends.

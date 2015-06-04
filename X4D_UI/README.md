@@ -41,6 +41,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.3
+
+- Integrated Stopwatch module for profiling misc code.
+
 v1.2
 
 - Added new 'ADDONS' statistic to status bar which shows amount of memory being used by Lua runtime, in megabytes.

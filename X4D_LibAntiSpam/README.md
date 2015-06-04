@@ -66,6 +66,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.64
+
+- Integrated Stopwatch module for profiling misc code.
+
 v1.63
 
 - Removed unnecessary debug output.

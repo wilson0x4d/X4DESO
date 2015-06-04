@@ -48,6 +48,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.10
+
+- Integrated Stopwatch module for profiling misc code.
+
 v1.9
 
 - Added new 'XP Status Panel' (depends on optional X4D UI Addon)

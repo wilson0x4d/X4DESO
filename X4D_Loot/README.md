@@ -45,6 +45,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.17
+
+- Integrated Stopwatch module for profiling misc code.
+
 v1.16
 
 - Fix several nil reference bugs when populating bag slots which may have been emptied/moved by a coroutine.

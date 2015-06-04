@@ -38,6 +38,11 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.7
+
+- Integrated Stopwatch module for profiling misc code.
+
+
 v1.6
 
 - Allow mail which was previously handled to be handled again (solves problem where no bagspace and must "retry" mail UI)

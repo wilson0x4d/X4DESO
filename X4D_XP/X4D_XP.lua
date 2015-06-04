@@ -1,4 +1,4 @@
-local X4D_XP = LibStub:NewLibrary("X4D_XP", 1009)
+local X4D_XP = LibStub:NewLibrary("X4D_XP", 1010)
 if (not X4D_XP) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.XP = X4D_XP
 
 X4D_XP.NAME = "X4D_XP"
-X4D_XP.VERSION = "1.9"
+X4D_XP.VERSION = "1.10"
 
 local _pointType = "XP"
 local _currentXP = 0
