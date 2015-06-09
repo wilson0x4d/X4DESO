@@ -671,12 +671,12 @@ local function OnPlayerActivated()
 	PopulateQuestsInternal()
 end
 
-local function OnAddOnLoaded(event, addonName)
+local function OnAddOnLoaded(eventCode, addonName)
 	if (addonName ~= X4D_Loot.NAME) then
 		return
 	end
+    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Loot.NAME)
     local stopwatch = X4D.Stopwatch:StartNew()
-
 	X4D_Loot.Settings = X4D.Settings(
 		X4D_Loot.NAME .. "_SV",
 		{

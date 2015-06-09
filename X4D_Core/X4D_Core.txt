@@ -4,7 +4,7 @@
 ## Description: X4D Core Library and Shared APIs which all X4D Add-Ons depend on.
 ## Version: 1.16
 ## SavedVariables: X4D_Core_SV
-## OptionalDependsOn: LibAddonMenu-2.0
+## OptionalDependsOn: LibStub LibAddonMenu-2.0
 
 ## third-party
 lib/LibStub/LibStub.lua

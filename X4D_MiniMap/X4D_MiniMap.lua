@@ -356,10 +356,11 @@ local function InitializeSettingsUI()
     )
 end
 
-EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(event, name)
-    if (name ~= "X4D_MiniMap") then
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(eventCode, addonName)
+    if (addonName ~= "X4D_MiniMap") then
         return
     end
+    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_MiniMap.NAME)
     local stopwatch = X4D.Stopwatch:StartNew()
 	X4D_MiniMap.Settings = X4D.Settings(
 		X4D_MiniMap.NAME .. "_SV",

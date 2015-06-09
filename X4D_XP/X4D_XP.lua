@@ -264,12 +264,12 @@ local function InitializeUI()
     end
 end
 
-EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(event, addonName)
+EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(eventCode, addonName)
 	if (addonName ~= X4D_XP.NAME) then
 		return
 	end	
+    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_XP.NAME)
     local stopwatch = X4D.Stopwatch:StartNew()
-
     _eta = X4D.ETA('X4D_XP')
 
 	X4D_XP.Settings = X4D.Settings(

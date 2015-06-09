@@ -4,9 +4,8 @@
 ## Description: Provides minor Mail enhancements, namely integrating 'LibAntiSpam', performing auto-accepting mail attachments and auto-deleting system-generated mail.
 ## Version: 1.7
 ## SavedVariables: X4D_Mail_SV
+## OptionalDependsOn: X4D_Loot X4D_LibAntiSpam
 ## DependsOn: X4D_Core
-## OptionalDependsOn: X4D_Loot
-## OptionalDependsOn: X4D_LibAntiSpam
 
 lib/LibStub/LibStub.lua
 

@@ -545,11 +545,11 @@ local function Register()
     --TODO: EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnItemSale", EVENT_SELL_RECEIPT, OnItemSale)
 end
 
-EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, function(event, name)
-	if (name ~= X4D_Vendors.NAME) then
+EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, function(eventCode, addonName)
+	if (addonName ~= X4D_Vendors.NAME) then
 		return
 	end	
-
+    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Vendors.NAME)
 	X4D_Vendors.Settings = X4D.Settings(
 		X4D_Vendors.NAME .. "_SV",
 		{

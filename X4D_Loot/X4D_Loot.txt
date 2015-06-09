@@ -4,8 +4,8 @@
 ## Description: Displays Loot Items and Money Updates in Chat Window
 ## Version: 1.17
 ## SavedVariables: X4D_Loot_SV
-## DependsOn: X4D_Core
 ## OptionalDependsOn: X4D_Loot
+## DependsOn: X4D_Core
 
 lib/LibStub/LibStub.lua
 

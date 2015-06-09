@@ -4,13 +4,8 @@
 ## Description: Modifies Chat to show Character Names in Guild Chat, and adds timestamps to all chat messages, supports color stripping, text clean-up. All features optional.
 ## Version: 1.32
 ## SavedVariables: X4D_Chat_SV
+## OptionalDependsOn: X4D_LibAntiSpam X4D_Vendors X4D_Loot X4D_XP X4D_Bank X4D_Mail
 ## DependsOn: X4D_Core
-## OptionalDependsOn: X4D_LibAntiSpam
-## OptionalDependsOn: X4D_Vendors
-## OptionalDependsOn: X4D_Loot
-## OptionalDependsOn: X4D_XP
-## OptionalDependsOn: X4D_Bank
-## OptionalDependsOn: X4D_Mail
 
 lib/LibStub/LibStub.lua
 

@@ -155,7 +155,6 @@
     <Content Include="X4D_XP\LICENSE.md" />
     <Content Include="X4D_XP\README.md" />
     <Content Include="X4D_XP\X4D_XP.txt" />
-    <Content Include="X4D_XP\X4D_XP.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>
