@@ -141,6 +141,9 @@ end
 local _dangerMem = 64
 
 local function UpdatePerformancePanel()
+    if (X4D.UI == nil or X4D.UI.Settings == nil) then
+        return
+    end
     local text = GetTimestampPrefix(X4D.Colors.Gray)
     if (X4D.UI.Settings:Get("ShowFPS")) then
         local framerate = GetFramerate()
