@@ -229,17 +229,20 @@ X4D.Cartography.CurrentMap:Observe(function (map)
                     tile:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
                     tile:SetTexture(tileFilename)
                     if ((map.TileWidth == nil or map.TileHeight == nil) or (map.TileWidth <= scaleToFitTileSize)) then
-                        map.TileWidth, map.TileHeight = X4D.Cartography:GetTileDimensions(tileTexture)
+                        map.TileWidth, map.TileHeight = X4D.Cartography:GetTileDimensions(tileFilename)
                         if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
                             if (map.TileWidth <= scaleToFitTileSize) then
                                 -- assume map could not be sized correctly, so force defaults which scale to fit minimap window
-                                map.TileWidth = scaleToFitTileSize
-                                map.TileHeight = scaleToFitTileSize
+                                map.TileWidth = scaleToFitTileSize * 1.5
+                                map.TileHeight = scaleToFitTileSize * 1.5
+                                --X4D.Log:Warning{"tried determining scale"}
                             end
                             map.NativeWidth = map.TileWidth * map.HorizontalTileCount
                             map.NativeHeight = map.TileHeight * map.VerticalTileCount
                         end
-                        _tileContainer:SetDimensions(map.NativeWidth, map.NativeHeight)
+                        if (map.NativeWidth ~= nil and map.NativeHeight) then
+                            _tileContainer:SetDimensions(map.NativeWidth, map.NativeHeight)
+                        end
                     end
                     tile:SetDimensions(map.TileWidth, map.TileHeight)
                     tile:ClearAnchors()
