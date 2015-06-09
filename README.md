@@ -5,7 +5,7 @@ A collection of LibStub-compatible Add-Ons that provide minor enhancements.
 ### Dependencies
 
 - LibStub *(Optional)*
-- LibAddonMenu-2.0 **(Required)**
+- LibAddonMenu-2.0 *(Optional)*
 
 ### Modules
 
