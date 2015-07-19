@@ -194,6 +194,14 @@ end
 
 --endregion
 
+local _statusBarUpdateTimer
+
+local function OnStatusBarUpdateAsync(timer, state)
+    --X4D.Log:Verbose{"X4D_StatusBar", "Updating Status Bar Panels"}
+    state.Ticks = state.Ticks + 1
+    UpdateStatusBarPanels(state.Ticks)
+end
+
 function X4D_StatusBar:Initialize()
     if (_statusBarWindow == nil) then
         if (_private_label == nil) then
@@ -222,12 +230,10 @@ function X4D_StatusBar:Initialize()
 
         CreateBuiltInPerformancePanel()
         UpdateStatusBarPanels(0)
-        local statusBarUpdateTimer = X4D.Async:CreateTimer(function (timer, state)
-            --X4D.Log:Verbose{"X4D_StatusBar", "Updating Status Bar Panels"}
-            state.Ticks = state.Ticks + 1
-            UpdateStatusBarPanels(state.Ticks)
-        end, 1000, { Ticks = 0 }) 
-        statusBarUpdateTimer:Start(nil,nil,"X4D_StatusBar")
+        if (_statusBarUpdateTimer == nil) then
+            _statusBarUpdateTimer = X4D.Async:CreateTimer(OnStatusBarUpdateAsync, 1000, { Ticks = 0 })
+            _statusBarUpdateTimer:Start(nil,nil,"X4D_StatusBar")
+        end
     end
 end
 
