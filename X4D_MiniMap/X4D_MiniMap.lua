@@ -143,7 +143,7 @@ local function StartZoomPanController()
     if (_zoomPanTimer == nil) then
         _zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState)
     end
-    _zoomPanTimer:Start(100, { ZoomLevel = 1 }, "X4D_MiniMap::ZoomPanController")
+    _zoomPanTimer:Start(1000/15, { ZoomLevel = 1 }, "X4D_MiniMap::ZoomPanController")
 end
 
 local function StartWorldMapController()
@@ -363,8 +363,10 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
     if (addonName ~= "X4D_MiniMap") then
         return
     end
+
     X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_MiniMap.NAME)
     local stopwatch = X4D.Stopwatch:StartNew()
+
 	X4D_MiniMap.Settings = X4D.Settings(
 		X4D_MiniMap.NAME .. "_SV",
 		{
@@ -374,6 +376,10 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
             ShowMapName = true,
             ShowLocationName = true,
         })
+
+    -- explicit carto initialization by consumer(s)
+    X4D.Cartography:Initialize()
+
     InitializeSettingsUI()
     InitializeMiniMapWindow()
     StartZoomPanController()
