@@ -21,9 +21,17 @@ end
 
 local _base58Table = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
 
+function bignum(input)
+--    if (type(input) == "number") then
+--        return BigNum.new(input)
+--    end
+    return BigNum.new(input)
+end
+
+local bignum0 = bignum(0)
+local bignum1 = bignum(1)
+
 function base58(input)
-    local bignum0 = bignum(0)
-    local bignum1 = bignum(1)
     local bignum58 = bignum(58)
     if (input == nil) then
         return nil
@@ -48,7 +56,7 @@ function base58(input)
             input = tostring(input) -- attempt conversion to base58 string regardless of type
         end
         if (input == nil) then
-            return bignum(0)
+            return bignum0
         end
         local output = bignum(0)
         local power = bignum(0)
@@ -59,13 +67,6 @@ function base58(input)
         end
         return output
     end
-end
-
-function bignum(input)
---    if (type(input) == "number") then
---        return BigNum.new(input)
---    end
-    return BigNum.new(input)
 end
 
 function hash(input)
