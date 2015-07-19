@@ -19,25 +19,59 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, 
         {
             SettingsAre = "Account-Wide",
             X4DB = nil,
-        }, 
+        },
         5)
 
     if (_mm == nil) then
         local _lastCount = 0
         _mm = X4D.Async:CreateTimer(function (timer, state)
             local garbageCount = math.ceil(collectgarbage("count") * 1024)
-            local countColor = ""
+            local garbageCountColor = ""
             if (garbageCount < _lastCount) then
-                countColor = "|c11AA11"
+                garbageCountColor = "|c11AA11"
             elseif (garbageCount > _lastCount) then
-                countColor = "|cAA1111"
+                garbageCountColor = "|cAA1111"
             end
+
+            local framerate = GetFramerate()
+            local framerateColor = X4D.Colors.DarkGray
+            if (framerate <= 14) then
+                framerateColor = X4D.Colors.Red
+            elseif (framerate < 20) then
+                framerateColor = X4D.Colors.Orange
+            elseif (framerate < 26) then
+                framerateColor = X4D.Colors.Yellow
+            end
+            local framerateString = framerateColor .. zo_strformat(SI_FRAMERATE_METER_FORMAT, framerateColor .. math.floor(framerate))
+            local latency = GetLatency()
+            local latencyColor = X4D.Colors.DarkGray
+            if (latency > 500) then
+                latencyColor = X4D.Colors.Red
+            elseif (latency > 350) then
+                latencyColor = X4D.Colors.Orange
+            elseif (latency > 175) then
+                latencyColor = X4D.Colors.Yellow
+            end
+            local latencyString = latencyColor .. "PING: " .. latency --.. _latencyMeterIcons[latencyLevel]
+            local memory = math.ceil(collectgarbage("count") / 1024)
+            local memoryColor = X4D.Colors.DarkGray
+            if (memory >= (X4D.OOM)) then
+                memoryColor = X4D.Colors.Red
+            elseif (memory >= (X4D.OOM/100)*85) then
+                memoryColor = X4D.Colors.Orange
+            elseif (memory >= (X4D.OOM/100)*70) then
+                memoryColor = X4D.Colors.Yellow
+            end
+            local memoryString = memoryColor .. "ADDONS: " .. memory .. "MB"
+
             X4D.Log:Debug({
-                "Memory: " .. countColor .. tostring(math.ceil(collectgarbage("count") * 1024)) .. X4D.Colors.TRACE_DEBUG,
-                "Timers: " .. X4D.Async.ActiveTimers:Count(),
+                "Memory: " .. garbageCountColor .. tostring(math.ceil(collectgarbage("count") * 1024)) .. X4D.Colors.TRACE_DEBUG,
+                "Timers: " .. X4D.Async.ActiveTimers:Count() .. X4D.Colors.TRACE_DEBUG,
+                framerateString .. X4D.Colors.TRACE_DEBUG,
+                latencyString .. X4D.Colors.TRACE_DEBUG,
                 }, "DBG")
             _lastCount = garbageCount
-        end):Start(5000,{},"X4D_Core::DEBUG")
+        end):Start(1000,{},"X4D_Core::DEBUG")
     end
     X4D.Took = stopwatch.ElapsedMilliseconds()
 end)
@@ -158,7 +192,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Core_OOM", EVENT_LUA_LOW_MEMORY, function()
     -- log to chat, including how much memory is in use
     local before = collectgarbage("count")
     collectgarbage("collect")
-    if (_oomCount % 5 == 0) then        
+    if (_oomCount % 3 == 0) then
         local after = collectgarbage("count")
         local message = GetString(SI_LUA_LOW_MEMORY) .. "\nLua memory usage before " .. (math.ceil(before / 1024)) .. "MB, after " .. (math.ceil(after / 1024)) .. "MB. Total reclaimed " .. (math.ceil((before - after) / 1024)) .. "MB)"
         X4D.Log:Warning(message, "X4D")
