@@ -82,7 +82,9 @@ local function ShouldScavengePlayer(player)
 end
 
 local function DoScavenge(player, key)
-    X4D_Players.DB:Remove(key)
+    if (ShouldScavengePlayer(player)) then
+        X4D_Players.DB:Remove(key)
+    end
 end
 
 local function StartPlayerScavenger() 
@@ -91,7 +93,6 @@ local function StartPlayerScavenger()
     end
     _playerScavenger = X4D.Async:CreateTimer(function (timer, state)
         X4D_Players.DB
-            :Where(ShouldScavengePlayer, true)
             :ForEach(DoScavenge)
     end, {}):Start(_playerScavengerFrequency, {}, "X4D_Players::PlayerScavenger")
 end
