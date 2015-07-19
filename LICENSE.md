@@ -1,11 +1,11 @@
  All **X4D ESO Add-Ons** are licensed under the **MS-RL (Microsoft Reciprocal License)**, a copy of this license appears below.
 
-**Copyright © Shaun Wilson, all rights reserved.**
+**Copyright Â© Shaun Wilson, all rights reserved.**
 
 # Reciprocal License (Ms-RL)
 
-This license governs use of the accompanying software. 
-If you use the software, you accept this license. 
+This license governs use of the accompanying software.
+If you use the software, you accept this license.
 If you do not accept the license, do not use the software.
 
 ## 1. Definitions
@@ -37,4 +37,3 @@ A "contributor" is any person that distributes its contribution under this licen
 (E) If you distribute any portion of the software in source code form, you may do so only under this license by including a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object code form, you may only do so under a license that complies with this license.
 
 (F) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
-
