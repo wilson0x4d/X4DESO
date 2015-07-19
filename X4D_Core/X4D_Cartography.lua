@@ -31,12 +31,12 @@ function X4D_Cartography:GetTileDimensions(filename)
 end
 
 function X4D_Cartography:GetCurrentMap()
-    --[[ 
+    --[[
         TODO: "zone fencing" to auto-detect the need for a map transition, each can have zero or more fences, each fence being a collection of coordinates in clockwise order which form a closed loop
     ]]
     local mapIndex = X4D.Cartography.MapIndex()
     if (mapIndex == nil) then
-        -- when mapIndex is null, there is no current map 
+        -- when mapIndex is null, there is no current map
         return nil
     end
     local mapName = X4D.Cartography.MapName()
@@ -207,6 +207,9 @@ EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, functi
         return
     end
     X4D_Cartography.DB = X4D.DB:Open("X4D_Cartography.DB")
+end)
+
+function X4D_Cartography:Initialize()
     if (_private_texture == nil) then
         local tex = WINDOW_MANAGER:GetControlByName("X4D_PVT_TEX")
         if (tex == nil) then
@@ -217,6 +220,6 @@ EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, functi
         _private_texture = tex
     end
     if (_timer == nil) then
-        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/20, {}, "X4D_Cartography")
+        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/15, {}, "X4D_Cartography")
     end
-end)
+end
