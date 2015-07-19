@@ -445,11 +445,11 @@ local function ConductTransactions()
     InvokeChatCallback(X4D.Colors.X4D, message)
 end
 
-local function OnOpenBank(eventCode)
-    X4D.Async:CreateTimer(function (timer, state)
-        timer:Stop()
-        ConductTransactions()
-    end):Start(337, {}, "X4D_Bank::ConductTransactions")
+local function OnOpenBankAsync(timer, state)
+    timer:Stop()
+    -- item transactions
+    ConductTransactions()
+    -- monetary transactions
     if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
         _nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000)
         local availableAmount = TryDepositFixedAmount()
@@ -458,8 +458,12 @@ local function OnOpenBank(eventCode)
     TryWithdrawReserveAmount()
 end
 
+local function OnOpenBank(eventCode)
+    X4D.Async:CreateTimer(OnOpenBankAsync):Start(337, {}, "X4D_Bank::ConductTransactions")
+end
+
 local function OnCloseBank()
-    -- force update of bag snapshots on close
+    -- coerce update of bag snapshots on close
     local inventoryState = TryGetBag(BAG_BACKPACK)
     local bankState = TryGetBag(BAG_BANK)
 end
