@@ -1,4 +1,4 @@
-local X4D_MiniMap = LibStub:NewLibrary("X4D_MiniMap", 1003)
+local X4D_MiniMap = LibStub:NewLibrary("X4D_MiniMap", 1004)
 if (not X4D_MiniMap) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.MiniMap = X4D_MiniMap
 
 X4D_MiniMap.NAME = "X4D_MiniMap"
-X4D_MiniMap.VERSION = "1.3"
+X4D_MiniMap.VERSION = "1.4"
 
 local X4D_MINIMAP_SMALLFONT = "ZoFontGameSmall"
 local X4D_MINIMAP_LARGEFONT = "ZoFontGamepad22"

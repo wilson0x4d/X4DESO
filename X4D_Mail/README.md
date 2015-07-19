@@ -38,10 +38,13 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.8
+
+- Removed anonymous function (minor optimization)
+
 v1.7
 
 - Integrated Stopwatch module for profiling misc code.
-
 
 v1.6
 

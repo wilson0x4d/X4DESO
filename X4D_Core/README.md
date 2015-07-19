@@ -124,6 +124,17 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.17
+
+- Several global functions in 3rd party libs are now local to prevent collision with other poorly written addons.
+- Added debug output to report module loads, only visible to developers who modify add-on source code to default to 'DEBUG' trace level.
+- Added framerate and latency data to core debug output.
+- Modified oom handler to report after 3rd out-of-memory event instead of 5th.
+- Relocate Cartography coroutine creation to explicit initializer, requiring dependent modules to call initializer (minor optimization)
+- Fixed bug where Log module output verbose log lines not meant for release to users.
+- Avoid full-copy of player DB during scavenge, instead preferring iterator with predicate relocated into iter function (major optimization)
+- Modified base58 wrapper to use single-alloc for bignum0/bignum1 (minor optimization)
+
 v1.16
 
 - Moved Cartography module init into LOAD instead of ACTIVATE event handler (e.g. is now initializing earlier than player init.)

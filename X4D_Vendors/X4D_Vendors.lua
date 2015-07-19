@@ -1,4 +1,4 @@
-local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1008)
+local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1009)
 if (not X4D_Vendors) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Vendors = X4D_Vendors
 
 X4D_Vendors.NAME = "X4D_Vendors"
-X4D_Vendors.VERSION = "1.8"
+X4D_Vendors.VERSION = "1.9"
 
 local constUnspecified = X4D.Colors.Gray .. "Unspecified"
 local constKeep = X4D.Colors.Deposit .. "Keep"
@@ -198,6 +198,10 @@ local function GetItemTypeActions()
 end
 
 local function ConductTransactions(vendor)
+    if (vendor == nil) then
+        X4D.Log:Error({"Vendor reference is nil or invalid.", vendor}, "X4D_Vendors") 
+        return
+    end
     -- TODO: add an option where once all fence laundering is exhausted, begin performing fence sales (or the other way around, based on user selection) with this, also: re-order transactions based on user setting ascending or descending.
     local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
     local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
@@ -292,6 +296,7 @@ local function OnOpenFence()
 end
 
 local function OnOpenStoreAsync(timer, state)
+    local vendor = state
     timer:Stop()
     ConductTransactions(vendor)
     ReportEarnings()
@@ -303,7 +308,7 @@ local function OnOpenStore()
     local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
     vendor.IsFence = false
     UpdateVendorPositionData(vendor)
-    X4D.Async:CreateTimer(OnOpenStoreAsync):Start(337, {}, "X4D_Vendors::ConductTransactions")
+    X4D.Async:CreateTimer(OnOpenStoreAsync):Start(337, vendor, "X4D_Vendors::ConductTransactions")
 end
 
 local function OnCloseStore()

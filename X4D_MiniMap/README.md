@@ -53,6 +53,11 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.4
+
+- Fix error incorreect name when performing tile measurements.
+- Modified zoom/pan state to update 15 times a second instead of 10 (providing a smoother user experience)
+
 v1.3
 
 - Integrated Stopwatch module for profiling misc code.
