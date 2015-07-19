@@ -291,17 +291,19 @@ local function OnOpenFence()
     ReportEarnings()
 end
 
+local function OnOpenStoreAsync(timer, state)
+    timer:Stop()
+    ConductTransactions(vendor)
+    ReportEarnings()
+end
+
 local function OnOpenStore()
     _debits = 0
     _credits = 0
     local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
     vendor.IsFence = false
     UpdateVendorPositionData(vendor)
-    X4D.Async:CreateTimer(function (timer, state)
-        timer:Stop()
-        ConductTransactions(vendor)
-        ReportEarnings()
-    end):Start(337, {}, "X4D_Vendors::ConductTransactions")
+    X4D.Async:CreateTimer(OnOpenStoreAsync):Start(337, {}, "X4D_Vendors::ConductTransactions")
 end
 
 local function OnCloseStore()
@@ -550,6 +552,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
 		return
 	end	
     X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Vendors.NAME)
+
 	X4D_Vendors.Settings = X4D.Settings(
 		X4D_Vendors.NAME .. "_SV",
 		{
@@ -576,6 +579,9 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
                 -- items matching an "ignored" pattern will be left alone regardless of any other pattern or setting, consider this a "safety list" if you will
             },
         })
+
+    -- explicit carto initialization by consumer(s)
+    X4D.Cartography:Initialize()
 
     InitializeSettingsUI()
 
