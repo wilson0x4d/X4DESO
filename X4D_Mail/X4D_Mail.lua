@@ -136,6 +136,12 @@ function X4D_Mail:HandleSpam(mailId)
 	return mail.IsSpam
 end
 
+local function OnMailReadableAsync(timer, state)
+    timer:Stop();
+    X4D_Mail:HandleMailAttachments(mailId)
+    X4D_Mail:HandleSpam(mailId)
+end
+
 local function OnMailReadable(eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subjectText, mailIcon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	local bodyText = ReadMail(mailId)
@@ -160,11 +166,7 @@ local function OnMailReadable(eventCode, mailId)
 		    IsSpam = false,
 	    }
 	    _readableMail[mailId] = mail
-        X4D.Async:CreateTimer(function (timer, state)
-                timer:Stop();
-        	    X4D_Mail:HandleMailAttachments(mailId)
-        	    X4D_Mail:HandleSpam(mailId)
-        end):Start(337, {}, "MailHandler")
+        X4D.Async:CreateTimer(OnMailReadableAsync):Start(337, {}, "MailHandler")
     --end
 end
 
