@@ -1,4 +1,4 @@
-local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1008)
+local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1009)
 if (not X4D_Mail) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Mail = X4D_Mail
 
 X4D_Mail.NAME = "X4D_Mail"
-X4D_Mail.VERSION = "1.8"
+X4D_Mail.VERSION = "1.9"
 
 -- 1.0
 -- X4D_Mail:IsMailReadable(mailId)
@@ -136,7 +136,7 @@ function X4D_Mail:HandleSpam(mailId)
 	return mail.IsSpam
 end
 
-local function OnMailReadableAsync(timer, state)
+local function OnMailReadableAsync(timer, mailId)
     timer:Stop();
     X4D_Mail:HandleMailAttachments(mailId)
     X4D_Mail:HandleSpam(mailId)
@@ -166,7 +166,7 @@ local function OnMailReadable(eventCode, mailId)
 		    IsSpam = false,
 	    }
 	    _readableMail[mailId] = mail
-        X4D.Async:CreateTimer(OnMailReadableAsync):Start(337, {}, "MailHandler")
+        X4D.Async:CreateTimer(OnMailReadableAsync):Start(337, mailId, "MailHandler")
     --end
 end
 

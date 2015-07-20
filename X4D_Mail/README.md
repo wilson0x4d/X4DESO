@@ -38,6 +38,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.9
+
+- Fix missing `mailId` bug in async handler.
+
 v1.8
 
 - Removed anonymous function (minor optimization)
