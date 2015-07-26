@@ -6,6 +6,7 @@ local X4D = LibStub("X4D")
 X4D.UI.StatusBar = X4D_StatusBar
 
 local _statusBarWindow
+local _borderImage
 local _private_label
 
 X4D_StatusBar.Panels = {}
@@ -202,6 +203,12 @@ local function OnStatusBarUpdateAsync(timer, state)
     UpdateStatusBarPanels(state.Ticks)
 end
 
+local function OnScreenResized(eventCode, width, height)
+    local screenWidth, screenHeight = GuiRoot:GetDimensions()
+    _statusBarWindow:SetDimensions(screenWidth, 21)
+    _borderImage:SetDimensions(screenWidth, 3) -- TODO: on window resize, update
+end
+
 function X4D_StatusBar:Initialize()
     if (_statusBarWindow == nil) then
         if (_private_label == nil) then
@@ -211,19 +218,19 @@ function X4D_StatusBar:Initialize()
         end
         _statusBarWindow = WINDOW_MANAGER:CreateTopLevelWindow("X4D_StatusBar")
         local screenWidth, screenHeight = GuiRoot:GetDimensions()
-        _statusBarWindow:SetDimensions(screenWidth, 21) -- TODO: on window resize, update
+        _statusBarWindow:SetDimensions(screenWidth, 21)
         _statusBarWindow:SetAnchor(BOTTOMRIGHT)
         _statusBarWindow:SetDrawLayer(DL_BACKGROUND)
         _statusBarWindow:SetHidden(false)
         local backgroundImage = WINDOW_MANAGER:CreateControl("X4D_StatusBar_Background", _statusBarWindow, CT_TEXTURE)
         backgroundImage:SetAnchorFill(_statusBarWindow)
         backgroundImage:SetTexture("EsoUI/Art/Tooltips/UI-TooltipCenter.dds")
-        local borderImage = WINDOW_MANAGER:CreateControl("X4D_StatusBar_Border", _statusBarWindow, CT_TEXTURE)
-        borderImage:SetTexture("X4D_UI/FizzBuzz.dds")
-        borderImage:SetAnchor(TOPRIGHT)
-        borderImage:SetDimensions(screenWidth, 3) -- TODO: on window resize, update
+        _borderImage = WINDOW_MANAGER:CreateControl("X4D_StatusBar_Border", _statusBarWindow, CT_TEXTURE)
+        _borderImage:SetTexture("X4D_UI/FizzBuzz.dds")
+        _borderImage:SetAnchor(TOPRIGHT)
+        _borderImage:SetDimensions(screenWidth, 3) -- TODO: on window resize, update
         --borderImage:SetDrawLayer(DL_BACKGROUND)
-        borderImage:SetDrawTier(DT_LOW)
+        _borderImage:SetDrawTier(DT_LOW)
         --_statusBarWindow:SetEdgeTexture("EsoUI/Art/Tooltips/UI-Border.dds", screenWidth, 16)
 
         --ZO_AlphaAnimation
@@ -232,8 +239,10 @@ function X4D_StatusBar:Initialize()
         UpdateStatusBarPanels(0)
         if (_statusBarUpdateTimer == nil) then
             _statusBarUpdateTimer = X4D.Async:CreateTimer(OnStatusBarUpdateAsync, 1000, { Ticks = 0 })
-            _statusBarUpdateTimer:Start(nil,nil,"X4D_StatusBar")
+            _statusBarUpdateTimer:Start(nil, nil, "X4D_StatusBar")
         end
+
+        EVENT_MANAGER:RegisterForEvent("X4D_StatusBar", EVENT_SCREEN_RESIZED, OnScreenResized)
     end
 end
 
