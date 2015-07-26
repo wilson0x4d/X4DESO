@@ -102,10 +102,10 @@ local function UpdateZoomPanState(timer, state)
     if ((_playerX ~= nil and _playerY ~= nil) and ((_playerX ~= _lastPlayerX or _playerY ~= _lastPlayerY) or (state.ZoomLevel ~= maxZoomLevel))) then
         if (_tileContainer ~= nil) then
             local zoomLevel = state.ZoomLevel
-            if (map.IsSubZone) then
-                -- we get a great deal of 'jitter' in subzone maps due to their size, so scale them out a bit
-                zoomLevel = zoomLevel * 0.8
-            end
+--            if (map.IsSubZone) then
+--                -- we get a great deal of 'jitter' in subzone maps due to their size, so scale them out a bit
+--                zoomLevel = zoomLevel * 0.8
+--            end
             _tileContainer:SetScale(state.ZoomLevel)
             for _,tile in ipairs(_tiles) do
                 tile:SetScale(state.ZoomLevel)
