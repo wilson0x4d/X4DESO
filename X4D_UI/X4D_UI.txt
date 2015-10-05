@@ -1,8 +1,8 @@
-## APIVersion: 100011
-## Title: X4D |cFFAE19UI |c4D4D4D1.4
+## APIVersion: 100012
+## Title: X4D |cFFAE19UI |c4D4D4D1.5
 ## Author: @wilson0x4d
 ## Description: A UI Framework for creating Add-ons, used by X4D Add-ons which extend the in-game UI.
-## Version: 1.4
+## Version: 1.5
 ## SavedVariables: X4D_UI_SV
 ## DependsOn: X4D_Core
 

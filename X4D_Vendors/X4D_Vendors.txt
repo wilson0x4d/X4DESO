@@ -1,8 +1,8 @@
-## APIVersion: 100011
-## Title: X4D |cFFAE19Vendors |c4D4D4D1.9
+## APIVersion: 100012
+## Title: X4D |cFFAE19Vendors |c4D4D4D1.10
 ## Author: @wilson0x4d
 ## Description: Interacts and tracks Vendors, performing sales/laundering on your behalf.
-## Version: 1.9
+## Version: 1.10
 ## SavedVariables: X4D_Vendors_SV
 ## DependsOn: X4D_Core
 

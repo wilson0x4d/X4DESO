@@ -124,6 +124,11 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.18
+
+- API Version 100012
+- Updated 'currency type' enums which ESO devs renamed and also removed.
+
 v1.17
 
 - Several global functions in 3rd party libs are now local to prevent collision with other poorly written addons.

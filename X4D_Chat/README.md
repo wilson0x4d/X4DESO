@@ -47,6 +47,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.33
+
+- API Version 100012
+
 v1.32
 
 - Integrated Stopwatch module for profiling misc code.

@@ -1,8 +1,8 @@
-## APIVersion: 100011
-## Title: X4D |cFFAE19Loot |c4D4D4D1.17
+## APIVersion: 100012
+## Title: X4D |cFFAE19Loot |c4D4D4D1.18
 ## Author: @wilson0x4d
 ## Description: Displays Loot Items and Money Updates in Chat Window
-## Version: 1.17
+## Version: 1.18
 ## SavedVariables: X4D_Loot_SV
 ## OptionalDependsOn: X4D_Loot
 ## DependsOn: X4D_Core

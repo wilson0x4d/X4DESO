@@ -53,6 +53,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.5
+
+- API Version 100012
+
 v1.4
 
 - Fix error incorreect name when performing tile measurements.

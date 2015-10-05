@@ -50,6 +50,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 v1.25
 
+- API Version 100012
+
+v1.25
+
 - Removed anonymous function (minor optimization)
 
 v1.24

@@ -1,10 +1,10 @@
-local X4D = LibStub:NewLibrary("X4D", 1017)
+local X4D = LibStub:NewLibrary("X4D", 1018)
 if (not X4D) then
     return
 end
 
 X4D.NAME = "X4D"
-X4D.VERSION = "1.17"
+X4D.VERSION = "1.18"
 
 local _mm
 
