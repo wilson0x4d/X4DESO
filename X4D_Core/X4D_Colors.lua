@@ -112,11 +112,11 @@ local _itemQualityColors = {
 
 X4D_Colors.Gold = "|cEED700" --X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_GOLD)):UnpackRGBA())
 X4D_Colors.AlliancePoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ALLIANCE_POINTS)):UnpackRGBA())
-X4D_Colors.Items = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ITEM)):UnpackRGBA())
-X4D_Colors.BattleTokens = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_BATTLE_TOKENS)):UnpackRGBA())
-X4D_Colors.RankPoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_RANK_POINTS)):UnpackRGBA())
-X4D_Colors.Inspiration = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_INSPIRATION)):UnpackRGBA())
-X4D_Colors.Crowns = X4D_Colors.Gold
+X4D_Colors.Items = X4D_Colors.White --X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_ITEM)):UnpackRGBA())
+X4D_Colors.TelvarStones = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_TELVAR_STONES)):UnpackRGBA())
+--X4D_Colors.RankPoints = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_RANK_POINTS)):UnpackRGBA())
+--X4D_Colors.Inspiration = X4D_Colors:Create(ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_CURRENCY, CURRENCY_COLOR_INSPIRATION)):UnpackRGBA())
+--X4D_Colors.Crowns = X4D_Colors.Gold
 
 
 function X4D_Colors:ExtractLinkColor(itemLink, defaultColor)
