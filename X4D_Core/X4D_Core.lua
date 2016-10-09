@@ -156,6 +156,10 @@ function X4D:Test()
     })
 
     -- Items API
+	if (X4D.Items ~= nil) then
+		X4D.Items:Test()
+	end
+
     -- Guilds API
     -- Players API
 

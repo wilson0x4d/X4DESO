@@ -1,8 +1,8 @@
-## APIVersion: 100012
-## Title: X4D |cFFAE19Core |c4D4D4D1.18
+## APIVersion: 100017
+## Title: X4D |cFFAE19Core |c4D4D4D1.19
 ## Author: @wilson0x4d
 ## Description: X4D Core Library and Shared APIs which all X4D Add-Ons depend on.
-## Version: 1.18
+## Version: 1.19
 ## SavedVariables: X4D_Core_SV
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0
 

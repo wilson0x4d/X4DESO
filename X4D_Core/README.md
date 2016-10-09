@@ -4,7 +4,6 @@ X4D Core is a LibStub-compatible Framework of shared code used throughout <a hre
 
 All X4D Add-Ons depend on this Framework.
 
-
 ## Features
 
 * String Module
@@ -124,12 +123,23 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
-v1.18
+### 1.19
+#### ESO 2.6 (API Version 100017)
 
-- API Version 100012
+- API Version 100017
+- somewhere between ESO 2.2 and ESO 2.6 the game client stopped including names in item links when converting them to strings, therefore, all calls which previously returned a parsed item name now instead return the original link object (which the game engine will be entirely responsible for rendering correctly) -- if these are used as strings, they should convert into an engine-compatible equivalent and render correctly
+
+?? - similarly item ids now include options so that X4D_Item objects can continue to be used to track extended item details as if they represented unique items -- for this reason we generate a new item link to serve as the aforementioned `name` result -- however, X4D will never use the resulting item names/links where uniqueness (instance-id) is required
+
+#### ESO 2.4 (API Version 100015)
+
+- Fixed bug with `ITEMTYPE_ALCHEMY_BASE` having been split into two groups, potions and poisons.
+
+### 1.18
+#### ESO 2.1 (API Version 100012)
 - Updated 'currency type' enums which ESO devs renamed and also removed.
 
-v1.17
+### 1.17
 
 - Several global functions in 3rd party libs are now local to prevent collision with other poorly written addons.
 - Added debug output to report module loads, only visible to developers who modify add-on source code to default to 'DEBUG' trace level.
@@ -140,7 +150,7 @@ v1.17
 - Avoid full-copy of player DB during scavenge, instead preferring iterator with predicate relocated into iter function (major optimization)
 - Modified base58 wrapper to use single-alloc for bignum0/bignum1 (minor optimization)
 
-v1.16
+### 1.16
 
 - Moved Cartography module init into LOAD instead of ACTIVATE event handler (e.g. is now initializing earlier than player init.)
 - Fixed bug with DB module :Count() method returning incorrect counts.
@@ -151,7 +161,7 @@ v1.16
 - Added new 'Raw' log level, which bypasses all of X4D_Log's "prettifying" behavior (e.g. functionally equivalent to in-build d(...) function, no timestamps and no color modifications.)
 - Added new 'System' log level, which will always appear if used, and will use the in-built 'System' text color (yellow.)
 
-v1.15
+### 1.15
 
 - Refactors to Cartography module for more efficient amp data acquisition, as well as numerous work-arounds to the quirky nature of ZO_WorldMap & Friends.
 - Cartography module now updates at a rate of ~20fps, this affects animations of consumer code (like MiniMap.) The old update rate was ~13fps (bare minimum.)
@@ -162,7 +172,7 @@ v1.15
 - The DB module now allows authors to version each database independent of any SVs which may be used as a backing store. This way a DB can be reset (by version) without necessarily having to reset all SVs.
 - Many general optimizations to cull back memory and CPU use.
 
-v1.14
+### 1.14
 
 - Removed unnecessary log lines.
 - Fixed bug where IsSubZone was not being set properly.
@@ -170,7 +180,8 @@ v1.14
 - Created new 'Crafting' item types group to clarify settings in misc addons which depend on it.
 - Salting vendor keys to avoid name collisions for generic-named NPCs.
 
-v1.13
+### 1.13
+
 - Added new 'X4D_Cartography' module.
 - Several bug fixes for Observables, including a plurality change on all uses, and the introduction of 'Rate Limit' concept.
 - Modified "/x4d" slash-command to accept a -test option, this puts the framework into development mode.
@@ -178,13 +189,13 @@ v1.13
 - Callers can now include their identity when creating an async timer, this is a debugging aid.
 - Added new "Debug" trace level (this is lower level than "Verbose")
 
-v1.12
+### 1.12
 
 - Added new 'X4D_Observable' module, check source file for notes/usage.
 - Using localized "Item Type" Names where possible.
 - Updated Test() method with X4D.Observable showcase.
 
-v1.11
+### 1.11
 
 - fix 'fish bug', add missing ITEMTYPE_FISH, it has been placed in the "Provisioning" group
 - X4D.Log:Error only displays type info when Verbose trace level has been set (e.g. no longer the default)
@@ -193,64 +204,65 @@ v1.11
 - added quality colors to item qualities table
 - added some basic colors (RGB,CYM,BWG) to Colors module
 
-v1.10
+### 1.10
 
 - Fix bug where items stored without an item type would cause normalization to error.
 - Fix bug where item names would be overwritten with non-normalized versions
 - Adapted MD5 algo from https://github.com/kikito/md5.lua/blob/master/md5.lua
 - X4D.Debug is now X4D.Log
 
-v1.9
+### 1.9
 
 - Fixed bug where FreeCount would desync when slots were repopulated.
 - Modified item normalization text so that "level" portion uses minimum of 2 digits for level (to assist with low level item pattern matches e.g. "L[012][0-9].*ITEMTYPE_POTION")
 
-v1.8
+### 1.8
 
 - Reset of Core DBs (nobody will notice)
 - Improved Icons, Items, Bags, Players and Settings modules.
 - Bug fixes for DB, Players and Settings moduls.
 
-v1.7-hotfix
+### 1.7-hotfix
 
 - fix null reference error in X4D_DB module
 
-v1.6
+### 1.6
 
 - Added new X4D_Bags module, which will help consolidate code/requirements that exist for Vendor, Bank and Loot Addons.
 - X4D_DB now returns keys in addition to values from :Find() and most callbacks (predicates, builders, visitors) are now sent the key as a second parameter. This allows more efficient code to be written (knowing which key allows for direct lookups.)
 - Default 'trace level' is now "INFORMATION" (instead of WARNING), developers should use X4D.Log:Verbose(...) for debug output, and X4D.Log:Information(...) for user-friendly information messages. Eventually the end-user will be able to change trace level, developers need to ensure "Information" level is not used for dev-only feedback.
 - X4D_Players base58 encodes keys, it does not duplicate the key as a conventional property (shaving memory for something we don't actually need to look-up.), and optimized player lookups.
 
-v1.5
+### 1.5
 
 - Fixed a bug which only affects X4D_Bank by preventing you from changing "Settings Are.." from "Account-Wide" to "Per-Character"
 
-v1.4
+### 1.4
 
 - Fixed several bugs in Async, DB, and Settings modules.
 - Implemented persistence and scavenging for Players module, moved data out of AntiSpam.
 - Added 'LibAddonMenu-2.0' to /lib/ folder, marked it as an optional dependency.
 - Added new 'X4D_ETA' module
 
-v1.3
+### 1.3
 
 - Fixed bug in settings save/restore for per-character
 - Added 'Low Addon Memory' event handler that reports amount of memory in-use at the time
 
-v1.2
+### 1.2
 
 - Added sha1, base58 and bignum functions/libraries
 
-v1.1
+### 1.1
 
-- ESO Update 6
+#### ESO 1.4-1.6(-ish)
 - Removed LibAddonMenu-1.0 from /lib/ folder
 - DependsOn: LibAddonMenu-2.0
 
 
-v1.0
+### 1.0
 
+#### ESO 1.0-1.2(-ish)
 - Initial release.
 - multiple fixes
 

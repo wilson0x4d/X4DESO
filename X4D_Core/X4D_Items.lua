@@ -5,15 +5,48 @@ end
 local X4D = LibStub("X4D")
 X4D.Items = X4D_Items
 
+--[[ X4D_Items changes (1.19 functions differently due to intentional API limitations created by Zenimax):
+
+	at some point ESO changed, and now we no longer receive localized names when we parse a link (as a string)
+	we used to, as long as the item had been loaded by the UI at least once,
+	this sort of behavior aligns with other MMOs out there, MMOs which will shutdown a client (for example) whenever the client requests item details for an item it has never before "received"
+	in orde rto Play Nice(tm) one would simply prefetch the item data by loading (or waiting for the user to load) the relevant UI. like your bank, or backpack/inventory.
+	
+	ZO no longer returns the name once a localized name is known. To know these names requires external access to game resources. It is not efficient for the game to keep data like this lingering within LUA.
+
+	Fx#1:
+    d({"X4D_Items:ParseLink", link:sub(2, link:len() - 1), link or 'no-link', options or 'no-options', name or 'no-name'})
+
+	Fx#2:
+	link = string.gsub(zo_strformat("<<x:1>>", link), "|", "!") -- results in zero-length string
+
+	as a result, we have dropped the use of "name" from X4D entirely, and replaced it with a "Scrubbed Link" (which is also what is used as an Entity ID)
+	this is LESS INTUITIVE overall, but it more accurately reflects how the game views the same data. addon authers need to augment their perception and instead view this not as an item database to be indexed and catalogued, but an item cache to make more efficient many look-ups X4D needs to perform at run time (instead of paying for it over and over again.)
+]]
+
+function X4D_ScrubItemLinkForIdentity(link)
+	if (link == nil or not link:StartsWith("|H1:item:")) then
+		return link
+	end
+	local itemId, itemQuality, levelReq, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, style, isCrafted, isBound, isStolen, condition, instanceData = X4D.Items:ParseLink(link)
+	return 
+		"|H1:item:" .. itemId .. ":" .. itemQuality .. ":" .. levelReq .. ":0:0:0:0:0:0:0:0:0:0:0:0:" .. style .. ":" .. isCrafted .. ":0:" .. isStolen .. ":0:" .. instanceData .. "|h|h",
+		itemId, itemQuality, levelReq, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, style, isCrafted, isBound, isStolen, condition, instanceData
+end
+
 --region X4D_Item entity
 
 local X4D_Item = {}
 
-function X4D_Item:New(itemId, name)
-    local normalizedName = name:lower()
+function X4D_Item:New(link)
+	local
+		scrubbedLink, 
+		itemId, itemQuality, levelReq, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, style, isCrafted, isBound, isStolen, condition, instanceData
+		= X4D_ScrubItemLinkForIdentity(link)
     local item = {
-        Id = tonumber(tostring(itemId)),
-        Name = normalizedName,
+        Id = scrubbedLink,
+		Quality = itemQuality,
+		LevelRequired = levelReq,
         ItemType = nil,
         StackMax = nil,
         Icon58 = nil,
@@ -22,33 +55,34 @@ function X4D_Item:New(itemId, name)
         MarketPrice = nil, -- TODO: sell prices by per-level
     }
     setmetatable(item, { __index = X4D_Item })
-    return item, itemId
+    return item, link
 end
 
 setmetatable(X4D_Item, { __call = X4D_Item.New })
 
-function X4D_Item:GetItemLink(quality, level, style, isCrafted, isBound, isStolen, condition, instanceData, enchantment1, enchantment2, enchantment3)
-    if (quality == nil or type(quality) == "number") then
-        quality = quality ~= nil and quality or 0
-        level = level ~= nil and level or 0
-        style = style ~= nil and style or 0
-        isCrafted = (isCrafted ~= nil and isCrafted and 1) or 0
-        isBound = (isBound ~= nil and isBound and 1) or 0
-        isStolen = (isStolen ~= nil and isStolen and 1) or 0
-        condition = condition ~= nil and condition or 0
-        instanceData = instanceData ~= nil and instanceData or 0
-        enchantment1 = enchantment1 ~= nil and enchantment1 or 0
-        enchantment2 = enchantment2 ~= nil and enchantment2 or 0
-        enchantment3 = enchantment3 ~= nil and enchantment3 or 0
-        return string.format("|H1:item:%s:%s:%s:%s:%s:%s:0:0:0:0:0:0:0:0:0:%s:%s:%s:%s:%s:%s|h[%s]|h",
-            self.Id, quality, level, enchantment1, enchantment2, enchantment3,
-            style, isCrafted, isBound, isStolen, condition, instanceData,
-            self.Name)
-    else
-        return string.format("|H1:item:%s|h[%s]|h",
-            quality, -- this is assumed to contain a pre-constructed 'options' string, not a quality value
-            self.Name)
-    end
+function X4D_Item:GetItemLink() --!!! quality, level, style, isCrafted, isBound, isStolen, condition, instanceData, enchantment1, enchantment2, enchantment3)
+	return self.Id
+	--!!!if (quality == nil or type(quality) == "number") then
+	--    quality = quality ~= nil and quality or 0
+	--    level = level ~= nil and level or 0
+	--    style = style ~= nil and style or 0
+	--    isCrafted = (isCrafted ~= nil and isCrafted and 1) or 0
+	--    isBound = (isBound ~= nil and isBound and 1) or 0
+	--    isStolen = (isStolen ~= nil and isStolen and 1) or 0
+	--    condition = condition ~= nil and condition or 0
+	--    instanceData = instanceData ~= nil and instanceData or 0
+	--    enchantment1 = enchantment1 ~= nil and enchantment1 or 0
+	--    enchantment2 = enchantment2 ~= nil and enchantment2 or 0
+	--    enchantment3 = enchantment3 ~= nil and enchantment3 or 0
+	--    return string.format("|H1:item:%s:%s:%s:%s:%s:%s:0:0:0:0:0:0:0:0:0:%s:%s:%s:%s:%s:%s|h[%s]|h",
+	--        self.Id, quality, level, enchantment1, enchantment2, enchantment3,
+	--        style, isCrafted, isBound, isStolen, condition, instanceData,
+	--        self.Name)
+	--else
+	--    return string.format("|H1:item:%s|h[%s]|h",
+	--        quality, -- this is assumed to contain a pre-constructed 'options' string, not a quality value
+	--        self.Name)
+	--end
 end
 
 function X4D_Item:GetItemIconFilename()
@@ -71,20 +105,10 @@ end)
 
 function X4D_Items:ParseLink(link)
     local options, name = link:match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
-    --d({link or 'no-link', options or 'no-options', name or 'no-name'})
-    name = name:gsub("%^.*", ""):lower()
     if (options == nil) then
-        options = ""
+        options = "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0"
     end
-    local
-        itemId, itemQuality, levelReq, _4, _5, _6,
-        _7, _8, _9, _10, _11, _12, _13, _14, _15, 
-        style, isCrafted, isBound, isStolen, condition, instanceData 
-            = self:ParseOptions(options)
-    return name, options, 
-        itemId, itemQuality, levelReq, _4, _5, _6,
-        _7, _8, _9, _10, _11, _12, _13, _14, _15, 
-        style, isCrafted, isBound, isStolen, condition, instanceData 
+    return self:ParseOptions(options)
 end
 
 function X4D_Items:ParseOptions(options)
@@ -98,37 +122,22 @@ function X4D_Items:ParseOptions(options)
             style, isCrafted, isBound, isStolen, condition, instanceData 
                 = self:ParseOptions(options)
         ]]
-
-        return options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)")
+        return options:match("(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)$")
     end
 end
 
 function X4D_Items:FromLink(link)
+	link = X4D_ScrubItemLinkForIdentity(link)
     local item
-    local name, options, itemId = self:ParseLink(link)
-    if (itemId ~= nil) then
-        item = self.DB:Find(itemId)
-        if (item == nil) then        
-            item = X4D_Item(itemId, name)
-            self.DB:Add(itemId, item)
-        end
-    elseif (name ~= nil) then
-        item = self:FromName(name)
+    item = self.DB:Find(link)
+    if (item == nil) then        
+        item = X4D_Item(link) 
+        self.DB:Add(link, item)
     end
     if (item ~= nil) then
         setmetatable(item, { __index = X4D_Item })
     end
-    return item, name
-end
-
-function X4D_Items:FromName(name)
-    name = name:gsub("%^.*", ""):lower()
-    local item = self.DB
-        :FirstOrDefault(function (item) return item.Name == name end)
-    if (item ~= nil) then
-        setmetatable(item, { __index = X4D_Item })
-    end
-    return item, name
+    return item
 end
 
 function X4D_Items:FromBagSlot(bagId, slotIndex)
@@ -236,10 +245,17 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = "Misc"
     },
-    [ITEMTYPE_ALCHEMY_BASE] = {
-        Id = ITEMTYPE_ALCHEMY_BASE,
-        Canonical = "ITEMTYPE_ALCHEMY_BASE",
-        Name = GetString("SI_ITEMTYPE", ITEMTYPE_ALCHEMY_BASE), --"Bases",
+    [ITEMTYPE_POISON_BASE] = {
+        Id = ITEMTYPE_POISON_BASE,
+        Canonical = "ITEMTYPE_POISON_BASE",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_POISON_BASE), --"Poison Bases",
+        Tooltip = nil,
+        Group = "Alchemy"
+    },
+    [ITEMTYPE_POTION_BASE] = {
+        Id = ITEMTYPE_POTION_BASE,
+        Canonical = "ITEMTYPE_POTION_BASE",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_POTION_BASE), --"Potion Bases",
         Tooltip = nil,
         Group = "Alchemy"
     },
@@ -615,3 +631,12 @@ X4D_Items.ItemTypes = {
         Group = "Woodworking"
     },
 }
+
+function X4D_Items:Test()
+	local testLink =     "|H1:item:30141:30:40:1:1:1:1:1:1:1:1:1:1:1:1:1:0:0:1:0:983299|h|h";
+	local expectedLink = "|H1:item:30141:30:40:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:983299|h|h";
+	local scrubbedLink = X4D_ScrubItemLinkForIdentity(testLink);
+	if not (expectedLink == scrubbedLink) then
+		X4D.Log:Error("Expected(" .. string.gsub(expectedLink, "|", "!") .. ") and Actual(" .. string.gsub(scrubbedLink, "|", "!") .. ")")
+	end
+end

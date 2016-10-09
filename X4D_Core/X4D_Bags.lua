@@ -43,12 +43,12 @@ function X4D_Bag:PopulateSlot(slotIndex)
     local slot
     local itemLink, itemColor, itemQuality, item, slotStackCount, slotLocked, slotEquipType = X4D.Items:FromBagSlot(self.Id, slotIndex)
     if (itemLink ~= nil and itemLink:len() > 0 and itemQuality ~= nil) then
-        local _, itemOptions, _1, _2, itemLevel, enchantment1, enchantment2, enchantment3, _7, _8, _9, _10, _11, _12, _13, _14, _15, itemStyle, isCrafted, isBound, isStolen, condition, instanceData =
+        local _1, _2, itemLevel, enchantment1, enchantment2, enchantment3, _7, _8, _9, _10, _11, _12, _13, _14, _15, itemStyle, isCrafted, isBound, isStolen, condition, instanceData =
                 X4D.Items:ParseLink(itemLink)  
         local instanceId = GetItemInstanceId(self.Id, slotIndex) or 0
         slot = {
             Id = slotIndex,
-            IsEmpty = false,
+            IsEmpty = item == nil,
             Item = item,
             IsLocked = slotLocked == "1",
             ItemColor = itemColor,
@@ -138,8 +138,8 @@ function X4D_Bags:GetGuildBankBag(refresh)
 end
 
 function X4D_Bags:GetNormalizedString(slot)
-    if (slot == nil or slot.IsEmpty) then
-        return "ISEMPTY"
+    if (slot == nil or slot.IsEmpty or slot.Item == nil) then
+        return ""
     end
     local itemQualityString = X4D.Items.ToQualityString(slot.ItemQuality)
     local itemType = X4D.Items.ItemTypes[slot.Item.ItemType]
@@ -149,8 +149,8 @@ function X4D_Bags:GetNormalizedString(slot)
     else
         canonicalName = "ITEMTYPE_NONE"
     end
-    local normalized = string.format("L%02d %s %s/%s %s",
-        slot.ItemLevel, itemQualityString:upper(), canonicalName, slot.Item.Id, slot.Item:GetItemLink(slot.ItemOptions))
+    local normalized = string.format("L%02d %s %s/%s",
+        slot.ItemLevel, itemQualityString:upper(), canonicalName, slot.Item.Id)
     if (slot.IsStolen) then
         normalized = "STOLEN " .. normalized
     end
