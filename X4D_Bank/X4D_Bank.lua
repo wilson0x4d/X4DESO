@@ -1,4 +1,4 @@
-local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1026)
+local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1027)
 if (not X4D_Bank) then
     return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Bank = X4D_Bank
 
 X4D_Bank.NAME = "X4D_Bank"
-X4D_Bank.VERSION = "1.26"
+X4D_Bank.VERSION = "1.27"
 
 X4D_BANKACTION_NONE = 0
 X4D_BANKACTION_DEPOSIT = 1
@@ -33,8 +33,54 @@ X4D_Bank.Colors = {
     Subtext = "|c5C5C5C",
 }
 
-local _nextAutoDepositTime = 0
+local _nextAutoDepositTime = 0 -- the next time we will bother attempting to auto-deposit/withdraw any currency
+local _isBankBusy = false -- true if a bank is currently busy processing, used to prevent renentrancy into async addon methods
+local _isBankOpen = false -- true if a bank is currently open, regardless of its processing state
 
+--region MRL helpers
+
+local _mrlIdealRate = 5 -- arbitrary
+local _mrlLastTimestamp = 0
+local _mrlCountSinceLast = 0
+local function MRL_Increment(count)
+	if (count == nil) then
+		count = 1
+	end
+	_mrlCountSinceLast = _mrlCountSinceLast + count
+end
+local function MRL_WouldExceedLimit()
+	-- TODO: calculate based on all factors, Fx. does the MRL have decay? what is the peak before we must meet decay requirements? et cetera.
+	local ts = GetGameTimeMilliseconds()
+	local seconds = ((ts - _mrlLastTimestamp) + 1) / 1000
+	local rate = _mrlCountSinceLast / seconds
+	return (rate > _mrlIdealRate); -- arbitrary, 2-per-second (sustained) would hit limit
+end
+local function MRL_GetMessageRateLimit()
+	-- TODO: this is guesswork, I still have not seen a definition of MRL from ZO staff, see also: https://forums.elderscrollsonline.com/en/discussion/169096/what-is-the-message-rate-limit-exactly
+	-- NOTE: the MRL of 500ms would appear to be incorrect
+	-- NOTE: however, it appears it takes "about that long" for a bank transaction to commit and come back from the server (e.g. result in UI state change) so we always wait a base period of 500ms + 50ms per message sent since last check
+	-- TODO: calculate based on all factors, Fx. does the MRL have decay? what is the peak before we must meet decay requirements? et cetera.
+	local ts = GetGameTimeMilliseconds()
+	local seconds = ((ts - _mrlLastTimestamp) + 1) / 1000
+	local rate = _mrlCountSinceLast / seconds
+	if (rate > _mrlIdealRate) then
+		waitTime = (((rate - _mrlIdealRate) / _mrlIdealRate) * 500) -- wait one second for every overage of "ideal-per-second", ie. if ideal rate is 3 and current rate is 9, we wait 2 additional seconds to 'nudge' the rate down
+	else
+		waitTime = 50 -- standard wait time 
+--		X4D.Log:Warning("- waitTime=" .. waitTime)
+	end
+	if (waitTime < 50) then -- max effective rate once at peak becomes 20-per
+		waitTime = 50 -- apply a minimum wait period, this solves the problem of overly aggressive ideal-rate delay calculations (e.g. sub-50ms waits, they only eat CPU, providing no real value beyond initial burst)
+	end
+--	X4D.Log:Verbose("X4D_Bank MRL waitTime=" .. waitTime)
+	return waitTime
+end
+local function MRL_ResetRate()
+	_mrlCountSinceLast = 0
+	_mrlLastTimestamp = GetGameTimeMilliseconds()
+end
+
+--endregion MRL helpers
 --region Chat Callback
 
 local function DefaultChatCallback(color, text)
@@ -174,30 +220,41 @@ local function TryWithdrawReserveAmount()
     end
 end
 
-local function ShouldDepositItemType(slot, itemTypeActions)
-    return itemTypeActions[slot.Item.ItemType] == X4D_BANKACTION_DEPOSIT
-end
-
-local function ShouldWithdrawItemType(slot, itemTypeActions)
-    return itemTypeActions[slot.Item.ItemType] == X4D_BANKACTION_WITHDRAW
-end
-
 local function CreateSettingsName(itemType)
     return itemType.Id
 end
 
+local _itemTypeActions = nil
+local _itemTypeActionsExpiry = 0
+
 local function GetItemTypeActions()
-    local itemTypeActions = { }
-    for _,groupName in pairs(X4D.Items.ItemGroups) do
-        for _,itemType in pairs(X4D.Items.ItemTypes) do
-            if (itemType.Group == groupName) then
-                local dropdownName = CreateSettingsName(itemType)
-                local direction = X4D_Bank.Settings:Get(dropdownName) or 0
-                itemTypeActions[itemType.Id] = direction
-            end
-        end
-    end
-    return itemTypeActions
+	local startTime = GetGameTimeMilliseconds()
+	if (_itemTypeActions == nil or _itemTypeActionsExpiry < GetGameTimeMilliseconds()) then
+		-- TODO: when settings are saved/set, these actions must be invalidaed in order to cause a refresh
+		local itemTypeActions = { }
+		for _,groupName in pairs(X4D.Items.ItemGroups) do
+			for _,itemType in pairs(X4D.Items.ItemTypes) do
+				if (itemType.Group == groupName) then
+					local dropdownName = CreateSettingsName(itemType)
+					local direction = X4D_Bank.Settings:Get(dropdownName) or 0
+					itemTypeActions[itemType.Id] = direction
+				end
+			end
+		end
+		_itemTypeActions = itemTypeActions
+		_itemTypeActionsExpiry = startTime + 7000 -- TODO: arbitrary, could remove expiry if this was invlaidated whenever settings were set, so this expiry only exists to ensure new settings are picked up within a reasonable time-frame after being set -- we chose 7s because we feel it's improbably that a user would interact with a bank, reconfigure the add-on, then interact with the bank again within a 7 second period
+	end
+	return _itemTypeActions 
+end
+
+local function ShouldDepositItemType(slot)
+	local itemTypeActions = GetItemTypeActions()
+    return itemTypeActions[slot.Item.ItemType] == X4D_BANKACTION_DEPOSIT
+end
+
+local function ShouldWithdrawItemType(slot)
+	local itemTypeActions = GetItemTypeActions()
+    return itemTypeActions[slot.Item.ItemType] == X4D_BANKACTION_WITHDRAW
 end
 
 local function TryCombinePartialStacks(bag, depth)
@@ -217,17 +274,18 @@ local function TryCombinePartialStacks(bag, depth)
                 if (rval ~= nil) then
                     local lslot = bag.Slots[lval.Id]
                     local rslot = bag.Slots[rval.Id]
-                    if ((lval.Id ~= rval.Id) and(lval.ItemLevel == rval.ItemLevel) and(lval.ItemQuality == rval.ItemQuality) and(lval.Item.Name == rval.Item.Name) and(rval.StackCount ~= 0) and(lval.StackCount ~= 0) and lslot ~= nil and rslot ~= nil and(not lslot.IsEmpty) and(not rslot.IsEmpty) and(lslot.IsStolen == rslot.IsStolen)) then
-                        table.insert(combines, { [1] = lval, [2] = rval })
-                        combineCount = combineCount + 1
-                        break
-                    end
+					if lslot ~= nil and rslot ~= nil and(not lslot.IsEmpty) and(not rslot.IsEmpty) and (lval.Item ~= nil and rval.Item ~= nil) then
+						if ((lval.Id ~= rval.Id) and(lval.ItemLevel == rval.ItemLevel) and(lval.ItemQuality == rval.ItemQuality) and (lval.Item.Id == rval.Item.Id) and(rval.StackCount ~= 0) and(lval.StackCount ~= 0) and(lslot.IsStolen == rslot.IsStolen)) then
+							table.insert(combines, { [1] = lval, [2] = rval })
+							break
+						end
+					end
                 end
             end
         end
     end
     for i,combine in pairs(combines) do
-        --X4D.Log:Verbose{i,combine}
+        X4D.Log:Verbose{i,combine}
         local lval, rval = combines[i][1], combines[i][2]
         local countToMove = (rval.Item.StackMax - rval.StackCount)
         if (lval.StackCount < countToMove) then
@@ -238,13 +296,20 @@ local function TryCombinePartialStacks(bag, depth)
             lval.StackCount = lval.StackCount - countToMove
             CallSecureProtected("PickupInventoryItem", bag.Id, lval.Id, countToMove)
             CallSecureProtected("PlaceInInventory", bag.Id, rval.Id)
-            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
-                "Restacked", lval.Item:GetItemIcon(), lval.Item:GetItemLink(lval.ItemOptions), X4D.Colors.StackCount, countToMove)
+			MRL_Increment(1)
+            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>> <<6>>",
+                "Restacked", lval.Item:GetItemIcon(), lval.Item:GetItemLink(), X4D.Colors.StackCount, countToMove)
 			InvokeChatCallback(lval.ItemColor, message)
+            combineCount = combineCount + 1
+			if (MRL_WouldExceedLimit()) then
+				return false
+			end
         end
     end
     if (combineCount > 0 and depth > 0) then
-        TryCombinePartialStacks(bag, depth - 1)
+        return TryCombinePartialStacks(bag, depth - 1)
+	else
+		return true
     end
 end
 
@@ -258,20 +323,22 @@ local function FindTargetSlots(sourceSlot, targetBag)
             X4D.Log:Error{"FindTargetSlots", "INVALID SLOT INDEX " .. slotIndex}
         elseif (slot.IsEmpty) then
             table.insert(empties, slot)
-        elseif ((sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Name == slot.Item.Name) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
-            table.insert(partials, slot)
-            remaining = slot.Item.StackMax - slot.StackCount
-            if (remaining <= 0) then
-                break
-            end
-        end
+        elseif (sourceSlot.Item ~= nil and slot.Item ~= nil) then
+			if ((sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Id == slot.Item.Id) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
+				table.insert(partials, slot)
+				remaining = slot.Item.StackMax - slot.StackCount
+				if (remaining <= 0) then
+					break
+				end
+			end
+		end
     end
     return partials, empties
 end
 
 local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, directionText)
     local itemIcon = sourceSlot.Item:GetItemIcon()
-    local itemLink = sourceSlot.Item:GetItemLink(sourceSlot.ItemOptions)
+    local itemLink = sourceSlot.Item:GetItemLink()
     local countRemaining = 0
     local totalMoved = 0
     local usedEmptySlot = false
@@ -284,13 +351,18 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         end
         CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
         CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
+		MRL_Increment(1)
         X4D.Log:Verbose{"TryMove(topartial)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
         totalMoved = totalMoved + countToMove
         sourceSlot.StackCount = sourceSlot.StackCount - countToMove
         if (sourceSlot.StackCount <= 0) then
             sourceSlot.IsEmpty = true
+			sourceSlot.Item = nil
             break
         end
+		if (MRL_WouldExceedLimit()) then
+			return totalMoved, usedEmptySlot
+		end
     end
     if (not sourceSlot.IsEmpty) then
         for _, targetSlot in pairs(emptySlots) do
@@ -298,6 +370,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 local countToMove = sourceSlot.StackCount
                 CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
                 CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
+				MRL_Increment(1)
                 X4D.Log:Verbose{"TryMove(toempty)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
                 targetSlot.IsEmpty = false
                 usedEmptySlot = true
@@ -305,164 +378,246 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 sourceSlot.StackCount = sourceSlot.StackCount - countToMove
                 if (sourceSlot.StackCount <= 0) then
                     sourceSlot.IsEmpty = true
+					sourceSlot.Item = nil
                     break
                 end
             end
+			if (MRL_WouldExceedLimit()) then
+				return totalMoved, usedEmptySlot
+			end
         end
     end
     if (totalMoved > 0) then
-            local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
-                directionText, itemIcon, itemLink, X4D.Colors.StackCount, totalMoved)
-			InvokeChatCallback(sourceSlot.ItemColor, message)
+        local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
+            directionText, itemIcon, itemLink, X4D.Colors.StackCount, totalMoved)
+		InvokeChatCallback(sourceSlot.ItemColor, message)
     end
     return totalMoved, usedEmptySlot
 end
 
-local function ConductTransactions()
-    local totalDeposits = 0
-    local totalWithdrawals = 0
+local function ConductTransactions(transactionState)
+	local itemTypeActions = GetItemTypeActions()
+	if (transactionState.BACKPACK == nil) then
+		transactionState.BACKPACK = TryGetBag(BAG_BACKPACK)
+--		return false
+	end
+	if (transactionState.BANK == nil) then
+		transactionState.BANK = TryGetBag(BAG_BANK)
+--		return false
+	end
 
-    local inventoryState = TryGetBag(BAG_BACKPACK)
-    local bankState = TryGetBag(BAG_BANK)
-
-    TryCombinePartialStacks(inventoryState)
-    TryCombinePartialStacks(bankState)
+    if (not TryCombinePartialStacks(transactionState.BACKPACK)) then
+		return false
+	end
+	if (not TryCombinePartialStacks(transactionState.BANK)) then
+		return false
+	end
 
     ClearCursor()
 
-    local itemTypeActions = GetItemTypeActions()
-    local pendingDeposits = { }
-    local pendingDepositCount = 0
-    local pendingWithdrawals = { }
-    local pendingWithdrawalCount = 0
+	if (transactionState.pendingDeposits == nil) then
+		for _, slot in pairs(transactionState.BACKPACK.Slots) do
+			if (slot ~= nil and not slot.IsEmpty and slot.Item ~= nil) then
+				local slotAction = GetPatternAction(slot)
+				if (slotAction == X4D_BANKACTION_NONE) then
+					slotAction = itemTypeActions[slot.Item.ItemType]
+				end
+				if (slotAction == X4D_BANKACTION_DEPOSIT) then
+					transactionState.pendingDepositCount = transactionState.pendingDepositCount + 1
+					transactionState.pendingDeposits = {
+						n = transactionState.pendingDeposits,
+						v = slot,
+					}
+				end
+			else
+				transactionState.BACKPACK.FreeCount = transactionState.BACKPACK.FreeCount + 1
+			end
+		end
+		if (transactionState.pendingDeposits == nil) then
+			transactionState.pendingDeposits = false
+		end
+	end
 
-    local backpackFreeCount = 0
-    local bankFreeCount = 0
+	if (transactionState.pendingWithdrawals == nil) then
+		for _, slot in pairs(transactionState.BANK.Slots) do
+			if (slot ~= nil and not slot.IsEmpty) then
+				local slotAction = GetPatternAction(slot)
+				if (slotAction == X4D_BANKACTION_NONE and slot.Item ~= nil) then
+					slotAction = itemTypeActions[slot.Item.ItemType]
+				end
+				if (slotAction == X4D_BANKACTION_WITHDRAW) then
+					transactionState.pendingWithdrawalCount = transactionState.pendingWithdrawalCount + 1
+					transactionState.pendingWithdrawals = {
+						n = transactionState.pendingWithdrawals,
+						v = slot,
+					}
+				end
+			else
+				transactionState.BANK.FreeCount = transactionState.BANK.FreeCount + 1
+			end
+		end
+		if (transactionState.pendingWithdrawals == nil) then
+			transactionState.pendingWithdrawals = false
+		end
+	end
 
-    for _, slot in pairs(inventoryState.Slots) do
-        if (slot ~= nil and not slot.IsEmpty) then
-            local slotAction = GetPatternAction(slot)
-            if (slotAction == X4D_BANKACTION_NONE) then
-                slotAction = itemTypeActions[slot.Item.ItemType]
-            end
-            if (slotAction == X4D_BANKACTION_DEPOSIT) then
-                pendingDepositCount = pendingDepositCount + 1
-                table.insert(pendingDeposits, slot)
-            end
-        else
-            backpackFreeCount = backpackFreeCount + 1
-        end
-    end
+	local wasAnyChangeMade = false
+    local shouldProcessBags = (transactionState.pendingDepositCount > 0 or transactionState.pendingWithdrawalCount > 0)
+	local sourceBag
+	local targetBag
+	while (shouldProcessBags) do
+		shouldProcessBags = false
+		sourceBag = transactionState.BACKPACK
+		targetBag = transactionState.BANK
+		while (transactionState.pendingDeposits) do
+			local sourceSlot = transactionState.pendingDeposits.v
+			transactionState.pendingDeposits = transactionState.pendingDeposits.n
+			if (not sourceSlot.IsEmpty) then
+				local usedEmptySlots = 0
+				local countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
+				wasAnyChangeMade = wasAnyChangeMade or countMoved > 0
+				if (L_usedEmptySlot) then
+					usedEmptySlots = usedEmptySlots + 1
+				end
+				while (countMoved > 0 and not sourceSlot.IsEmpty) do
+					transactionState.totalDeposits = transactionState.totalDeposits + countMoved
+					countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
+					if (L_usedEmptySlot) then
+						usedEmptySlots = usedEmptySlots + 1
+					end
+				end
+				transactionState.totalDeposits = transactionState.totalDeposits + countMoved
+				if (usedEmptySlots > 0) then
+					transactionState.BANK.FreeCount = transactionState.BANK.FreeCount - usedEmptySlots
+					if (transactionState.pendingWithdrawalCount > 0) then
+						shouldProcessBags = true
+					end
+				end
+				if (sourceSlot.IsEmpty) then
+					transactionState.BACKPACK.FreeCount = transactionState.BACKPACK.FreeCount + 1
+					transactionState.pendingDepositCount = transactionState.pendingDepositCount - 1
+				end
+				if (MRL_WouldExceedLimit()) then
+					return false
+				end
+			end
+		end
+		sourceBag = transactionState.BANK
+		targetBag = transactionState.BACKPACK
+		while (transactionState.pendingWithdrawals) do
+			local sourceSlot = transactionState.pendingWithdrawals.v
+			transactionState.pendingWithdrawals = transactionState.pendingWithdrawals.n
+			if (not sourceSlot.IsEmpty) then
+				local usedEmptySlots = 0
+				local countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
+				wasAnyChangeMade = wasAnyChangeMade or countMoved > 0
+				if (L_usedEmptySlot) then
+					usedEmptySlots = usedEmptySlots + 1
+				end
+				while (countMoved > 0 and not sourceSlot.IsEmpty) do
+					transactionState.totalWithdrawals = transactionState.totalWithdrawals + countMoved
+					countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
+					if (L_usedEmptySlot) then
+						usedEmptySlots = usedEmptySlots + 1
+					end
+				end
+				transactionState.totalWithdrawals = transactionState.totalWithdrawals + countMoved
+				if (usedEmptySlot) then
+					transactionState.BACKPACK.FreeCount = transactionState.BACKPACK.FreeCount - usedEmptySlots
+					if (transactionState.pendingDepositCount > 0) then
+						shouldProcessBags = true
+					end
+				end
+				if (sourceSlot.IsEmpty) then
+					transactionState.BANK.FreeCount = transactionState.BANK.FreeCount + 1
+					transactionState.pendingWithdrawalCount = transactionState.pendingWithdrawalCount - 1
+				end
+				if (MRL_WouldExceedLimit()) then
+					return false
+				end
+			end
+		end
+	end
 
-    for _, slot in pairs(bankState.Slots) do
-        if (slot ~= nil and not slot.IsEmpty) then
-            local slotAction = GetPatternAction(slot)
-            if (slotAction == X4D_BANKACTION_NONE) then
-                slotAction = itemTypeActions[slot.Item.ItemType]
-            end
-            if (slotAction == X4D_BANKACTION_WITHDRAW) then
-                pendingWithdrawalCount = pendingWithdrawalCount + 1
-                table.insert(pendingWithdrawals, slot)
-            end
-        else
-            bankFreeCount = bankFreeCount + 1
-        end
-    end
+	-- HACK: we require at least one "re-entry" in order to continue deposits and withdrawals in the case where we've hit a cap, before v1.27 we would simply loop one addiitonal iteration
+	if (wasAnyChangeMade) then
+		return false
+	end
 
-    local shouldProcessBags = (pendingDepositCount > 0 or pendingWithdrawalCount > 0)
-    local sourceBag
-    local targetBag
-    while (shouldProcessBags) do
-        shouldProcessBags = false
-        sourceBag = inventoryState
-        targetBag = bankState
-        for _,sourceSlot in pairs(pendingDeposits) do
-            if (not sourceSlot.IsEmpty) then
-                local countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
-                while (countMoved > 0 and not sourceSlot.IsEmpty) do
-                    totalDeposits = totalDeposits + countMoved
-                    countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
-                end
-                totalDeposits = totalDeposits + countMoved
-                if (usedEmptySlot) then
-                    bankFreeCount = bankFreeCount - 1
-                    if (pendingWithdrawalCount > 0) then
-                        shouldProcessBags = true
-                    end
-                end
-                if (sourceSlot.IsEmpty) then
-                    backpackFreeCount = backpackFreeCount + 1
-                    pendingDepositCount = pendingDepositCount - 1
-                end
-            end
-        end
-        sourceBag = bankState
-        targetBag = inventoryState
-        for _,sourceSlot in pairs(pendingWithdrawals) do
-            if (not sourceSlot.IsEmpty) then
-                local countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
-                while (countMoved > 0 and not sourceSlot.IsEmpty) do
-                    totalWithdrawals = totalWithdrawals + countMoved
-                    countMoved, usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Withdrew")
-                end
-                totalWithdrawals = totalWithdrawals + countMoved
-                if (usedEmptySlot) then
-                    backpackFreeCount = backpackFreeCount - 1
-                    if (pendingDepositCount > 0) then
-                        shouldProcessBags = true
-                    end
-                end
-                if (sourceSlot.IsEmpty) then
-                    bankFreeCount = bankFreeCount + 1
-                    pendingWithdrawalCount = pendingWithdrawalCount - 1
-                end
-            end
-        end
-    end
-
-    inventoryState.FreeCount = backpackFreeCount
-    bankState.FreeCount = bankFreeCount
+	-- HACK: ideally we should not need to refresh state like this to know proper "FreeCount" -- however, FreeCount is not being maintained correctly, today, and without this we get incorrect counts on the summary message printed further below
+	transactionState.BACKPACK = TryGetBag(BAG_BACKPACK)
+	transactionState.BANK = TryGetBag(BAG_BANK)
 
     local message
     local inventoryFreeColor = X4D.Colors.Gold
-    if (inventoryState.FreeCount < (inventoryState.SlotCount * 0.2)) then
+    if (transactionState.BACKPACK.FreeCount < (transactionState.BACKPACK.SlotCount * 0.2)) then
         inventoryFreeColor = X4D.Colors.Red
     end
     local bankFreeColor = X4D.Colors.Gold
-    if (bankState.FreeCount < (bankState.SlotCount * 0.2)) then
+    if (transactionState.BANK.FreeCount < (transactionState.BANK.SlotCount * 0.2)) then
         bankFreeColor = X4D.Colors.Red
     end
-    if (totalDeposits > 0 or totalWithdrawals > 0) then
+    if (transactionState.totalDeposits > 0 or transactionState.totalWithdrawals > 0) then
         message = string.format("Bank Deposits: %s, Withdrawals: %s, Bank: %s/%s free, Backpack: %s/%s free",
-            X4D.Colors.Gold .. totalDeposits .. X4D.Colors.X4D, X4D.Colors.Gold .. totalWithdrawals .. X4D.Colors.X4D, 
-            bankFreeColor ..  bankState.FreeCount .. X4D.Colors.X4D, bankState.SlotCount,
-            inventoryFreeColor .. inventoryState.FreeCount .. X4D.Colors.X4D, inventoryState.SlotCount)
+            X4D.Colors.Gold .. transactionState.totalDeposits .. X4D.Colors.X4D, X4D.Colors.Gold .. transactionState.totalWithdrawals .. X4D.Colors.X4D, 
+            bankFreeColor ..  transactionState.BANK.FreeCount .. X4D.Colors.X4D, transactionState.BANK.SlotCount,
+            inventoryFreeColor .. transactionState.BACKPACK.FreeCount .. X4D.Colors.X4D, transactionState.BACKPACK.SlotCount)
     else
         message = string.format("Bank: %s/%s free, Backpack: %s/%s free",
-            bankFreeColor ..  bankState.FreeCount .. X4D.Colors.X4D, bankState.SlotCount,
-            inventoryFreeColor .. inventoryState.FreeCount .. X4D.Colors.X4D, inventoryState.SlotCount)
+            bankFreeColor ..  transactionState.BANK.FreeCount .. X4D.Colors.X4D, transactionState.BANK.SlotCount,
+            inventoryFreeColor .. transactionState.BACKPACK.FreeCount .. X4D.Colors.X4D, transactionState.BACKPACK.SlotCount)
     end
     InvokeChatCallback(X4D.Colors.X4D, message)
+
+	return true
 end
 
-local function OnOpenBankAsync(timer, state)
+local function OnOpenBankAsync(timer, transactionState)
     timer:Stop()
-    -- item transactions
-    ConductTransactions()
-    -- monetary transactions
-    if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
-        _nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000)
-        local availableAmount = TryDepositFixedAmount()
-        TryDepositPercentage(availableAmount)
-    end
-    TryWithdrawReserveAmount()
+--	X4D.Log:Warning("BEGIN " .. timer.Name)
+	if (not _isBankOpen) then
+		_isBankBusy = false
+	else
+		-- item transactions
+		if (not ConductTransactions(transactionState)) then
+			timer._interval = MRL_GetMessageRateLimit()
+			timer._enabled = true -- we do not call start because zo_calllater is called on our behalf if _enabled == true
+		else
+			-- monetary transactions
+			if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
+				_nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000) + 2000
+				local availableAmount = TryDepositFixedAmount()
+				TryDepositPercentage(availableAmount)
+			end
+			TryWithdrawReserveAmount()
+			_isBankBusy = false
+		end
+	end
+--	X4D.Log:Warning("END " .. timer.Name)
 end
 
 local function OnOpenBank(eventCode)
-    X4D.Async:CreateTimer(OnOpenBankAsync):Start(337, {}, "X4D_Bank::ConductTransactions")
+--	X4D.Log:Warning("BEGIN OnOpenBank")
+	_isBankOpen = true;
+	if (not _isBankBusy) then
+		_isBankBusy = true
+		local transactionState = {
+			totalDeposits = 0,
+			totalWithdrawals = 0,
+			pendingDeposits = nil, 
+			pendingDepositCount = 0,
+			pendingWithdrawals = nil,
+			pendingWithdrawalCount = 0,
+		}
+		MRL_ResetRate() -- we always reset the rate limit when the UI is first opened, the allow the rate to compound for the duration of the bank session
+		X4D.Async:CreateTimer(OnOpenBankAsync):Start(500, transactionState, "X4D_Bank::ConductTransactions") -- we apply a standard start delay of 500 ms, an arbitrary period, but it seems to be enough to allow the UI to finish initializing itself with data
+	end
+--	X4D.Log:Warning("END OnOpenBank")
 end
 
 local function OnCloseBank()
+	_isBankOpen = false;
+	-- TODO: cancel any busy timers
     -- coerce update of bag snapshots on close
     local inventoryState = TryGetBag(BAG_BACKPACK)
     local bankState = TryGetBag(BAG_BANK)
@@ -608,7 +763,7 @@ local function InitializeSettingsUI()
     table.insert(panelControls, {
         type = "editbox",
         name = "'For " .. GetString(SI_BANK_WITHDRAW) .. "' Items",
-        tooltip = "Line-delimited list of 'Withdraw' item patterns, items matching these patterns will be withdrawn from the bank regardless of any item type settings. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case.",
+        tooltip = "Line-delimited list of 'Withdraw' item patterns, items matching these patterns will be withdrawn from the bank regardless of any item type settings.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ITEM ID+OPTIONS INSTEAD.",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -633,7 +788,7 @@ local function InitializeSettingsUI()
     table.insert(panelControls, {
         type = "editbox",
         name = "'For " .. GetString(SI_BANK_DEPOSIT) .. "' Items",
-        tooltip = "Line-delimited list of 'Deposit' item patterns, items matching these patterns will be deposited into the bank regardless of any item type settings. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. |cFFFFC7Note that the 'Withdraw' item patterns list takes precedence over the 'Deposit Patterns' list.",
+        tooltip = "Line-delimited list of 'Deposit' item patterns, items matching these patterns will be deposited into the bank regardless of any item type settings.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cFFFFC7Note that the 'Withdraw' item patterns list takes precedence over the 'Deposit Patterns' list.",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -658,7 +813,7 @@ local function InitializeSettingsUI()
     table.insert(panelControls, {
         type = "editbox",
         name = "'Ignored' Items",
-        tooltip = "Line-delimited list of items to ignore using 'lua patterns'. Ignored items will NOT be withdrawn, deposited nor restacked regardless of any other setting. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. \n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+        tooltip = "Line-delimited list of items to ignore using 'lua patterns'. Ignored items will NOT be withdrawn, deposited nor restacked regardless of any other setting.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ITEM ID+OPTIONS INSTEAD.\n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -876,9 +1031,10 @@ local function OnAddOnLoaded(eventCode, addonName)
             },
             IgnoredItemPatterns =
             {
-                -- items matching an "ignored" pattern will be left alone regardless of any other pattern or setting, consider this a "safety list"
+                -- items matching an "ignored" pattern will be left alone regardless of any other pattern or setting, it is considered a "safety list"
                 "STOLEN",
-                "ring of mara",
+                "item:44904:", -- ring of mara
+				"item:44903:", -- pledge of mara
             }
         },
         2)

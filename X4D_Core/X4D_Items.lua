@@ -60,29 +60,8 @@ end
 
 setmetatable(X4D_Item, { __call = X4D_Item.New })
 
-function X4D_Item:GetItemLink() --!!! quality, level, style, isCrafted, isBound, isStolen, condition, instanceData, enchantment1, enchantment2, enchantment3)
+function X4D_Item:GetItemLink() 
 	return self.Id
-	--!!!if (quality == nil or type(quality) == "number") then
-	--    quality = quality ~= nil and quality or 0
-	--    level = level ~= nil and level or 0
-	--    style = style ~= nil and style or 0
-	--    isCrafted = (isCrafted ~= nil and isCrafted and 1) or 0
-	--    isBound = (isBound ~= nil and isBound and 1) or 0
-	--    isStolen = (isStolen ~= nil and isStolen and 1) or 0
-	--    condition = condition ~= nil and condition or 0
-	--    instanceData = instanceData ~= nil and instanceData or 0
-	--    enchantment1 = enchantment1 ~= nil and enchantment1 or 0
-	--    enchantment2 = enchantment2 ~= nil and enchantment2 or 0
-	--    enchantment3 = enchantment3 ~= nil and enchantment3 or 0
-	--    return string.format("|H1:item:%s:%s:%s:%s:%s:%s:0:0:0:0:0:0:0:0:0:%s:%s:%s:%s:%s:%s|h[%s]|h",
-	--        self.Id, quality, level, enchantment1, enchantment2, enchantment3,
-	--        style, isCrafted, isBound, isStolen, condition, instanceData,
-	--        self.Name)
-	--else
-	--    return string.format("|H1:item:%s|h[%s]|h",
-	--        quality, -- this is assumed to contain a pre-constructed 'options' string, not a quality value
-	--        self.Name)
-	--end
 end
 
 function X4D_Item:GetItemIconFilename()
