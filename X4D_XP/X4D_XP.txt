@@ -1,8 +1,8 @@
-## APIVersion: 100012
-## Title: X4D |cFFAE19XP |c4D4D4D1.12
+## APIVersion: 100017
+## Title: X4D |cFFAE19XP |c4D4D4D1.13
 ## Author: @wilson0x4d
 ## Description: Shows XP Gains in the Chat Window
-## Version: 1.12
+## Version: 1.13
 ## SavedVariables: X4D_XP_SV
 ## OptionalDependsOn: X4D_UI
 ## DependsOn: X4D_Core
