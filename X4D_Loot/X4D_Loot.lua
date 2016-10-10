@@ -132,7 +132,7 @@ local function CheckBagForChange(bagId, reportChanges)
                                 levelString = "L" ..  current.ItemLevel .. " "
                             end
                             local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>>",
-                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
+                                current.Item:GetItemIcon(), current.Item:GetItemLink(), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
 			                InvokeChatCallback(current.ItemColor, message)
 		                end
                     end
@@ -146,7 +146,7 @@ local function CheckBagForChange(bagId, reportChanges)
                                 levelString = "L" ..  current.ItemLevel .. " "
                             end
                             local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>>",
-                                current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
+                                current.Item:GetItemIcon(), current.Item:GetItemLink(), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
 			                InvokeChatCallback(current.ItemColor, message)
 		                end
                     end
@@ -181,7 +181,7 @@ end
 --            end
 --		    if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
 --                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
---                    current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+--                    current.Item:GetItemIcon(), current.Item:GetItemLink(), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
 --			    InvokeChatCallback(current.ItemColor, message)
 --		    end
 --        elseif (current ~= nil and previous ~= nil and (current == previous or current.InstanceId == previous.InstanceId) and (current.StackCount ~= previous.StackCount)) then
@@ -189,7 +189,7 @@ end
 --            local stackChange = current.StackCount - previous.StackCount
 --		    if ((stackChange > 0) and (bagId == BAG_BACKPACK)) then
 --                local message = zo_strformat("<<1>><<t:2>> <<3>> x<<4>><<5>>",
---                    current.Item:GetItemIcon(), current.Item:GetItemLink(current.ItemOptions), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
+--                    current.Item:GetItemIcon(), current.Item:GetItemLink(), X4D.Colors.StackCount, stackChange, GetWorthString(current, current.StackCount))
 --			    InvokeChatCallback(current.ItemColor, message)
 --		    end
 --        elseif ((current == nil or current.IsEmpty) and (previous ~= nil and not previous.IsEmpty)) then
