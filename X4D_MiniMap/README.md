@@ -53,33 +53,37 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
-v1.5
+### 1.6
+### ESO 2.6
+- API Version 100017
 
+### 1.5
+#### ESO 2.1
 - API Version 100012
 
-v1.4
+### 1.4
 
 - Fix error incorreect name when performing tile measurements.
 - Modified zoom/pan state to update 15 times a second instead of 10 (providing a smoother user experience)
 
-v1.3
+### 1.3
 
 - Integrated Stopwatch module for profiling misc code.
 
-v1.2
+### 1.2
 
 - Code is stabilizing, but still considered Alpha stages of development.
 - Use new 'GetTileDimensions' from Cartography module, retiring use of globals for tracking/determining tile dimensions.
 - Fixed bug where minimap zoom level would become stuck on zone change, MiniMap now uses a fixed zoom level, and performs scaling instead of resizing.
 - Allow pip position to wander, rather than clamp to interior of tile container, this provides a better experience when nearing the edge of a map.
 
-v1.1
+### 1.1
 
 - Fix bug where Location Name not updating.
 - Misc optimizations to minimap/ui code.
-- Updates for X4D_Core v1.14
+- Updates for X4D_Core ### 1.14
 
-v1.0
+### 1.0
 
 - Initial release.
 
