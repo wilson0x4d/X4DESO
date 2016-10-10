@@ -47,101 +47,105 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
-v1.33
+### 1.35
+#### ESU 2.6
+- API Version 100017
 
+### 1.33
+#### ESU 2.1
 - API Version 100012
 
-v1.32
+### 1.32
 
 - Integrated Stopwatch module for profiling misc code.
 
-v1.31
+### 1.31
 
 - fix bug where player names are not displayed when both playername and character name options were enabled.
 - Updates for 
 
-v1.30
+### 1.30
 
 - fix bug with online/offline status.
-- Misc updates for Core v1.13
+- Misc updates for Core ### 1.13
 
-v1.29
+### 1.29
 
 - Fix bug invalid check for non-existent guild.
 
-v1.28
+### 1.28
 
-- Misc updates for Core v1.10
+- Misc updates for Core ### 1.10
 
-v1.27
+### 1.27
 
 - Fix bug in Chat settings where custom guild abbreviations would be reset at the end of the session.
 - Misc clean-up and bugfixes from core/items refactor for icons, items, bags, etc.
 
-v1.26
+### 1.26
 
 - add support for **X4D Vendors** Addon
 
-v1.25
+### 1.25
 
 - Misc updates due to Core changes.
 
-v1.24
+### 1.24
 
 - ESO Update 6
 - Removed LibAddonMenu-1.0 from /lib/ folder
 - Fixed parsing bug when deriving colors from 'nil'
 - Depends On: X4D_Core, LibAddonMenu-2.0
  
-v1.23
+### 1.23
 
 - ESO version update, no functional change
 
-v1.22
+### 1.22
 
 - Fix bad reference to LibAddonMenu.
 
-v1.21
+### 1.21
 
 - Fix bug in "Remove Seconds Component" option.
 
-v1.20
+### 1.20
 
 - Fix 12 hour timestamps showing as negative values.
 - Add option to remove the "seconds" component from timestamps.
 
-v1.19
+### 1.19
 
 - Add Support for [URL="http://www.esoui.com/downloads/info347-X4DBank.html"][B]X4D [COLOR="DarkOrange"]Bank[/COLOR][/B][/URL]
 
-v1.18
+### 1.18
 
 - Add Option to choose between 24-Hour and 12-Hour Timestamp Formats.
 
-v1.17
+### 1.17
 
 - Option to disable Friend Online/Offline messages.
 
-v1.16
+### 1.16
 
 - Friend Online/Offline Messages now display Character Name.
 - Add Timestamps to LibAntiSpam output.
 - Add Timestamps and Character Name is Friend Online/Offline Messages.
 - Add Timestamps to System Shutdown, Ignores, and Group Changes output.
 
-v1.15
+### 1.15
 
 - Fixed bug where Player/Character Name options were mutually exclusive and displaying an incorrect state.
 
-v1.14
+### 1.14
 
 - Add support for [URL="http://www.esoui.com/downloads/info324-X4DXP.html"][B]X4D [COLOR="DarkOrange"]XP[/COLOR][/B][/URL]
 
-v1.13
+### 1.13
 
 - Fixed Highlight Colors for all Chat Output.
 
-v1.12
+### 1.12
 
 - Fixed a LibStub error for users that do not also use LibAntiSpam.
 - Added Option to Display Player Name in Guild Chat (in addition to Character Name, thus "character@player")
@@ -149,54 +153,54 @@ v1.12
 - Users can now optionally specify an explicit Guild Abbreviation for each of their Guilds.
 - Added Option to Disable Chat Window Fading
 
-v1.11
+### 1.11
 
 - Chat Window can now be resized larger than the default limit allowed.
 
-v1.10
+### 1.10
 
 - Adds support for **X4D Loot** Add-On.
 
-v1.9
+### 1.9
 
 - Optimized resolving character names, reduces CPU utilization.
 
-v1.8
+### 1.8
 
 - Fixed bug with certain player names not properly converting to character names in guild chat.
 
-v1.7
+### 1.7
 
 - Support for displaying 'Guild Number' in lieu of or in addition to 'Guild Abbreviation'.
 - Fixed bug with 'Reset to Defaults' which affected both UI and SavedVars.
 
-v1.6
+### 1.6
 
 - Add support for Guild Name abbreviations, these can be specified in Guild Descriptions by Guild Leaders/Officers. For example "Our Guild Tag [FOO] is the best!" will cause "FOO" to be used as an abbreviation.- If an abbreviation is not set in Guild Description, one is inferred from the Guild Name.
 - This feature, like all others, can be disabled in settings.   
 
-v1.5
+### 1.5
 
 - Fixed bug with SavedVars not saving (oops!)
 - Added support for [URL="http://www.esoui.com/downloads/info211-X4DLibAntiSpam.html"][B]X4D [COLOR="DarkOrange"]LibAntiSpam[/COLOR][/B][/URL]
 
-v1.4
+### 1.4
 
 - Fixes a bug with player names which contain special characters.
 
-v1.3
+### 1.3
 
 - Adds Settings UI, Enables Color Stripping, Adds Excess Text Stripping.
 
-v1.2
+### 1.2
 
 - Added Timestamps, colorized for visibility. Added support to strip colors from text, but feature is not enabled.
 
-v1.1
+### 1.1
 
 - Remove debug output from console (oops!)
 
-v1.0
+### 1.0
 
 - Initial release.
 
