@@ -45,56 +45,61 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
-v1.10
+### 1.11
+#### ESO 2.6
+- API Version 100017
+- Updated functionality where "item names" were used for filtering, since item names are no longer reliably provided by the game engine, X4D_Vendor no longer reliably supports them.
 
+### 1.10
+#### ESO 2.1
 - API Version 100012
 
-v1.9
+### 1.9
 
 - Removed anonymous function (minor optimization)
 
-v1.8
+### 1.8
 
 - Integrated Stopwatch module for profiling misc code.
 
-v1.7
+### 1.7
 
 - When closing vendor, refresh bag state, allowing status bar updates to use cached data rather than constantly refresh bag state itself.
 - Workaround for case where ESO Store scene is still initializing and cannot handle coroutine modification of bag state or ZO's code will throw errors and require a reloadui.
 
-v1.6
+### 1.6
 
 - Salting vendor keys to avoid name collisions for vendors which have same name, but exist in different zone (for example, AvA Quartermasters.)
 
-v1.5
+### 1.5
 
 - stolen items are no longer auto-laundered on fresh addon installs. however, lockpicks, motifs, legendarys, artifacts and arcane items still are.
 - fixed bug where no items would be laundered once salesmax was reached.
 - added option to launder items which would normally be sold when there would be no profit
-- Misc updates for Core v1.13
+- Misc updates for Core ### 1.13
 
-v1.4
+### 1.4
 
 - Fixed bug where items would not actually sell to fences when they were supposed to.
 
-v1.3
+### 1.3
 
 - Added option to switch settings between "Account-Wide" and "Per-Character", defaulting to "Per-Character"
 - Fix bug between fence transaction submission and fence transaction counts not being synchronizedS
-- Misc updates for Core v1.10
+- Misc updates for Core ### 1.10
 
-v1.2
+### 1.2
 
 - Will no longer attempt to launder items where there are insufficient funds available, condquently does not show incorrect earnings report for failed launder attempts.
 
-v1.1
+### 1.1
 
 - Now you can conduct transactions based on item type settings similar to [bank] addon (keep/sell patterns still take precedence)
 - Now tracking map/zone in Vendor DB
 - Adopted use of zo_strformat where appropriate.
 - Integration with recent X4D Core library changes (icons, items, bags, etc)
 
-v1.0
+### 1.0
 
 - Initial release.
 - Options to Auto-Sell/Launder Items by Pattern Matching (pattern matching is identical to 'Bank Ignore List')

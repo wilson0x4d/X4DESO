@@ -1,4 +1,4 @@
-local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1010)
+local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1011)
 if (not X4D_Vendors) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Vendors = X4D_Vendors
 
 X4D_Vendors.NAME = "X4D_Vendors"
-X4D_Vendors.VERSION = "1.10"
+X4D_Vendors.VERSION = "1.11"
 
 local constUnspecified = X4D.Colors.Gray .. "Unspecified"
 local constKeep = X4D.Colors.Deposit .. "Keep"
@@ -218,7 +218,7 @@ local function ConductTransactions(vendor)
                     local vendorAction = GetPatternAction(slot)
                     local itemTypeAction = itemTypeActions[slot.Item.ItemType]
                     if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
-                        --X4D.Log:Verbose({"Launder Codes for "..slot.Item:GetItemLink(slot.ItemOptions), vendorAction, itemTypeAction, (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+                        --X4D.Log:Verbose({"Launder Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                         if (vendor.IsFence and slot.IsStolen) then
                             if (laundersUsed < laundersMax) then
                                 if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
@@ -231,7 +231,7 @@ local function ConductTransactions(vendor)
                                         local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
                                         _debits = _debits + totalPrice
                                         local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                            "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
+                                            "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
 			                            InvokeChatCallback(slot.ItemColor, message)
                                     end
                                 end
@@ -240,7 +240,7 @@ local function ConductTransactions(vendor)
                     elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
                         if (vendor.IsFence == slot.IsStolen) then
                             if ((not vendor.IsFence) or (vendor.IsFence and (sellsUsed <= sellsMax))) then
-                                --X4D.Log:Verbose({"Sales Codes for "..slot.Item:GetItemLink(slot.ItemOptions), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+                                --X4D.Log:Verbose({"Sales Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                                 sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
                                 CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
                                 CallSecureProtected("PlaceInStoreWindow")
@@ -252,12 +252,12 @@ local function ConductTransactions(vendor)
                                     _credits = _credits + totalPrice
                                 end
                                 local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                    "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(slot.ItemOptions), X4D.Colors.StackCount, slot.StackCount, statement)
+                                    "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
 			                    InvokeChatCallback(slot.ItemColor, message)
                             end
                         end
                     --else
-                        --X4D.Log:Verbose({"NonAction Codes for "..slot.Item:GetItemLink(slot.ItemOptions), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+                        --X4D.Log:Verbose({"NonAction Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
                     end
                 end
             end
@@ -373,7 +373,7 @@ local function InitializeSettingsUI()
     table.insert(panelControls, {
         type = "editbox",
         name = "'For Keeps' Items",
-        tooltip = "Line-delimited list of 'For Keeps' patterns, items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case.",
+        tooltip = "Line-delimited list of 'For Keeps' patterns, items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -398,7 +398,7 @@ local function InitializeSettingsUI()
     table.insert(panelControls, {
         type = "editbox",
         name = "'For Sale' Items",
-        tooltip = "Line-delimited list of 'For Sale' item patterns, items matching these patterns WILL BE SOLD. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. |cFFFFC7Note that the 'For Keeps' item list will take precedence over the 'For Sale' list.",
+        tooltip = "Line-delimited list of 'For Sale' item patterns, items matching these patterns WILL BE SOLD.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cFFFFC7Note that the 'For Keeps' item list will take precedence over the 'For Sale' list.",
         isMultiline = true,
         width = "half",
         getFunc = function()
@@ -423,7 +423,7 @@ local function InitializeSettingsUI()
     table.insert(panelControls, {
         type = "editbox",
         name = "'Ignored' Items",
-        tooltip = "Line-delimited list of items to ignore using 'lua patterns'case. Ignored items will NOT be laundered nor sold regardless of any other setting. |cFFFFFFItem names should be all lower-case, special tokens should be all upper-case. \n |cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+        tooltip = "Line-delimited list of items to ignore using 'lua patterns'case. Ignored items will NOT be laundered nor sold regardless of any other setting.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
         isMultiline = true,
         width = "half",
         getFunc = function()
