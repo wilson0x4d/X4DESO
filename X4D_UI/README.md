@@ -41,29 +41,33 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
-v1.5
+### 1.6
+### ESO 2.6
+- API Version 100017
 
+### 1.5
+### ESO 2.1
 - API Version 100012
 
-v1.4
+### 1.4
 
 - Removed anonymous function (minor optimization)
 
-v1.3
+### 1.3
 
 - Integrated Stopwatch module for profiling misc code.
 
-v1.2
+### 1.2
 
 - Added new 'ADDONS' statistic to status bar which shows amount of memory being used by Lua runtime, in megabytes.
 - Added new slash commands: /fps /latency /mem to toggle status bar output/displays.
 - Introduced new 'ErrorManager', will iterate based on user feedback and own DEV needs.
 
-v1.1 
+### 1.1 
 
 - Add an observable for detecting scene changes.
 
-v1.0
+### 1.0
 
 - Initial release.
 
