@@ -230,7 +230,7 @@ local _itemTypeActionsExpiry = 0
 local function GetItemTypeActions()
 	local startTime = GetGameTimeMilliseconds()
 	if (_itemTypeActions == nil or _itemTypeActionsExpiry < GetGameTimeMilliseconds()) then
-		-- TODO: when settings are saved/set, these actions must be invalidaed in order to cause a refresh
+		-- TODO: when settings are saved/set, these actions should be invalidated in order to cause a refresh, instead we have an expiry implemented, below.
 		local itemTypeActions = { }
 		for _,groupName in pairs(X4D.Items.ItemGroups) do
 			for _,itemType in pairs(X4D.Items.ItemTypes) do
@@ -242,7 +242,7 @@ local function GetItemTypeActions()
 			end
 		end
 		_itemTypeActions = itemTypeActions
-		_itemTypeActionsExpiry = startTime + 7000 -- TODO: arbitrary, could remove expiry if this was invlaidated whenever settings were set, so this expiry only exists to ensure new settings are picked up within a reasonable time-frame after being set -- we chose 7s because we feel it's improbably that a user would interact with a bank, reconfigure the add-on, then interact with the bank again within a 7 second period
+		_itemTypeActionsExpiry = startTime + 7000 -- TODO: arbitrary, could remove expiry if this was invalidated whenever settings were set, so this expiry only exists to ensure new settings are picked up within a reasonable time-frame after being set -- we chose 7s because we feel it's improbably that a user would interact with a bank, reconfigure the add-on, then interact with the bank again within a 7 second period
 	end
 	return _itemTypeActions 
 end
@@ -541,6 +541,10 @@ local function ConductTransactions(transactionState)
 
 	-- HACK: we require at least one "re-entry" in order to continue deposits and withdrawals in the case where we've hit a cap, before v1.27 we would simply loop one addiitonal iteration
 	if (wasAnyChangeMade) then
+		if (not MRL_WouldExceedLimit()) then
+			-- HACK: setting this to 1 ensures that a minimum delay is incurred, improves UX
+			_mrlCountSinceLast = 1;
+		end
 		return false
 	end
 
