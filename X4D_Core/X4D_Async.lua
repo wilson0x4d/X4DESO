@@ -19,7 +19,12 @@ local X4D_Timer = {}
 --- <param name="callback">the callback to execute when the timer elapses, receives a reference to Timer instance and user state object</param>
 --- <param name="interval">the interval at which the timer elapses</param>
 --- </params>
-function X4D_Timer:New(callback, interval, state)
+function X4D_Timer:New(callback, interval, state, name)
+    if (name ~= nil) then
+        self.Name = name
+    elseif (self.Name == nil) then
+        self.Name = "$timer_" .. tostring(GetGameTimeMilliseconds())
+    end
     local timerId = _nextTimerId
     _nextTimerId = _nextTimerId + 1
 	local proto = {
@@ -66,8 +71,6 @@ end
 function X4D_Timer:Start(interval, state, name)
     if (name ~= nil) then
         self.Name = name
-    elseif (self.Name == nil) then
-        self.Name = "$" .. tostring(GetGameTimeMilliseconds())
     end
 	if (state ~= nil) then
 		self._state = state
@@ -96,6 +99,6 @@ end
 
 setmetatable(X4D_Timer, { __call = X4D_Timer.New })
 
-function X4D_Async:CreateTimer(callback, interval, state)
-    return X4D_Timer:New(callback, interval, state)
+function X4D_Async:CreateTimer(callback, interval, state, name)
+    return X4D_Timer:New(callback, interval, state, name)
 end
