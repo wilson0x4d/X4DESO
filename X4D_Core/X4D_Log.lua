@@ -64,6 +64,13 @@ function X4D_Log:SetTraceLevel(level)
 	_minTraceLevel = level
 end
 
+function X4D_Log:IsDebugEnabled()
+	return _minTraceLevel == X4D_Log.TRACE_LEVELS.DEBUG
+end
+function X4D_Log:IsVerboseEnabled()
+	return _minTraceLevel == X4D_Log.TRACE_LEVELS.VERBOSE
+end
+
 local _buffer = nil
 local _initialized = false
 

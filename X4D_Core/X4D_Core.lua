@@ -104,7 +104,7 @@ function X4D:Test()
     local callback1 = function(timer, state)
         state.counter = state.counter + 1
         X4D.Log:Verbose("count=" .. state.counter .. " time=" .. GetGameTimeMilliseconds(), "TIMER#1@107ms")
-        if (state.counter >= 4) then
+        if (state.counter >= 10) then
             timer:Stop()
             stopwatch:Stop()
             X4D.Log:Information("Test() took " .. stopwatch.ElapsedMilliseconds() .. "ms")
@@ -113,7 +113,7 @@ function X4D:Test()
     local callback2 = function(timer, state)
         state.counter = state.counter + 1
         X4D.Log:Verbose("count=" .. state.counter .. " time=" .. GetGameTimeMilliseconds(), "TIMER#2@47ms")
-        if (state.counter >= 4) then
+        if (state.counter >= 10) then
             timer:Stop()
         end
     end
@@ -182,7 +182,8 @@ end
 
 --region Garbage Collection
 
-X4D.OOM = 64
+-- NOTE: in ESO 2.6 I am seeing an average utilization of 63MB when running only X4D add-on, changed this default to be double the average (128MB)
+X4D.OOM = 128
 
 local _oomCount = 0
 local _previousGarbageIdle, _previousGarbageStepMul = 100, 150
@@ -277,10 +278,7 @@ local function ReportLoadTimes()
     X4D.Log:Warning(loadTimes, "X4D")
 end
 
-
 SLASH_COMMANDS["/x4d"] = function (parameters, other)
-    ReportVersions()
-    ReportLoadTimes()
     if (parameters ~= nil and parameters:len() > 0) then
         X4D.Log:Information("Parameters: " .. parameters, "X4D")
     end
@@ -289,13 +287,18 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
         if (Zgoo ~= nil) then
             Zgoo:Main(nil,1,X4D)
         end
-    end
-    if (parameters == "-test") then
+    elseif (parameters == "-test") then
         X4D.Test()
         return
-    end
-
-    if (X4D.UI ~= nil) then
-        X4D.UI:View("X4D_About")
-    end
+    elseif (parameters:StartsWith("backpack ")) then
+		local slotIndex = tonumber(parameters:sub(9, parameters:len()))
+		X4D.Log:Debug(slotIndex)
+    elseif (parameters:StartsWith("bank ")) then
+	else
+	    ReportVersions()
+	    ReportLoadTimes()
+		if (X4D.UI ~= nil) then
+			X4D.UI:View("X4D_About")
+	    end
+	end
 end
