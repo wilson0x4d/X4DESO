@@ -9,11 +9,13 @@ X4D_Bags.NAME = "X4D_Bags"
 X4D_Bags.VERSION = "1.9"
 
 local _bags = X4D.DB:Create()
-
-EVENT_MANAGER:RegisterForEvent(X4D_Bags.NAME, EVENT_PLAYER_ACTIVATED, function() 
-    -- reset state on player activate, ensure clean bag state on player login/out and zone change
+local function InvalidateBags(...)
+    -- reset state on player activate, ensure clean bag state on player login/out and zone change, other relevant events listed below
     _bags = X4D.DB:Create()
-end)
+end
+
+EVENT_MANAGER:RegisterForEvent(X4D_Bags.NAME, EVENT_PLAYER_ACTIVATED, InvalidateBags)
+EVENT_MANAGER:RegisterForEvent(X4D_Bags.NAME, EVENT_INVENTORY_BAG_CAPACITY_CHANGED, InvalidateBags)
 
 local X4D_Bag = {}
 

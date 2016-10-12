@@ -127,9 +127,9 @@ and send bitcoin if you don't already have a bitcoin wallet.
 #### ESO 2.6 (API Version 100017)
 
 - API Version 100017
-- somewhere between ESO 2.2 and ESO 2.6 the game client stopped including names in item links when converting them to strings, therefore, all calls which previously returned a parsed item name now instead return the original link object (which the game engine will be entirely responsible for rendering correctly) -- if these are used as strings, they should convert into an engine-compatible equivalent and render correctly
-
-?? - similarly item ids now include options so that X4D_Item objects can continue to be used to track extended item details as if they represented unique items -- for this reason we generate a new item link to serve as the aforementioned `name` result -- however, X4D will never use the resulting item names/links where uniqueness (instance-id) is required
+- Sometime after ESO 2.1 first released 6 the game client stopped including names in item links when converting them to strings, therefore, all calls which previously returned a parsed item name now instead return a link instead.
+- All functions which filtered items based on their name have been removed. Modules which performed item filtering (Bank, Vendors, etc) now require the use of item IDs instead. The default config has samples of this in each affected module.
+- Fixed bug where bag upgrade would not result in a status bar (UI module) change.
 
 #### ESO 2.4 (API Version 100015)
 
