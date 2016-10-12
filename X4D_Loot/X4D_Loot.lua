@@ -1,4 +1,7 @@
-local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1018)
+-- TODO:
+-- EVENT_LOCKPICK_BROKE (integer eventCode, number inactivityLengthMs)
+
+local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1019)
 if (not X4D_Loot) then
 	return
 end
@@ -6,7 +9,7 @@ local X4D = LibStub("X4D")
 X4D.Loot = X4D_Loot
 
 X4D_Loot.NAME = "X4D_Loot"
-X4D_Loot.VERSION = "1.18"
+X4D_Loot.VERSION = "1.19"
 
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 
@@ -106,6 +109,7 @@ local function InitializeSnapshots()
 end
 
 local function CheckBagForChange(bagId, reportChanges)
+--	X4D.Log:Verbose{"CheckBagForChange", bagId, reportChanges}
     local snapshot = _snapshots[bagId]
     local freeCount = 0
     if (snapshot == nil) then
@@ -115,7 +119,7 @@ local function CheckBagForChange(bagId, reportChanges)
         snapshot.SlotCount = GetBagSize(bagId)
 		for slotIndex = 0, (snapshot.SlotCount - 1) do
 	        local current, previous = snapshot:PopulateSlot(slotIndex)
-            if (current ~= nil and not current.IsEmpty) then
+            if (current ~= nil and not current.IsEmpty and current.Item ~= nil) then
                 if (current ~= previous and (previous == nil or previous.IsEmpty or current.InstanceId ~= previous.InstanceId)) then
                     -- slot contents are new
                     local stackChange = 0
@@ -132,7 +136,12 @@ local function CheckBagForChange(bagId, reportChanges)
                                 levelString = "L" ..  current.ItemLevel .. " "
                             end
                             local message = zo_strformat("<<6>><<1>><<t:2>> <<3>> x<<4>><<5>>",
-                                current.Item:GetItemIcon(), current.Item:GetItemLink(), X4D.Colors.StackCount, stackChange, GetWorthString(current, stackChange), levelString)
+                                current.Item:GetItemIcon(),
+								current.Item:GetItemLink(),
+								X4D.Colors.StackCount,
+								stackChange,
+								GetWorthString(current, stackChange),
+								levelString)
 			                InvokeChatCallback(current.ItemColor, message)
 		                end
                     end
@@ -151,8 +160,25 @@ local function CheckBagForChange(bagId, reportChanges)
 		                end
                     end
                 end
+			elseif (previous ~= nil and not previous.IsEmpty and previous.Item ~= nil) then
+				-- it would seem an item was removed from our backpack
+                if (reportChanges) then
+                    local stackChange = previous.StackCount
+                    local levelString = ""
+                    if (X4D.Loot.Settings:Get("DisplayLootLevel") and previous.ItemLevel ~= nil and previous.ItemLevel > 0) then
+                        levelString = "L" ..  previous.ItemLevel .. " "
+                    end
+                    local message = zo_strformat(X4D.Colors.Red .. "Lost " .. previous.ItemColor .. "<<6>><<1>><<t:2>> <<3>> x<<4>>",
+                        previous.Item:GetItemIcon(), 
+						previous.Item:GetItemLink(), 
+						X4D.Colors.StackCount, 
+						stackChange, 
+						GetWorthString(previous, stackChange), 
+						levelString)
+			        InvokeChatCallback(previous.ItemColor, message)
+                end
             end
-            if (current == nil or current.IsEmpty) then
+            if (current == nil or current.IsEmpty or current.Item == nil) then
                 freeCount = freeCount + 1
             end
         end
@@ -505,6 +531,7 @@ local function CheckInventorySpaceInternal()
 end
 
 function X4D_Loot:Refresh(displayChanges)
+--	X4D.Log:Verbose{"X4D_Loot:Refresh", displayChanges}
     CheckBagForChange(BAG_BACKPACK, displayChanges)
     if (displayChanges) then
         CheckInventorySpaceInternal()
@@ -532,13 +559,24 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
     end
 end
 
-function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
-    if(bagId ~= BAG_BACKPACK or updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
-    	return
-    end
-    --NOTE: this causes problems with Bank withdrawals, possibly other events
-    --CheckSlotForChange(bagId, slotIndex)
-end
+--function X4D_Loot.OnInventorySingleSlotUpdate(eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason, delta, _9)
+--	local bag = X4D.Bags:GetBag(bagId, isNewItem)
+--	if (bag ~= nil) then
+--		local slot = bag.Slots[slotIndex]
+--		if (slot ~= nil) then
+--			local item = slot.Item
+--			if (item ~= nil) then
+--				X4D.Log:Information({ "X4D_Loot.OnInventorySingleSlotUpdate", item.Id, delta })
+--			else
+--				X4D.Log:Warning({ "X4D_Loot.OnInventorySingleSlotUpdate", "no-item" })
+--			end
+--		else
+--			X4D.Log:Warning({ "X4D_Loot.OnInventorySingleSlotUpdate", "no-slot" })
+--		end
+--	else
+--		X4D.Log:Warning({ "X4D_Loot.OnInventorySingleSlotUpdate", "no-bag" })
+--	end
+--end
 
 --region Money Update
 
@@ -622,7 +660,7 @@ local function InitializeSettingsUI()
 
     table.insert(panelControls, {
             type = "checkbox",
-            name = "[BETA] Display Party Loot", 
+            name = "Display Party Loot", 
             tooltip = "When enabled, loot received by others is displayed in the Chat Window.", 
             getFunc = function() 
                 return X4D.Loot.Settings:Get("DisplayPartyLoot")
@@ -638,8 +676,8 @@ local function InitializeSettingsUI()
     )
 end
 
-
 local function DoRefreshSnapshots(...)
+	X4D.Log:Verbose({ "DoRefreshSnapshots", ... })
     X4D_Loot:Refresh(true)
 end
 
@@ -648,9 +686,7 @@ local function DoRefreshSnapshots_Silent()
 end
 
 function X4D_Loot.Register()
-    -- TODO: EVENT_ALLIANCE_POINT_UPDATE
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_LOOT_RECEIVED, X4D_Loot.OnLootReceived)
-	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, X4D_Loot.OnInventorySingleSlotUpdate)
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_MONEY_UPDATE, X4D_Loot.OnMoneyUpdate)
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_ADDED, X4D_Loot.OnQuestAdded)
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_QUEST_TOOL_UPDATED, X4D_Loot.OnQuestToolUpdated)
@@ -661,6 +697,12 @@ function X4D_Loot.Register()
     -- report updates for crafting
 	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_CRAFT_COMPLETED, DoRefreshSnapshots)
     EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_END_CRAFTING_STATION_INTERACT, DoRefreshSnapshots)
+	-- crime/justice
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_JUSTICE_STOLEN_ITEMS_REMOVED, DoRefreshSnapshots)
+	EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_LOCKPICK_BROKE, DoRefreshSnapshots)	
+
+	-- handler no longer required, but occasionally useful for debugging
+	--EVENT_MANAGER:RegisterForEvent(X4D_Loot.NAME, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, X4D_Loot.OnInventorySingleSlotUpdate)
 end
 
 function X4D_Loot.Unregister()
@@ -682,7 +724,7 @@ local function OnAddOnLoaded(eventCode, addonName)
 		{
             SettingsAre = "Account-Wide",
             DisplayMoneyUpdates = true,
-			DisplayPartyLoot = false,
+			DisplayPartyLoot = true,
 			DisplayLootWorth = true,
             DisplayLootLevel = false,
         }, 

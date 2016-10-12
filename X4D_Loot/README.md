@@ -48,6 +48,8 @@ and send bitcoin if you don't already have a bitcoin wallet.
 ### 1.19
 #### ESO 2.6
 - API Version 100017
+- Fixes a bug where confiscated items would cause new items to not be detected correctly.
+- Adds support for detecting when stolen items are confiscated/removed from your inventory.
 
 ### 1.18
 #### ESO 2.1
