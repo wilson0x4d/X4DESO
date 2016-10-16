@@ -107,6 +107,10 @@ function X4D_DB:Add(key, value)
 end
 
 function X4D_DB:Remove(key)
+	if (type(key) == "table") then
+		-- assume an entity was passed in, and apply conventions to resolve entity key
+        key = key.Id or key.Key or key.id or key.key or key.ID
+	end
 	X4D.Log:Debug{"X4D_DB:Remove", self._table._name, key}
     self._table[key] = nil
     self._table._count = self._table._count - 1

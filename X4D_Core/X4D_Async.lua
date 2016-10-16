@@ -7,7 +7,7 @@ X4D.Async = X4D_Async
 
 local _nextTimerId = 0
 local _timers = {}
-X4D_Async.ActiveTimers = X4D.DB:Create(_timers)
+X4D_Async.ActiveTimers = X4D.DB:Open(_timers)
 
 local X4D_Timer = {}
 
