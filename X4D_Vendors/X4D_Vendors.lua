@@ -8,53 +8,20 @@ X4D.Vendors = X4D_Vendors
 X4D_Vendors.NAME = "X4D_Vendors"
 X4D_Vendors.VERSION = "1.11"
 
+local _currentMapId = nil
+local _currentZoneIndex = nil
+
 local constUnspecified = X4D.Colors.Gray .. "Unspecified"
 local constKeep = X4D.Colors.Deposit .. "Keep"
 local constSell = X4D.Colors.Withdraw .. "Sell"
 
 local _itemTypeChoices = {
-    constUnspecified,
-    constKeep,
-    constSell,
+	constUnspecified,
+	constKeep,
+	constSell,
 }
 
-EVENT_MANAGER:RegisterForEvent("X4D_Vendors.DB", EVENT_ADD_ON_LOADED, function(event, name)
-    local stopwatch = X4D.Stopwatch:StartNew()
-    if (name == "X4D_Vendors") then
-        X4D_Vendors.DB = X4D.DB:Open("X4D_Vendors.DB")
-    end
-    X4D_Vendors.Took = stopwatch.ElapsedMilliseconds()
-end)
-
---region X4D_Vendor 
-
-local X4D_Vendor = {}
-
-function X4D_Vendor:New(tag, salt)
-    if (salt == nil) then 
-        salt = ""
-    end
-    local unitName = GetRawUnitName(tag)
-    if (unitName == nil or unitName:len() == 0) then
-        unitName = tag
-    end
-    local key = "$" .. base58(sha1(unitName .. salt):FromHex())
-    local position = { X4D.Cartography.PlayerX(), X4D.Cartography.PlayerY() }
-    local proto = {
-        Name = unitName,
-        Position = { [1] = 0, [2] = 0, [3] = 0 },
-        IsFence = false,
-        --Items = {}, -- TODO: vendor search?
-    }
-	--setmetatable(proto, { __index = X4D_Vendor })
-    return proto, key
-end
-
-setmetatable(X4D_Vendor, { __call = X4D_Vendor.New })
-
---endregion
-
---region Chat Callback
+-- region Chat Callback
 
 local function DefaultChatCallback(color, text)
 	d(color .. text)
@@ -84,33 +51,33 @@ local function InvokeChatCallback(color, text)
 	if (color:len() < 8) then
 		color = "|cFF0000"
 	end
-	if (callback ~= nil) then	
+	if (callback ~= nil) then
 		callback(color, text)
 	end
 end
 
---endregion
+-- endregion
 
 local function IsSlotIgnoredItem(slot)
-    if (not slot.IsEmpty) then
-        local normalized = X4D.Bags:GetNormalizedString(slot)
-        local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
-        for i = 1, #patterns do
-            local pattern = patterns[i]
-            local isIgnored = false
-            if (not pcall( function()
-                    if (normalized:find(pattern)) then
-                        isIgnored = true
-                    end
-                end )) then
-                InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad Ignored Item Pattern: |cFF7777" .. pattern)
-            end
-            if (isIgnored) then
-                return true
-            end
-        end
-    end
-    return false
+	if (not slot.IsEmpty) then
+		local normalized = X4D.Bags:GetNormalizedString(slot)
+		local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
+		for i = 1, #patterns do
+			local pattern = patterns[i]
+			local isIgnored = false
+			if (not pcall( function()
+					if (normalized:find(pattern)) then
+						isIgnored = true
+					end
+				end)) then
+				InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad Ignored Item Pattern: |cFF7777" .. pattern)
+			end
+			if (isIgnored) then
+				return true
+			end
+		end
+	end
+	return false
 end
 
 --[[
@@ -135,43 +102,43 @@ X4D_VENDORACTION_KEEP = 1
 X4D_VENDORACTION_SELL = 2
 
 local function GetPatternAction(slot)
-    if (IsSlotIgnoredItem(slot)) then
-        return X4D_VENDORACTION_NONE
-    end
-    --X4D.Log:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
-    local vendorAction = X4D_VENDORACTION_NONE
-    if (not slot.IsEmpty) then
-        local normalized = X4D.Bags:GetNormalizedString(slot)
-        local forKeepsPatterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
-        for i = 1, #forKeepsPatterns do
-            local pattern = forKeepsPatterns[i]
-            if (not pcall( function()
-                if (normalized:find(pattern)) then
-                    vendorAction = X4D_VENDORACTION_KEEP
-                end
-            end)) then
-                InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Pattern: |cFF7777" .. pattern)
-            end
-            if (vendorAction ~= X4D_VENDORACTION_NONE) then
-                return vendorAction
-            end
-        end
-        local forSalePatterns = X4D_Vendors.Settings:Get("ForSaleItemPatterns")
-        for i = 1, #forSalePatterns do
-            local pattern = forSalePatterns[i]
-            if (not pcall( function()
-                    if (normalized:find(pattern)) then
-                        vendorAction = X4D_VENDORACTION_SELL
-                    end
-                end )) then
-                InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Sale' Item Pattern: |cFF7777" .. pattern)
-            end
-            if (vendorAction ~= X4D_VENDORACTION_NONE) then
-                return vendorAction
-            end
-        end
-    end
-    return vendorAction
+	if (IsSlotIgnoredItem(slot)) then
+		return X4D_VENDORACTION_NONE
+	end
+--	 X4D.Log:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
+	local vendorAction = X4D_VENDORACTION_NONE
+	if (not slot.IsEmpty) then
+		local normalized = X4D.Bags:GetNormalizedString(slot)
+		local forKeepsPatterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
+		for i = 1, #forKeepsPatterns do
+			local pattern = forKeepsPatterns[i]
+			if (not pcall( function()
+					if (normalized:find(pattern)) then
+						vendorAction = X4D_VENDORACTION_KEEP
+					end
+				end)) then
+				InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Keeps' Pattern: |cFF7777" .. pattern)
+			end
+			if (vendorAction ~= X4D_VENDORACTION_NONE) then
+				return vendorAction
+			end
+		end
+		local forSalePatterns = X4D_Vendors.Settings:Get("ForSaleItemPatterns")
+		for i = 1, #forSalePatterns do
+			local pattern = forSalePatterns[i]
+			if (not pcall( function()
+					if (normalized:find(pattern)) then
+						vendorAction = X4D_VENDORACTION_SELL
+					end
+				end)) then
+				InvokeChatCallback(X4D.Colors.SYSTEM, "(Vendors) Bad 'For Sale' Item Pattern: |cFF7777" .. pattern)
+			end
+			if (vendorAction ~= X4D_VENDORACTION_NONE) then
+				return vendorAction
+			end
+		end
+	end
+	return vendorAction
 end
 
 local _debits = 0
@@ -179,416 +146,402 @@ local _credits = 0
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 
 local function GetItemTypeActions()
-    local itemTypeActions = { }
-    for _,groupName in pairs(X4D.Items.ItemGroups) do
-        for _,itemType in pairs(X4D.Items.ItemTypes) do
-            if (itemType.Group == groupName) then
-                local action = X4D_Vendors.Settings:Get(itemType.Id)
-                if (action == constKeep or action == X4D_VENDORACTION_KEEP) then
-                    itemTypeActions[itemType.Id] = X4D_VENDORACTION_KEEP
-                elseif (action == constSell or action == X4D_VENDORACTION_SELL) then
-                    itemTypeActions[itemType.Id] = X4D_VENDORACTION_SELL
-                else
-                    itemTypeActions[itemType.Id] = X4D_VENDORACTION_NONE
-                end                    
-            end
-        end
-    end
-    return itemTypeActions
+	local itemTypeActions = { }
+	for _, groupName in pairs(X4D.Items.ItemGroups) do
+		for _, itemType in pairs(X4D.Items.ItemTypes) do
+			if (itemType.Group == groupName) then
+				local action = X4D_Vendors.Settings:Get(itemType.Id)
+				if (action == constKeep or action == X4D_VENDORACTION_KEEP) then
+					itemTypeActions[itemType.Id] = X4D_VENDORACTION_KEEP
+				elseif (action == constSell or action == X4D_VENDORACTION_SELL) then
+					itemTypeActions[itemType.Id] = X4D_VENDORACTION_SELL
+				else
+					itemTypeActions[itemType.Id] = X4D_VENDORACTION_NONE
+				end
+			end
+		end
+	end
+	return itemTypeActions
 end
 
+-- TODO: refactor to leverage "transactionState" in the same way that X4D_Bank does -- but don't share MRL state (duplicate code, or wrap into instanced class, since Vendor MRL and Bank MRL may not be the same
 local function ConductTransactions(vendor)
-    if (vendor == nil) then
-        X4D.Log:Error({"Vendor reference is nil or invalid.", vendor}, "X4D_Vendors") 
-        return
-    end
-    -- TODO: add an option where once all fence laundering is exhausted, begin performing fence sales (or the other way around, based on user selection) with this, also: re-order transactions based on user setting ascending or descending.
-    local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
-    local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
-    local itemTypeActions = GetItemTypeActions()
-    local bag = X4D.Bags:GetBackpackBag(true)
-    if (bag ~= nil) then
-        for slotIndex = 0, bag.SlotCount do
-            local slot = bag.Slots[slotIndex]
-                --if (slot ~= nil and slot.Item ~= nil) then
-                --    X4D.Log:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
-                --end
-            if (slot ~= nil and not slot.IsEmpty) then
-                if (not IsSlotIgnoredItem(slot)) then
-                    local vendorAction = GetPatternAction(slot)
-                    local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-                    if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
-                        --X4D.Log:Verbose({"Launder Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
-                        if (vendor.IsFence and slot.IsStolen) then
-                            if (laundersUsed < laundersMax) then
-                                if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
-                                    local totalPrice = (slot.LaunderPrice * slot.StackCount)
-                                    if (totalPrice < GetCurrentMoney()) then
-                                        laundersUsed = laundersUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
-                                        LaunderItem(bag.Id, slot.Id, slot.StackCount)
-                                        slot.IsEmpty = false
-                                        slot.IsStolen = false
-                                        local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
-                                        _debits = _debits + totalPrice
-                                        local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                            "Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
-			                            InvokeChatCallback(slot.ItemColor, message)
-                                    end
-                                end
-                            end
-                        end
-                    elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
-                        if (vendor.IsFence == slot.IsStolen) then
-                            if ((not vendor.IsFence) or (vendor.IsFence and (sellsUsed <= sellsMax))) then
-                                --X4D.Log:Verbose({"Sales Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
-                                sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
-                                CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
-                                CallSecureProtected("PlaceInStoreWindow")
-                                slot.IsEmpty = true
-                                local statement = ""
-                                if (slot.SellPrice ~= nil) then
-                                    local totalPrice = (slot.SellPrice * slot.StackCount)
-                                    statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
-                                    _credits = _credits + totalPrice
-                                end
-                                local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-                                    "Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
-			                    InvokeChatCallback(slot.ItemColor, message)
-                            end
-                        end
-                    --else
-                        --X4D.Log:Verbose({"NonAction Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
-                    end
-                end
-            end
-        end
-    end
+	if (vendor == nil) then
+		X4D.Log:Error( { "Vendor reference is nil or invalid.", vendor }, "X4D_Vendors")
+		return
+	end
+	-- TODO: add an option where once all fence laundering is exhausted, begin performing fence sales (or the other way around, based on user selection) with this, also: re-order transactions based on user setting ascending or descending.
+	local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
+	local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
+	local itemTypeActions = GetItemTypeActions()
+	local bag = X4D.Bags:GetBackpackBag(true)
+	if (bag ~= nil) then
+		for slotIndex = 0, bag.SlotCount do
+			local slot = bag.Slots[slotIndex]
+			-- if (slot ~= nil and slot.Item ~= nil) then
+			--    X4D.Log:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
+			-- end
+			if (slot ~= nil and not slot.IsEmpty) then
+				if (not IsSlotIgnoredItem(slot)) then
+					local vendorAction = GetPatternAction(slot)
+					local itemTypeAction = itemTypeActions[slot.Item.ItemType]
+					if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or(slot.IsStolen and(vendorAction == X4D_VENDORACTION_SELL) and(slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
+--						 X4D.Log:Verbose({"Launder Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+						if (vendor.IsFence and slot.IsStolen) then
+							if (laundersUsed < laundersMax) then
+								if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
+									local totalPrice = (slot.LaunderPrice * slot.StackCount)
+									if (totalPrice < GetCurrentMoney()) then
+										laundersUsed = laundersUsed + 1
+										-- TODO: if transaction fails, we want to decrement this number, obviously
+										LaunderItem(bag.Id, slot.Id, slot.StackCount)
+										slot.IsEmpty = false
+										slot.IsStolen = false
+										local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
+										_debits = _debits + totalPrice
+										local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+										"Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
+										InvokeChatCallback(slot.ItemColor, message)
+									end
+								end
+							end
+						end
+					elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
+						if (vendor.IsFence == slot.IsStolen) then
+							if ((not vendor.IsFence) or(vendor.IsFence and(sellsUsed <= sellsMax))) then
+--								 X4D.Log:Verbose({"Sales Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+								sellsUsed = sellsUsed + 1
+								-- TODO: if transaction fails, we want to decrement this number, obviously
+								CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
+								CallSecureProtected("PlaceInStoreWindow")
+								slot.IsEmpty = true
+								local statement = ""
+								if (slot.SellPrice ~= nil) then
+									local totalPrice = (slot.SellPrice * slot.StackCount)
+									statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
+									_credits = _credits + totalPrice
+								end
+								local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+								"Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
+								InvokeChatCallback(slot.ItemColor, message)
+							end
+						end
+						-- else
+--						 X4D.Log:Verbose({"NonAction Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
+					end
+				end
+			end
+		end
+	end
 end
 
 local function ReportEarnings()
-    local delta = _credits - _debits
-    if (delta ~= 0) then
-        if (delta < 0) then
-            delta = X4D.Colors.X4D .. "Total Losses: " .. X4D.Colors.Red .. "(" .. delta .. _goldIcon .. ")"
-        else
-            delta = X4D.Colors.X4D .. "Total Earnings: " .. X4D.Colors.Gold .. delta .. _goldIcon
-        end
-        local balance = "" -- TODO: report balance-on-hand? seems a little chatty at that point
-        InvokeChatCallback(X4D.Colors.X4D, "Vendor Debits: " .. X4D.Colors.Gold .. _debits .. _goldIcon .. X4D.Colors.X4D .. " Credits: " .. X4D.Colors.Gold .. _credits .. _goldIcon .. " " .. delta .. balance)
-    end
+	local delta = _credits - _debits
+	if (delta ~= 0) then
+		if (delta < 0) then
+			delta = X4D.Colors.X4D .. "Total Losses: " .. X4D.Colors.Red .. "(" .. delta .. _goldIcon .. ")"
+		else
+			delta = X4D.Colors.X4D .. "Total Earnings: " .. X4D.Colors.Gold .. delta .. _goldIcon
+		end
+		local balance = ""
+		-- TODO: report balance-on-hand? seems a little chatty at that point
+		InvokeChatCallback(X4D.Colors.X4D, "Vendor Debits: " .. X4D.Colors.Gold .. _debits .. _goldIcon .. X4D.Colors.X4D .. " Credits: " .. X4D.Colors.Gold .. _credits .. _goldIcon .. " " .. delta .. balance)
+	end
 end
 
 local function UpdateVendorPositionData(vendor)
-    vendor.MapId = X4D.Cartography.MapIndex()
-    vendor.ZoneIndex = X4D.Cartography.ZoneIndex()
-    vendor.Position = { X4D.Cartography.PlayerX(), X4D.Cartography.PlayerY() }
-    X4D.Log:Verbose(vendor)
+	vendor.MapId = X4D.Cartography.MapIndex()
+	vendor.ZoneIndex = X4D.Cartography.ZoneIndex()
+	-- TODO: implement "averaging" against prior position data ... and determine if there is any value in a Z coordinate
+	vendor.Position = {
+		X = X4D.Cartography.PlayerX(),
+		Y = X4D.Cartography.PlayerY()
+	}
+	X4D.Log:Verbose { "UpdateVendorPositionData", { vendor.MapId, vendor.ZoneIndex, vendor.Position.X, vendor.Position.Y } }
 end
 
 local function OnOpenFence()
-    _debits = 0
-    _credits = 0
-    local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
-    vendor.IsFence = true
-    UpdateVendorPositionData(vendor)
-    ConductTransactions(vendor)
-    ReportEarnings()
+	_debits = 0
+	_credits = 0
+	local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
+	vendor.IsFence = true
+	UpdateVendorPositionData(vendor)
+	ConductTransactions(vendor)
+	ReportEarnings()
 end
 
 local function OnOpenStoreAsync(timer, state)
-    local vendor = state
-    timer:Stop()
-    ConductTransactions(vendor)
-    ReportEarnings()
+	local vendor = state
+	timer:Stop()
+	ConductTransactions(vendor)
+	ReportEarnings()
 end
 
 local function OnOpenStore()
-    _debits = 0
-    _credits = 0
-    local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
-    vendor.IsFence = false
-    UpdateVendorPositionData(vendor)
-    X4D.Async:CreateTimer(OnOpenStoreAsync):Start(337, vendor, "X4D_Vendors::ConductTransactions")
+	_debits = 0
+	_credits = 0
+	local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
+	vendor.IsFence = false
+	UpdateVendorPositionData(vendor)
+	X4D.Async:CreateTimer(OnOpenStoreAsync):Start(337, vendor, "X4D_Vendors::ConductTransactions")
 end
 
 local function OnCloseStore()
-    -- force update of bag snapshots on close
-    local inventoryState = X4D.Bags:GetBackpackBag(true)
-    local bankState = X4D.Bags:GetBankBag(true)
+	-- force update of bag snapshots on close
+	local inventoryState = X4D.Bags:GetBackpackBag(true)
+	local bankState = X4D.Bags:GetBankBag(true)
 end
-
-local function OnItemBuy(eventId, entryName, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory)
-    -- TODO: need items db to implement this properly, needs more time
-    --X4D.Log:Verbose({eventId, entryName, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory})
-end
-
-local function OnItemBuyBack(eventId, itemName, itemQuantity, money, itemSoundCategory)
-    -- TODO: need items db to implement this properly, needs more time
-    --X4D.Log:Verbose({ eventId, itemName, itemQuantity, money, itemSoundCategory })
-end
-
-local function OnItemSale(eventId, itemName, quantity, money)
-    -- TODO: need items db to implement this properly, needs more time
-    -- X4D.Log:Verbose({eventId, itemName, quantity, money})
-end
-
 
 function X4D_Vendors:GetVendor(tag)
-    local unitName = GetRawUnitName(tag)
-    if (unitName == nil or unitName:len() == 0) then
-        unitName = tag
-    end
-    local key = "$" .. base58(sha1(unitName):FromHex())
-    local vendor = self.DB:Find(key)
-    if (vendor == nil) then
-        vendor = X4D_Vendor(tag)
-        self.DB:Add(key, vendor)
-    end
-    return vendor, key
+	local unitName = GetRawUnitName(tag)
+	if (unitName == nil or unitName:len() == 0) then
+		unitName = tag
+	end
+	local vendor = self.DB:Find(unitName)
+	if (vendor == nil) then
+		X4D.Log:Verbose { "X4D_Vendors:GetVendor", "Vendor Missing", tag, unitName }
+		vendor = X4D.NPCs:Create(tag)
+		self.DB:Add(vendor)
+	end
+	return vendor, key
 end
 
 local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_VENDORS_CPL", {
-        type = "panel",
-        name = "X4D |cFFAE19Vendors |c4D4D4D" .. X4D_Vendors.VERSION,
-    })
+		type = "panel",
+		name = "X4D |cFFAE19Vendors |c4D4D4D" .. X4D_Vendors.VERSION,
+	})
 
-    local panelControls = { }
+	local panelControls = { }
 
-    table.insert(panelControls, {
-        type = "dropdown",
-        name = "Settings Are..",
-        tooltip = "Settings Scope",
-        choices = { "Account-Wide", "Per-Character" },
-        getFunc = function() return X4D_Vendors.Settings:Get("SettingsAre") or "Account-Wide" end,
-        setFunc = function(v)
-            if (X4D_Vendors.Settings:Get("SettingsAre") ~= v) then
-                X4D_Vendors.Settings:Set("SettingsAre", v)
-            end
-        end,
-    })
+	table.insert(panelControls, {
+		type = "dropdown",
+		name = "Settings Are..",
+		tooltip = "Settings Scope",
+		choices = { "Account-Wide", "Per-Character" },
+		getFunc = function() return X4D_Vendors.Settings:Get("SettingsAre") or "Account-Wide" end,
+		setFunc = function(v)
+			if (X4D_Vendors.Settings:Get("SettingsAre") ~= v) then
+				X4D_Vendors.Settings:Set("SettingsAre", v)
+			end
+		end,
+	})
 
+	table.insert(panelControls, {
+		type = "editbox",
+		name = "'For Keeps' Items",
+		tooltip = "Line-delimited list of 'For Keeps' patterns, items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n",
+		isMultiline = true,
+		width = "half",
+		getFunc = function()
+			local patterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
+			if (patterns == nil or type(patterns) == "string") then
+				patterns = { }
+			end
+			return table.concat(patterns, "\n")
+		end,
+		setFunc = function(v)
+			local result = v:Split("\n")
+			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+			for _, x in pairs(result) do
+				if (x:EndsWith("]")) then
+					result[_] = x .. "+"
+				end
+			end
+			X4D_Vendors.Settings:Set("ForKeepsItemPatterns", result)
+		end,
+	})
 
-    table.insert(panelControls, {
-        type = "editbox",
-        name = "'For Keeps' Items",
-        tooltip = "Line-delimited list of 'For Keeps' patterns, items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n",
-        isMultiline = true,
-        width = "half",
-        getFunc = function()
-            local patterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
-            if (patterns == nil or type(patterns) == "string") then
-                patterns = { }
-            end
-            return table.concat(patterns, "\n")
-        end,
-        setFunc = function(v)
-            local result = v:Split("\n")
-            -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
-            for _, x in pairs(result) do
-                if (x:EndsWith("]")) then
-                    result[_] = x .. "+"
-                end
-            end
-            X4D_Vendors.Settings:Set("ForKeepsItemPatterns", result)
-        end,
-    })
+	table.insert(panelControls, {
+		type = "editbox",
+		name = "'For Sale' Items",
+		tooltip = "Line-delimited list of 'For Sale' item patterns, items matching these patterns WILL BE SOLD.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cFFFFC7Note that the 'For Keeps' item list will take precedence over the 'For Sale' list.",
+		isMultiline = true,
+		width = "half",
+		getFunc = function()
+			local patterns = X4D_Vendors.Settings:Get("ForSaleItemPatterns")
+			if (patterns == nil or type(patterns) == "string") then
+				patterns = { }
+			end
+			return table.concat(patterns, "\n")
+		end,
+		setFunc = function(v)
+			local result = v:Split("\n")
+			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+			for _, x in pairs(result) do
+				if (x:EndsWith("]")) then
+					result[_] = x .. "+"
+				end
+			end
+			X4D_Vendors.Settings:Set("ForSaleItemPatterns", result)
+		end,
+	})
 
-    table.insert(panelControls, {
-        type = "editbox",
-        name = "'For Sale' Items",
-        tooltip = "Line-delimited list of 'For Sale' item patterns, items matching these patterns WILL BE SOLD.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cFFFFC7Note that the 'For Keeps' item list will take precedence over the 'For Sale' list.",
-        isMultiline = true,
-        width = "half",
-        getFunc = function()
-            local patterns = X4D_Vendors.Settings:Get("ForSaleItemPatterns")
-            if (patterns == nil or type(patterns) == "string") then
-                patterns = { }
-            end
-            return table.concat(patterns, "\n")
-        end,
-        setFunc = function(v)
-            local result = v:Split("\n")
-            -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
-            for _, x in pairs(result) do
-                if (x:EndsWith("]")) then
-                    result[_] = x .. "+"
-                end
-            end
-            X4D_Vendors.Settings:Set("ForSaleItemPatterns", result)
-        end,
-    })
+	table.insert(panelControls, {
+		type = "editbox",
+		name = "'Ignored' Items",
+		tooltip = "Line-delimited list of items to ignore using 'lua patterns'case. Ignored items will NOT be laundered nor sold regardless of any other setting.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+		isMultiline = true,
+		width = "half",
+		getFunc = function()
+			local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
+			if (patterns == nil or type(patterns) == "string") then
+				patterns = { }
+			end
+			return table.concat(patterns, "\n")
+		end,
+		setFunc = function(v)
+			local result = v:Split("\n")
+			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+			for _, x in pairs(result) do
+				if (x:EndsWith("]")) then
+					result[_] = x .. "+"
+				end
+			end
+			X4D_Vendors.Settings:Set("IgnoredItemPatterns", result)
+		end,
+	})
 
-    table.insert(panelControls, {
-        type = "editbox",
-        name = "'Ignored' Items",
-        tooltip = "Line-delimited list of items to ignore using 'lua patterns'case. Ignored items will NOT be laundered nor sold regardless of any other setting.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
-        isMultiline = true,
-        width = "half",
-        getFunc = function()
-            local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
-            if (patterns == nil or type(patterns) == "string") then
-                patterns = { }
-            end
-            return table.concat(patterns, "\n")
-        end,
-        setFunc = function(v)
-            local result = v:Split("\n")
-            -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
-            for _, x in pairs(result) do
-                if (x:EndsWith("]")) then
-                    result[_] = x .. "+"
-                end
-            end
-            X4D_Vendors.Settings:Set("IgnoredItemPatterns", result)
-        end,
-    })
+	table.insert(panelControls, {
+		type = "checkbox",
+		name = "Launder any 'For Sale' worth 0" .. _goldIcon,
+		tooltip = "When enabled, any stolen 'For Sale' items worth 0" .. _goldIcon .. " will be laundered instead. Once laundered if you visit a merchant they will be sold where you have a buyback option if you actually wanted the item. |cFFFFFFThis often includes recipes/materials/bases/etc. If you attempt to sell a 'worthless item' the game will treat it differently and generate an error, which in turn causes X4D to halt until resolved by the user- this option works around THAT problem, and it only matters when you've added a for-sale pattern that results in the sale of stolen items.",
+		width = "half",
+		getFunc = function()
+			return X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold")
+		end,
+		setFunc = function()
+			X4D.Vendors.Settings:Set("LaunderItemsWorth0Gold", not X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold"))
+		end,
+	})
 
-    table.insert(panelControls, {
-        type = "checkbox",
-        name = "Launder any 'For Sale' worth 0" .. _goldIcon, 
-        tooltip = "When enabled, any stolen 'For Sale' items worth 0" .. _goldIcon .. " will be laundered instead. Once laundered if you visit a merchant they will be sold where you have a buyback option if you actually wanted the item. |cFFFFFFThis often includes recipes/materials/bases/etc. If you attempt to sell a 'worthless item' the game will treat it differently and generate an error, which in turn causes X4D to halt until resolved by the user- this option works around THAT problem, and it only matters when you've added a for-sale pattern that results in the sale of stolen items.", 
-        width = "half",
-        getFunc = function() 
-            return X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold")
-        end,
-        setFunc = function()
-            X4D.Vendors.Settings:Set("LaunderItemsWorth0Gold", not X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold")) 
-        end,
-    })
+	-- region ItemType Options
 
+	for _, groupName in pairs(X4D.Items.ItemGroups) do
+		table.insert(panelControls, {
+			type = "header",
+			name = groupName,
+		})
+		for _, itemType in pairs(X4D.Items.ItemTypes) do
+			if (itemType.Group == groupName) then
+				table.insert(panelControls, {
+					type = "dropdown",
+					name = itemType.Name,
+					tooltip = itemType.Tooltip or itemType.Canonical,
+					choices = _itemTypeChoices,
+					getFunc = function()
+						local v = X4D_Vendors.Settings:Get(itemType.Id) or 0
+						if (v == 1) then
+							return constLaunder
+						elseif (v == 2) then
+							return constSell
+						else
+							return constUnspecified
+						end
+					end,
+					setFunc = function(v)
+						if (v == constLaunder) then
+							v = 1
+						elseif (v == constSell) then
+							v = 2
+						else
+							v = 0
+						end
+						X4D_Vendors.Settings:Set(itemType.Id, v)
+					end,
+					width = "half",
+				})
+			end
+		end
+	end
 
+	table.insert(panelControls, {
+		type = "header",
+		name = 'Reset',
+	})
+	table.insert(panelControls, {
+		type = "dropdown",
+		name = "All Item Types",
+		tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
+		choices = _itemTypeChoices,
+		getFunc = function()
+			local v = 0
+			if (v == 1) then
+				return constLaunder
+			elseif (v == 2) then
+				return constSell
+			else
+				return constUnspecified
+			end
+		end,
+		setFunc = function(v)
+			if (v == constLaunder) then
+				v = 1
+			elseif (v == constSell) then
+				v = 2
+			else
+				v = 0
+			end
+			for _, itemType in pairs(X4D.Items.ItemTypes) do
+				X4D_Vendors.Settings:Set(itemType.Id, v)
+			end
+			ReloadUI()
+			-- only necessary because i have no way to force LibAddonMenu to re-get/refresh all options
+		end,
+		width = "half",
+	})
 
-    --region ItemType Options
+	-- endregion
 
-    for _,groupName in pairs(X4D.Items.ItemGroups) do
-        table.insert(panelControls, {
-            type = "header",
-            name = groupName,
-        })
-        for _,itemType in pairs(X4D.Items.ItemTypes) do
-            if (itemType.Group == groupName) then
-                table.insert(panelControls, {
-                    type = "dropdown",
-                    name = itemType.Name,
-                    tooltip = itemType.Tooltip or itemType.Canonical,
-                    choices = _itemTypeChoices,
-                    getFunc = function() 
-                        local v = X4D_Vendors.Settings:Get(itemType.Id) or 0
-                        if (v == 1) then
-                            return constLaunder
-                        elseif (v == 2) then
-                            return constSell
-                        else
-                            return constUnspecified
-                        end
-                    end,
-                    setFunc = function(v)
-                        if (v == constLaunder) then
-                            v = 1
-                        elseif (v == constSell) then
-                            v = 2
-                        else
-                            v = 0
-                        end
-                        X4D_Vendors.Settings:Set(itemType.Id, v)
-                    end,
-                    width = "half",
-                })
-            end
-        end
-    end
-
-    table.insert(panelControls, {
-        type = "header",
-        name = 'Reset',
-    })
-    table.insert(panelControls, {
-        type = "dropdown",
-        name = "All Item Types",
-        tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
-        choices = _itemTypeChoices,
-        getFunc = function() 
-            local v = 0
-            if (v == 1) then
-                return constLaunder
-            elseif (v == 2) then
-                return constSell
-            else
-                return constUnspecified
-            end
-        end,
-        setFunc = function(v)
-            if (v == constLaunder) then
-                v = 1
-            elseif (v == constSell) then
-                v = 2
-            else
-                v = 0
-            end
-            for _,itemType in pairs(X4D.Items.ItemTypes) do
-                X4D_Vendors.Settings:Set(itemType.Id, v)
-            end
-            ReloadUI() -- only necessary because i have no way to force LibAddonMenu to re-get/refresh all options
-        end,
-        width = "half",
-    })
-
-    -- endregion
-
-    LAM:RegisterOptionControls(
-        "X4D_VENDORS_CPL",
-        panelControls
-    )
+	LAM:RegisterOptionControls(
+		"X4D_VENDORS_CPL",
+		panelControls)
 end
 
 local function Register()
-    EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenStore", EVENT_OPEN_STORE, OnOpenStore)
-    EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenFence", EVENT_OPEN_FENCE, OnOpenFence)
-    EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnCloseStore", EVENT_CLOSE_STORE, OnCloseStore)
-    --TODO: EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnItemBuy", EVENT_BUY_RECEIPT, OnItemBuy)
-    --TODO: EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnItemBuyBack", EVENT_BUYBACK_RECEIPT, OnItemBuyBack)
-    --TODO: EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnItemSale", EVENT_SELL_RECEIPT, OnItemSale)
+	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenStore", EVENT_OPEN_STORE, OnOpenStore)
+	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenFence", EVENT_OPEN_FENCE, OnOpenFence)
+	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnCloseStore", EVENT_CLOSE_STORE, OnCloseStore)
 end
 
 EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, function(eventCode, addonName)
 	if (addonName ~= X4D_Vendors.NAME) then
 		return
-	end	
-    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Vendors.NAME)
+	end
+	local stopwatch = X4D.Stopwatch:StartNew()
+	X4D.Log:Debug( { "OnAddonLoaded", eventCode, addonName }, X4D_Vendors.NAME)
+	X4D_Vendors.DB = X4D.NPCs
 
-	X4D_Vendors.Settings = X4D.Settings(
-		X4D_Vendors.NAME .. "_SV",
+	X4D_Vendors.Settings = X4D.Settings:Open(
+	X4D_Vendors.NAME .. "_SV", {
+		SettingsAre = "Per-Character",
+		LaunderItemsWorth0Gold = true,
+		ForKeepsItemPatterns =
 		{
-            SettingsAre = "Per-Character",
-            LaunderItemsWorth0Gold = true,
-            ForKeepsItemPatterns =
-            {
-                -- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered                
-                "lockpick",
-                "MOTIF",
-                "LEGENDARY",
-                "ARTIFACT",
-                "ARCANE",
-            },
-            ForSaleItemPatterns =
-            {
-                -- items matching a "for sale" pattern WILL BE SOLD without confirmation, this includes STOLEN items while at a vendor
-                -- laundering (or "Launder") takes precedence over "for sale"
-                "TRASH",
-                "ITEMTYPE_NONE",
-            },
-            IgnoredItemPatterns = 
-            {
-                -- items matching an "ignored" pattern will be left alone regardless of any other pattern or setting, consider this a "safety list" if you will
-            },
-        })
+			-- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered
+			"lockpick",
+			"MOTIF",
+			"LEGENDARY",
+			"ARTIFACT",
+			"ARCANE",
+		},
+		ForSaleItemPatterns =
+		{
+			-- items matching a "for sale" pattern WILL BE SOLD without confirmation, this includes STOLEN items while at a vendor
+			-- laundering (or "Launder") takes precedence over "for sale"
+			"TRASH",
+			"ITEMTYPE_NONE",
+		},
+		IgnoredItemPatterns =
+		{
+			-- items matching an "ignored" pattern will be left alone regardless of any other pattern or setting, consider this a "safety list" if you will
+		}
+	})
 
-    -- explicit carto initialization by consumer(s)
-    X4D.Cartography:Initialize()
+	InitializeSettingsUI()
 
-    InitializeSettingsUI()
+	Register()
 
-    Register()
+	X4D_Vendors.Took = stopwatch.ElapsedMilliseconds()
 end)

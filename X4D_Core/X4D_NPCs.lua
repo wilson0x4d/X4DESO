@@ -76,7 +76,7 @@ end
 
 function X4D_NPCs:Find(key)
 	if (not key:StartsWith("npc:")) then
-		-- X4D.Log:Information{"X4D_NPCs:Find", _currentMapId, _currentZoneIndex, key}
+--		X4D.Log:Information{"X4D_NPCs:Find", _currentMapId, _currentZoneIndex, key}
 		key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. key
 	end
 	return self.DB:Find(key)
