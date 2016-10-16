@@ -94,6 +94,7 @@
     <Compile Include="X4D_Core\X4D_Guilds.lua" />
     <Compile Include="X4D_Core\X4D_Icons.lua" />
     <Compile Include="X4D_Core\X4D_Items.lua" />
+    <Compile Include="X4D_Core\X4D_NPCs.lua" />
     <Compile Include="X4D_Core\X4D_Settings.lua" />
     <Compile Include="X4D_Core\X4D_Players.lua" />
     <Compile Include="X4D_Core\X4D_Stopwatch.lua" />
