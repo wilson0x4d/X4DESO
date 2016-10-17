@@ -41,22 +41,26 @@ function X4D_Observable:CreateObservable(initialValue)
         return observable
     end
     observable.Observe = function (self, observer)
-        table.insert(_observers, observer)
+		if (observer ~= nil and type(observer) == "function") then
+	        table.insert(_observers, observer)
+		else
+			X4D.Log:Warning{"X4D_Observable:Observe", "Observer null or invalid type", type(observer)}
+		end
         return observable
     end
     observable.GetOrSet = function (self, ...)
         if (select("#", ...) > 0) then
-            local v = select(1,...)
+            local v = select(1, ...)
             local pre = _value
-            if (_value ~= v) then
+            if (pre ~= v) then
                 _value = v
-                for _,observer in pairs(_observers) do
-                    -- TODO: pcall
-                    local now = GetGameTimeMilliseconds()
-                    if ((_rateLimit == nil) or ((now - _timestamp) > _rateLimit)) then
-                        _timestamp = now
-                        observer(v, pre)
-                    end
+                if ((_rateLimit == nil) or ((now - _timestamp) > _rateLimit)) then
+					local now = GetGameTimeMilliseconds()
+                    _timestamp = now
+					for _,observer in pairs(_observers) do
+						-- TODO: pcall
+						observer(v, pre)
+					end
                 end
             end
         end
