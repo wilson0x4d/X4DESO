@@ -17,7 +17,7 @@ function X4D_Settings:Get(name)
 	    if (scope ~= "Account-Wide") then
             scope = GetUnitName("player")
 	    end
-        if (scope ~= self.Scope) then
+        if (scope ~= self.Scope or self.Scope58 == nil) then
             self.Scope = scope
             self.Scope58 = "$" .. base58(sha1(scope):FromHex())
         end
@@ -41,7 +41,7 @@ function X4D_Settings:Set(name, value)
 	    if (scope ~= "Account-Wide") then
             scope = GetUnitName("player")
 	    end
-        if (scope ~= self.Scope) then
+        if (scope ~= self.Scope or self.Scope58 == nil) then
             self.Scope = scope
             self.Scope58 = "$" .. base58(sha1(scope):FromHex())
         end
@@ -50,6 +50,9 @@ function X4D_Settings:Set(name, value)
 		    scoped = {}
 		    self.Saved[self.Scope58] = scoped
 	    end
+		if (type(name) ~= "string") then
+			X4D.Log:Warning{"X4D_Settings:Set", "'name' parameter is not a string.", self.Scope, self.Scope58}
+		end
 	    scoped[name] = value
     end
     return value
@@ -64,7 +67,7 @@ function X4D_Settings:GetOrSet(name, value)
     end
 end
 
-function X4D_Settings:Create(savedVarsName, defaults, version)
+function X4D_Settings:Open(savedVarsName, defaults, version)
     if (version == nil or type(version) ~= "number") then
         version = 1
     end	
@@ -78,8 +81,8 @@ function X4D_Settings:Create(savedVarsName, defaults, version)
     end
     version = math.floor(version) + X4D_SETTINGS_IMPLEMENTATION_VERSION
     local saved = ZO_SavedVars:NewAccountWide(savedVarsName, version, nil, {})
+	X4D.Log:Verbose{"X4D_Settings:Open", savedVarsName, version}
     saved.SettingsAre = saved.SettingsAre or defaults.SettingsAre or "Account-Wide"
-
 	local scope = saved.SettingsAre
 	if (scope ~= "Account-Wide") then
         scope = GetUnitName("player")
@@ -95,9 +98,11 @@ function X4D_Settings:Create(savedVarsName, defaults, version)
     -- TODO: if "Saved" is missing members that are present in "Default", perform merge of missing members (e.g. apply missing defaults)
     -- TODO: if members of "Default" are assigned the value of "retired-variable" and it exists in "Saved", then is to be removed from "Saved"
 
-	setmetatable(proto, { __index = X4D_Settings, __call = X4D_Settings.GetOrSet })
+	setmetatable(proto, { __index = X4D_Settings })
 
 	return proto
 end
 
-setmetatable(X4D_Settings, { __call = X4D_Settings.Create })
+X4D_Settings.Create = X4D_Settings.Open -- compat
+
+setmetatable(X4D_Settings, { __call = X4D_Settings.Open })
