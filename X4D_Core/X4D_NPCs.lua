@@ -25,13 +25,17 @@ local _currentZoneIndex = nil
 	it provides observables which list all "nearby" NPCs, where "nearby" is determined as a combination of "`Map ID` and `Zone Index`"
 ]]
 
-function X4D_NPCs:Create(tag)
+function X4D_NPCs:Create(tag, npc_type)
+	if (npc_type == nil) then
+		X4D.Log:Warning { "X4D_NPCs:Create", "NPC_TYPE not provided, this will create problems later.", tag }
+	end
 	local unitName = GetRawUnitName(tag)
 	if (unitName == nil or unitName:len() == 0) then
 		unitName = tag
 	end
 	local key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. unitName
 	local entity = {
+		Type = npc_type,
 		Name = unitName,
 		Key = key,
 		MapId = _currentMapId,
@@ -50,19 +54,17 @@ X4D_NPCs.NearbyNPCs = X4D.Observable(nil) -- NOTE: used by X4D_MiniMap to create
 X4D_NPCs.CurrentNPC = X4D.Observable(nil) -- NOTE: when another module detects interaction with an NPC, it *may* place a module-specific entity here
 
 local function IsNPCNearby(npc, key)
-	local isNearby = npc ~= nil and npc.MapId == _currentMapId and npc.ZoneIndex == _currentZoneIndex
-	if (isNearby) then
-		X4D.Log:Warning { "IsNPCNearby", npc.Name, key, isNearby }
-	end
-	return isNearby
+	return npc ~= nil and npc.MapId == _currentMapId and npc.ZoneIndex == _currentZoneIndex
 end
-
+local function UpdateNearbyNPCs()
+	local nearby = X4D_NPCs.DB:Where(IsNPCNearby, true)
+	X4D_NPCs.NearbyNPCs(nearby)
+end
 local function OnCurrentMapChanged(map, oldMap)
 	_currentMapId = X4D.Cartography.MapIndex()
 	_currentZoneIndex = X4D.Cartography.ZoneIndex()
 	X4D.Log:Verbose { "OnCurrentMapChanged", _currentMapId, _currentZoneIndex }
-	local nearby = X4D_NPCs.DB:Where(IsNPCNearby, true)
-	X4D_NPCs.NearbyNPCs(nearby)
+	UpdateNearbyNPCs()
 end
 
 -- endregion Nearby NPCs
@@ -95,27 +97,27 @@ function X4D_NPCs:Add(key, value)
 	if (entity == nil) then
 		entity = key
 	else
-		X4D.Log:Warning { "X4D_NPCs:Add", "The NPC DB does not accept caller-supplied keys, keys are inferred using NPC-specific conventions", key }
-	end
-	if (entity.Class == nil) then
-		X4D.Log:Error { "X4D_NPCs:Add", "The NPC entity provided does not have a Class property, the NPC is not saved." }
-		return nil
+		X4D.Log:Warning { "X4D_NPCs:Add", "The NPC DB does not accept caller-supplied keys, keys are always inferred using NPC-specific conventions.", key }
 	end
 	if (entity.Name == nil) then
 		X4D.Log:Error { "X4D_NPCs:Add", "The NPC entity provided does not have a Name property, the NPC is not saved." }
 		return nil
 	end
-	if (entity ~= nil) then
-		-- TODO: there may be special NPCs which we do not do this for, or we may one day track multiple locations?
-		entity.Key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. entity.Name
-		entity.MapId = _currentMapId
-		entity.ZoneIndex = _currentZoneIndex
-		entity.Position = {
-			X = X4D.Cartography.PlayerX(),
-			Y = X4D.Cartography.PlayerY()
-		}
+	if (entity.Type == nil) then
+		X4D.Log:Error { "X4D_NPCs:Add", "The NPC entity provided does not have a Type property, the NPC is not saved." }
+		return nil
 	end
-	return self.DB:Add(entity.Key, entity)
+	-- TODO: there may be special NPCs which we do not do this for, or we may one day track multiple locations?
+	entity.Key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. entity.Name
+	entity.MapId = _currentMapId
+	entity.ZoneIndex = _currentZoneIndex
+	entity.Position = {
+		X = X4D.Cartography.PlayerX(),
+		Y = X4D.Cartography.PlayerY()
+	}
+	local result = self.DB:Add(entity.Key, entity)
+	UpdateNearbyNPCs()
+	return result
 end
 
 function X4D_NPCs:Remove(key)
@@ -152,3 +154,16 @@ EVENT_MANAGER:RegisterForEvent(X4D_NPCs.NAME, EVENT_ADD_ON_LOADED, function(even
 	-- record module load time
 	X4D_NPCs.Took = stopwatch.ElapsedMilliseconds()
 end)
+
+--[[
+
+some additional events to handle since we don't have a module for them (yet)
+
+EVENT_STABLE_INTERACT_END (number eventCode)
+EVENT_STABLE_INTERACT_START (number eventCode)
+
+EVENT_CHATTER_BEGIN (integer eventCode, number optionCount)
+
+
+
+]]
