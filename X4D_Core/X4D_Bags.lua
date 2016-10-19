@@ -8,10 +8,10 @@ X4D.Bags = X4D_Bags
 X4D_Bags.NAME = "X4D_Bags"
 X4D_Bags.VERSION = "1.9"
 
-local _bags = X4D.DB:Create()
+local _bags = X4D.DB:Open()
 local function InvalidateBags(...)
     -- reset state on player activate, ensure clean bag state on player login/out and zone change, other relevant events listed below
-    _bags = X4D.DB:Create()
+    _bags = X4D.DB:Open()
 end
 
 EVENT_MANAGER:RegisterForEvent(X4D_Bags.NAME, EVENT_PLAYER_ACTIVATED, InvalidateBags)
@@ -107,7 +107,7 @@ local function OnRefreshVisible(control, data, scrollList)
             slot.SellPrice = item.data.sellPrice or slot.SellPrice
             slot.LaunderPrice = item.data.launderPrice or slot.LaunderPrice
         end
-        --X4D.Log:Verbose(slot)
+--        X4D.Log:Verbose(slot)
     end
 end
 

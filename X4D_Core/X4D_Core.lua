@@ -7,14 +7,13 @@ X4D.NAME = "X4D"
 X4D.VERSION = "1.18"
 
 local _mm
-
 EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)
     if (name ~= "X4D_Core") then
         return
     end
 
     local stopwatch = X4D.Stopwatch:StartNew()
-    X4D.InternalSettings = X4D.Settings(
+    X4D.InternalSettings = X4D.Settings:Open(
         "X4D_Core_SV",
         {
             SettingsAre = "Account-Wide",
@@ -122,7 +121,7 @@ function X4D:Test()
 
     -- SavedVars API
     -- DB API (indirectly also verifies "Settings API")
-    local nonPersistentDb = X4D.DB:Create()
+    local nonPersistentDb = X4D.DB:Open()
     nonPersistentDb:Add({
         Id = ITEMTYPE_NONE,
         Canonical = "ITEMTYPE_NONE",

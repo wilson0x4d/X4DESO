@@ -97,10 +97,11 @@ local function StartPlayerScavenger()
     end, {}):Start(_playerScavengerFrequency, {}, "X4D_Players::PlayerScavenger")
 end
 
-EVENT_MANAGER:RegisterForEvent("X4D_Players.DB", EVENT_ADD_ON_LOADED, function(event, name)
-    if (name == "X4D_Core") then
-        X4D_Players.DB = X4D.DB:Open("X4D_Players.DB")
+EVENT_MANAGER:RegisterForEvent("X4D_Players", EVENT_ADD_ON_LOADED, function(event, name)
+    if (name ~= "X4D_Core") then
+        return
     end
+    X4D_Players.DB = X4D.DB:Open("X4D_Players")
 end)
 
 EVENT_MANAGER:RegisterForEvent("X4D_Players_SCAVENGER", EVENT_PLAYER_ACTIVATED, function()

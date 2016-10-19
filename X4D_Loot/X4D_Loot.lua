@@ -677,7 +677,7 @@ local function InitializeSettingsUI()
 end
 
 local function DoRefreshSnapshots(...)
-	X4D.Log:Verbose({ "DoRefreshSnapshots", ... })
+	--X4D.Log:Verbose({ "DoRefreshSnapshots", ... })
     X4D_Loot:Refresh(true)
 end
 
@@ -719,7 +719,7 @@ local function OnAddOnLoaded(eventCode, addonName)
 	end
     X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Loot.NAME)
     local stopwatch = X4D.Stopwatch:StartNew()
-	X4D_Loot.Settings = X4D.Settings(
+	X4D_Loot.Settings = X4D.Settings:Open(
 		X4D_Loot.NAME .. "_SV",
 		{
             SettingsAre = "Account-Wide",
@@ -729,6 +729,10 @@ local function OnAddOnLoaded(eventCode, addonName)
             DisplayLootLevel = false,
         }, 
         2)
+
+	-- TODO: implement a database which records loot lists for "map areas", a map area being PK={mapId,zoneIndex,X,Y}, loot being a raw item link, this should include stolen items
+	-- NOTE: each unique "loot" entry should have a key value table of loot sources, a loot source being PK={targetType,targetNameOrId,targetLevel} as application. each loot source should also have a "count" (which will be used to try and infer drop rates)
+    X4D_Loot.DB = X4D.DB:Open(X4D_Loot.NAME)
 
     InitializeSettingsUI()
 

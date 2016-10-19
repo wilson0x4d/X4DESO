@@ -380,9 +380,12 @@ local function OnAddOnLoaded(eventCode, addonName)
 	if (addonName ~= X4D_Chat.NAME) then
 		return
 	end	
-    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Chat.NAME)
     local stopwatch = X4D.Stopwatch:StartNew()
-    X4D_Chat.Settings = X4D.Settings(
+    X4D_Chat.DB = X4D.DB:Open(X4D_Chat.NAME)
+
+--    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Chat.NAME)
+    local stopwatch = X4D.Stopwatch:StartNew()
+    X4D_Chat.Settings = X4D.Settings:Open(
         X4D_Chat.NAME .. "_SV",
         {
 	        GuildCharNames = true,

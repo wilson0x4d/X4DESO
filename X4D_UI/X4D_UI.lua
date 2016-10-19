@@ -32,7 +32,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_UI.NAME, EVENT_ADD_ON_LOADED, function(eventC
     end
     X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_UI.NAME)
     local stopwatch = X4D.Stopwatch:StartNew()
-	X4D_UI.Settings = X4D.Settings(
+	X4D_UI.Settings = X4D.Settings:Open(
 		X4D_UI.NAME .. "_SV",
 		{
             SettingsAre = "Per-Character",

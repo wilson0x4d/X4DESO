@@ -76,10 +76,11 @@ end
 
 --region X4D_Items DB
 
-EVENT_MANAGER:RegisterForEvent("X4D_Items.DB", EVENT_ADD_ON_LOADED, function(event, name)
-    if (name == "X4D_Core") then
-        X4D_Items.DB = X4D.DB:Open("X4D_Items.DB")
+EVENT_MANAGER:RegisterForEvent("X4D_Items", EVENT_ADD_ON_LOADED, function(event, name)
+    if (name ~= "X4D_Core") then
+        return
     end
+    X4D_Items.DB = X4D.DB:Open("X4D_Items")
 end)
 
 function X4D_Items:ParseLink(link)

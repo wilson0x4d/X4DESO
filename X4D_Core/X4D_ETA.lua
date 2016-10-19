@@ -10,11 +10,12 @@ end
 local X4D = LibStub("X4D")
 X4D.ETA = X4D_ETA
 
-EVENT_MANAGER:RegisterForEvent("X4D_ETA.DB", EVENT_ADD_ON_LOADED, function(event, name)
-    if (name == "X4D_Core") then
-        X4D_ETA.DB = X4D.DB:Open("X4D_ETA.DB")
-    end
-end )
+EVENT_MANAGER:RegisterForEvent("X4D_ETA", EVENT_ADD_ON_LOADED, function(event, name)
+    if (name ~= "X4D_Core") then
+		return
+	end
+    X4D_ETA.DB = X4D.DB:Open("X4D_ETA")
+end)
 
 local _sessionStartTime = GetGameTimeMilliseconds()
 
@@ -147,7 +148,8 @@ end
 setmetatable(X4D_ETA, { __call = X4D_ETA.GetOrCreate })
 
 EVENT_MANAGER:RegisterForEvent("X4D_ETA", EVENT_ADD_ON_LOADED, function (event, name)
-    if (name == "X4D_Core") then
-        _sessionStartTime = GetGameTimeMilliseconds()
-    end
+    if (name ~= "X4D_Core") then
+		return
+	end
+    _sessionStartTime = GetGameTimeMilliseconds()
 end)
