@@ -54,9 +54,9 @@ function X4D_Cartography:GetCurrentMap()
             Tiles = {},
             Zones = {},
             Locations = {},
-            IsSubZone = tonumber(mapIndex) == nil
+            IsSubZone = tonumber(mapIndex) == nil,
         }
-        local mapZones = X4D.DB:Create(map.Zones)
+        local mapZones = X4D.DB:Open(map.Zones)
         if (mapZones:Count() == 0) then
             -- not tested and/or bugged temporarily removed
             --if (isSubZone) then
@@ -82,7 +82,7 @@ function X4D_Cartography:GetCurrentMap()
             --    end
             --end
         end
-        local mapLocations = X4D.DB:Create(map.Locations)
+        local mapLocations = X4D.DB:Open(map.Locations)
         if (mapLocations:Count() == 0) then
 --            -- attempt to enumerate locations
 --            for locationIndex = 1, GetNumMapLocations() do
@@ -105,7 +105,7 @@ function X4D_Cartography:GetCurrentMap()
 --            end
         end
         if (GetCurrentMapIndex() == mapIndex or isSubZone) then
-            local mapTiles = X4D.DB:Create(map.Tiles)
+            local mapTiles = X4D.DB:Open(map.Tiles)
             if (mapTiles:Count() == 0) then
                 local numHorizontalTiles, numVerticalTiles = GetMapNumTiles()
                 if (numHorizontalTiles ~= nil and numVerticalTiles ~= nil) then
@@ -118,8 +118,8 @@ function X4D_Cartography:GetCurrentMap()
                             if (map.TileWidth == nil or map.TileHeight == nil) then
                                 map.TileWidth, map.TileHeight = X4D_Cartography:GetTileDimensions(tileTexture)
                                 if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
-                                    map.NativeWidth = map.TileWidth * map.HorizontalTileCount
-                                    map.NativeHeight = map.TileHeight * map.VerticalTileCount
+                                    map.MapWidth = map.TileWidth * map.HorizontalTileCount
+                                    map.MapHeight = map.TileHeight * map.VerticalTileCount
                                 end
                             end
                         end
@@ -159,7 +159,7 @@ local function GetMapIndexByZoneIndex(zoneIndex)
 end
 
 local function TryUpdateMapState(timer, state)
-    --X4D.Log:Warning("TryUpdateMapState")
+--    X4D.Log:Warning("TryUpdateMapState")
     if (ZO_WorldMap_IsWorldMapShowing()) then
         --NOP
         --TODO: this doesn't prevent state changes from occurring, since the 'map api calls' exposed by ZO are representative of ZO_WorldMap state prior to closure. le sigh.
@@ -177,14 +177,16 @@ local function TryUpdateMapState(timer, state)
     if (_currentMapTile ~= mapTile or _currentLocationName ~= locationName) then
         _currentMapTile = mapTile
         _currentLocationName = locationName
+
         local zoneIndex = GetCurrentMapZoneIndex()
         local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
 	    X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil)
-        mapName = GetMapName()
         X4D.Cartography.MapIndex(mapIndex)
         X4D.Cartography.ZoneIndex(zoneIndex)
-        X4D.Cartography.MapName(mapName)
+        X4D.Cartography.MapName(GetMapName())
+--		X4D.Log:Verbose{"TryUpdateMapState=>GetCurrentMap"}
         local currentMap = X4D.Cartography:GetCurrentMap()
+--		X4D.Log:Verbose{"TryUpdateMapState=>SetCurrentMap", mapIndex, zoneIndex}
         X4D.Cartography.CurrentMap(currentMap)
     end
 
@@ -194,7 +196,7 @@ local function TryUpdateMapState(timer, state)
     X4D.Cartography.PlayerY(playerY)
     X4D.Cartography.PlayerHeading(playerHeading)
     X4D.Cartography.CameraHeading(cameraHeading)
-    --X4D.Log:Information({mapIndex,zoneIndex,mapName,locationName,playerX,playerY,playerH,locationName, mapTile}, "Cartography")
+--    X4D.Log:Information({mapIndex,zoneIndex,mapName,locationName,playerX,playerY,playerH,locationName, mapTile}, "Cartography")
 end
 
 local _timer
@@ -202,11 +204,11 @@ local _timer
 --EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
 --end)
 
-EVENT_MANAGER:RegisterForEvent("X4D_Cartography.DB", EVENT_ADD_ON_LOADED, function(event, name)
+EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ADD_ON_LOADED, function(event, name)
     if (name ~= "X4D_Core") then
         return
     end
-    X4D_Cartography.DB = X4D.DB:Open("X4D_Cartography.DB")
+    X4D_Cartography.DB = X4D.DB:Open("X4D_Cartography")
 end)
 
 function X4D_Cartography:Initialize()
@@ -220,6 +222,6 @@ function X4D_Cartography:Initialize()
         _private_texture = tex
     end
     if (_timer == nil) then
-        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/15, {}, "X4D_Cartography")
+        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/30, {}, "X4D_Cartography")
     end
 end
