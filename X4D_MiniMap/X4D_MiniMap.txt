@@ -8,5 +8,5 @@
 
 lib/LibStub/LibStub.lua
 
-X4D_MiniMapPOI.lua
 X4D_MiniMap.lua
+
