@@ -40,7 +40,10 @@ function X4D_Observable:CreateObservable(initialValue)
         _rateLimit = rateLimit -- optional, default is no rate limit, observers are activateed on every update
         return observable
     end
-    observable.Observe = function (self, observer)
+    observable.Observe = function (self, observer, rateLimit)
+		if (rateLimit ~= nil) then
+			rateLimit = nil
+		end
 		if (observer ~= nil and type(observer) == "function") then
 	        table.insert(_observers, observer)
 		else
