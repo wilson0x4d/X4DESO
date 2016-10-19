@@ -63,7 +63,7 @@ end
 local function OnCurrentMapChanged(map, oldMap)
 	_currentMapId = X4D.Cartography.MapIndex()
 	_currentZoneIndex = X4D.Cartography.ZoneIndex()
-	X4D.Log:Verbose { "OnCurrentMapChanged", _currentMapId, _currentZoneIndex }
+--	X4D.Log:Verbose { "OnCurrentMapChanged", _currentMapId, _currentZoneIndex, map.IsSubZone, map.MapWidth, map.MapHeight  }
 	UpdateNearbyNPCs()
 end
 
