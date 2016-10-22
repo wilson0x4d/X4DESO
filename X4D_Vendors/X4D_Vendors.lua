@@ -249,25 +249,21 @@ local function ReportEarnings()
 	end
 end
 
-local function UpdateVendorPositionData(vendor)
-	vendor.MapId = X4D.Cartography.MapIndex()
-	vendor.ZoneIndex = X4D.Cartography.ZoneIndex()
-	-- TODO: implement "averaging" against prior position data ... and determine if there is any value in a Z coordinate
-	vendor.Position = {
-		X = X4D.Cartography.PlayerX(),
-		Y = X4D.Cartography.PlayerY()
-	}
-	X4D.Log:Verbose { "UpdateVendorPositionData", { vendor.MapId, vendor.ZoneIndex, vendor.Position.X, vendor.Position.Y } }
-end
-
 local function OnOpenFence()
 	_debits = 0
 	_credits = 0
-	local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
-	vendor.IsFence = true
-	UpdateVendorPositionData(vendor)
-	ConductTransactions(vendor)
+	local fence = X4D.NPCs:GetOrCreate("interact")
+	fence.IsFence = true
+	X4D.NPCs:UpdatePosition(fence)
+	X4D.NPCs.CurrentNPC(fence)
+	ConductTransactions(fence)
 	ReportEarnings()
+end
+local function OnCloseFence() 
+	-- force update of bag snapshots on close
+	local inventoryState = X4D.Bags:GetBackpackBag(true)
+	local bankState = X4D.Bags:GetBankBag(true)
+	X4D.NPCs.CurrentNPC(nil)
 end
 
 local function OnOpenStoreAsync(timer, state)
@@ -280,30 +276,30 @@ end
 local function OnOpenStore()
 	_debits = 0
 	_credits = 0
-	local vendor = X4D_Vendors:GetVendor("interact", tostring(X4D.Cartography.ZoneIndex()))
+	local vendor = X4D.NPCs:GetOrCreate("interact")
 	vendor.IsFence = false
-	UpdateVendorPositionData(vendor)
+	X4D.NPCs:UpdatePosition(vendor)
+	X4D.NPCs.CurrentNPC(vendor)
 	X4D.Async:CreateTimer(OnOpenStoreAsync):Start(337, vendor, "X4D_Vendors::ConductTransactions")
 end
-
-local function OnCloseStore()
+local function OnCloseStore() 
 	-- force update of bag snapshots on close
 	local inventoryState = X4D.Bags:GetBackpackBag(true)
 	local bankState = X4D.Bags:GetBankBag(true)
+	X4D.NPCs.CurrentNPC(nil)
 end
 
-function X4D_Vendors:GetVendor(tag)
-	local unitName = GetRawUnitName(tag)
-	if (unitName == nil or unitName:len() == 0) then
-		unitName = tag
-	end
-	local vendor = self.DB:Find(unitName)
-	if (vendor == nil) then
-		X4D.Log:Verbose { "X4D_Vendors:GetVendor", "Vendor Missing", tag, unitName }
-		vendor = X4D.NPCs:Create(tag)
-		self.DB:Add(vendor)
-	end
-	return vendor, key
+local function OnOpenStable()
+	local stablemaster = X4D.NPCs:GetOrCreate("interact")
+	X4D.NPCs:UpdatePosition(stablemaster)
+	X4D.NPCs.CurrentNPC(stablemaster)
+end
+local function OnCloseStable()
+	X4D.NPCs.CurrentNPC(nil)
+end
+
+function X4D_Vendors:GetorCreateVendor(tag)
+	return X4D.NPCs:GetOrCreate(tag)
 end
 
 local function InitializeSettingsUI()
@@ -501,8 +497,11 @@ end
 
 local function Register()
 	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenStore", EVENT_OPEN_STORE, OnOpenStore)
-	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenFence", EVENT_OPEN_FENCE, OnOpenFence)
 	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnCloseStore", EVENT_CLOSE_STORE, OnCloseStore)
+	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenFence", EVENT_OPEN_FENCE, OnOpenFence)
+	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnCloseFence", EVENT_Close_FENCE, OnCloseFence)
+	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnOpenStable", EVENT_STABLE_INTERACT_START, OnOpenStable)
+	EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnCloseStable", EVENT_STABLE_INTERACT_END, OnCloseStable)
 end
 
 EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, function(eventCode, addonName)
@@ -516,7 +515,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
 	X4D_Vendors.Settings = X4D.Settings:Open(
 	X4D_Vendors.NAME .. "_SV", {
 		SettingsAre = "Per-Character",
-		LaunderItemsWorth0Gold = true,
+		LaunderItemsWorth0Gold = false, -- this no longer defaults to true, this results in less confusion for users
 		ForKeepsItemPatterns =
 		{
 			-- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered
