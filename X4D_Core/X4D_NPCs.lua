@@ -25,7 +25,7 @@ local _currentZoneIndex = nil
 	it provides observables which list all "nearby" NPCs, where "nearby" is determined as a combination of "`Map ID` and `Zone Index`"
 ]]
 
-function X4D_NPCs:Create(tag)
+function X4D_NPCs:GetOrCreate(tag)
 	local npcType = GetUnitCaption(tag)
 	local npcName = GetRawUnitName(tag)
 	if (npcName == nil or npcName:len() == 0) then
@@ -45,18 +45,12 @@ function X4D_NPCs:Create(tag)
 				Y = X4D.Cartography.PlayerY()
 			}
 		}
-		self:Add(entity)
+		self.DB:Add(entity.Key, entity)
+		X4D.Log:Verbose{"X4D_NPCs:GetOrCreate(Create)", entity}
+	else
+		X4D.Log:Verbose{"X4D_NPCs:GetOrCreate(Get)", entity}
 	end
 	return entity, entity.Key
-end
-
-function X4D_NPCs:GetOrCreate(tag)
-	local npcName = GetRawUnitName(tag)
-	local npc = self.DB:Find(npcName)
-	if (npc == nil) then
-		npc = X4D.NPCs:Create(tag)
-	end
-	return npc, npc.Key
 end
 
 -- region Nearby NPCs
@@ -65,16 +59,21 @@ X4D_NPCs.NearbyNPCs = X4D.Observable(nil) -- NOTE: used by X4D_MiniMap to create
 X4D_NPCs.CurrentNPC = X4D.Observable(nil) -- NOTE: when another module detects interaction with an NPC, it *may* place a module-specific entity here, treat this as a read-only/internal-only value
 
 local function IsNPCNearby(npc, key)
-	return npc ~= nil and npc.MapId == _currentMapId and npc.ZoneIndex == _currentZoneIndex
+	local result = npc ~= nil and npc.MapId == _currentMapId and npc.ZoneIndex == _currentZoneIndex
+--	X4D.Log:Information{"IsNPCNearby", npc.Key, npc.MapId, npc.ZoneIndex, _currentMapId, _currentZoneIndex}	
+	return result
 end
 local function UpdateNearbyNPCs()
 	local nearby = X4D_NPCs.DB:Where(IsNPCNearby, true)
+--	nearby:ForEach(function (e) 
+--		X4D.Log:Information{"UpdateNearbyNPCs", e}	
+--	end)
 	X4D_NPCs.NearbyNPCs(nearby)
 end
 local function OnCurrentMapChanged(map, oldMap)
 	_currentMapId = X4D.Cartography.MapIndex()
 	_currentZoneIndex = X4D.Cartography.ZoneIndex()
---	X4D.Log:Verbose { "OnCurrentMapChanged", _currentMapId, _currentZoneIndex, map.IsSubZone, map.MapWidth, map.MapHeight  }
+	X4D.Log:Verbose { "OnCurrentMapChanged", _currentMapId, _currentZoneIndex, map.IsSubZone, map.MapWidth, map.MapHeight  }
 	UpdateNearbyNPCs()
 end
 
@@ -149,7 +148,7 @@ end
 
 function X4D_NPCs:UpdatePosition(entity, mapId, zoneIndex)
 	entity.MapId = mapId or _currentMapId
-	entity.ZoneIndex = zoneIndex or _zoneIndex
+	entity.ZoneIndex = zoneIndex or _currentZoneIndex
 	if (entity.Position ~= nil) then
 		-- we average positions so as to normalize the plot over time, doesn't work for every NPC
 		local entityX = X4D.Cartography.PlayerX()
@@ -166,6 +165,7 @@ function X4D_NPCs:UpdatePosition(entity, mapId, zoneIndex)
 		}
 	end
 	X4D.Log:Verbose { "UpdatePosition", { entity.MapId, entity.ZoneIndex, entity.Position.X, entity.Position.Y } }
+	UpdateNearbyNPCs()
 end
 
 -- endregion
