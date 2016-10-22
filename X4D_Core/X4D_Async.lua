@@ -74,13 +74,9 @@ function X4D_Timer:Start(interval, state, name)
     end
 	if (state ~= nil) then
 		self._state = state
-	elseif (self._state == nil) then
-        self._state = {}
     end
 	if (interval ~= nil) then
 		self._interval = interval
-    elseif (self._interval == nil) then
-        self._interval = 1000
 	end
 	if (self._enabled) then
 		return
