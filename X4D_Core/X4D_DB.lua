@@ -7,12 +7,10 @@ local X4D = LibStub("X4D")
 X4D.DB = X4D_DB
 
 local function countof(table)
-    local count = #(table)
-    if (count == 0) then
-        for key,entity in pairs(table) do
-            if ((type(key) ~= "string") or (not key:StartsWith("_"))) then
-                count = count + 1
-            end
+    local count = 0
+    for key,entity in pairs(table) do
+        if ((type(key) ~= "string") or (not key:StartsWith("_"))) then
+            count = count + 1
         end
     end
     return count
