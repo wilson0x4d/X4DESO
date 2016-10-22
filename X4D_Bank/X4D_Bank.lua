@@ -47,6 +47,10 @@ local function MRL_Increment(count)
 		count = 1
 	end
 	_mrlCountSinceLast = _mrlCountSinceLast + count
+	return _mrlCountSinceLast
+end
+local function MRL_GetCount()
+	return _mrlCountSinceLast
 end
 local function MRL_WouldExceedLimit()
 	-- TODO: calculate based on all factors, Fx. does the MRL have decay? what is the peak before we must meet decay requirements? et cetera.
@@ -57,20 +61,17 @@ local function MRL_WouldExceedLimit()
 end
 local function MRL_GetMessageRateLimit()
 	-- TODO: this is guesswork, I still have not seen a definition of MRL from ZO staff, see also: https://forums.elderscrollsonline.com/en/discussion/169096/what-is-the-message-rate-limit-exactly
-	-- NOTE: the MRL of 500ms would appear to be incorrect
-	-- NOTE: however, it appears it takes "about that long" for a bank transaction to commit and come back from the server (e.g. result in UI state change) so we always wait a base period of 500ms + 50ms per message sent since last check
-	-- TODO: calculate based on all factors, Fx. does the MRL have decay? what is the peak before we must meet decay requirements? et cetera.
+	-- NOTE: the MRL of 500ms noted in that thread would appear to be incorrect for bank management, suggesting different MRLs are applied to difference game services, if we refactor MRL into reusable code we must be able to get an "MRL state" based on a "group key" so that relevant bits of code can share an instance, without sharing a reference
 	local ts = GetGameTimeMilliseconds()
 	local seconds = ((ts - _mrlLastTimestamp) + 1) / 1000
 	local rate = _mrlCountSinceLast / seconds
 	if (rate > _mrlIdealRate) then
-		waitTime = (((rate - _mrlIdealRate) / _mrlIdealRate) * 500) -- wait one second for every overage of "ideal-per-second", ie. if ideal rate is 3 and current rate is 9, we wait 2 additional seconds to 'nudge' the rate down
+		waitTime = (((rate - _mrlIdealRate) / _mrlIdealRate) * 500) -- wait one "half second" (500ms) for every overage of "ideal-per-second", ie. if ideal rate is 3 and current rate is 9, we wait ~800ms to 'nudge' the rate down toward our ideal rate (~50% if we're doing sustained rates), if the next rate count is 6 (overage of 3), we nudge down again by ~600 (another 50%, or 75% of original burst rate). typically it takes ~2 seconds to match target MRL, and we do not incur heavy delays in UI/performance doing it this way.
 	else
-		waitTime = 50 -- standard wait time 
---		X4D.Log:Warning("- waitTime=" .. waitTime)
+		waitTime = 50 -- TODO: determine average (or current) ping/latency, and apply it here, effectively giving up "a network slice" to other addon code
 	end
-	if (waitTime < 50) then -- max effective rate once at peak becomes 20-per
-		waitTime = 50 -- apply a minimum wait period, this solves the problem of overly aggressive ideal-rate delay calculations (e.g. sub-50ms waits, they only eat CPU, providing no real value beyond initial burst)
+	if (waitTime < 50) then -- max effective rate once at peak is 20/s
+		waitTime = 50 -- apply a minimum wait period, this solves the problem of overly aggressive ideal-rate delay calculations (e.g. sub-50ms waits, they only eat CPU, providing no real value beyond the initial burst)
 	end
 --	X4D.Log:Verbose("X4D_Bank MRL waitTime=" .. waitTime)
 	return waitTime
@@ -129,7 +130,7 @@ local function IsSlotIgnoredItem(slot)
                     if (normalized:find(pattern)) then
                         isIgnored = true
                     end
-                end )) then
+                end)) then
                 InvokeChatCallback(X4D.Colors.SYSTEM, "(BANK) Bad Item Pattern: |cFF7777" .. pattern)
             end
             if (isIgnored) then
@@ -141,7 +142,7 @@ local function IsSlotIgnoredItem(slot)
 end
 
 local function GetPatternAction(slot)
-    --X4D.Log:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
+--    X4D.Log:Verbose{"GetPatternAction", slot.Id, slot.Item.Name}
     local patternAction = X4D_BANKACTION_NONE
     if (not slot.IsEmpty) then
         if (IsSlotIgnoredItem(slot)) then
@@ -156,7 +157,7 @@ local function GetPatternAction(slot)
                         patternAction = X4D_BANKACTION_WITHDRAW
                     end
                 end)) then
-                    InvokeChatCallback(X4D.Colors.SYSTEM, "(Bank) Bad Withdraw Pattern: |cFF7777" .. pattern)
+                    InvokeChatCallback(X4D.Colors.SYSTEM, "(Bank) Bad 'Withdraw Item' Pattern: |cFF7777" .. pattern)
                 end
                 if (patternAction ~= X4D_BANKACTION_NONE) then
                     return patternAction
@@ -169,8 +170,8 @@ local function GetPatternAction(slot)
                         if (normalized:find(pattern)) then
                             patternAction = X4D_BANKACTION_DEPOSIT
                         end
-                    end )) then
-                    InvokeChatCallback(X4D.Colors.SYSTEM, "(Bank) Bad Deposit Item Pattern: |cFF7777" .. pattern)
+                    end)) then
+                    InvokeChatCallback(X4D.Colors.SYSTEM, "(Bank) Bad 'Deposit Item' Pattern: |cFF7777" .. pattern)
                 end
                 if (patternAction ~= X4D_BANKACTION_NONE) then
                     return patternAction
@@ -267,7 +268,7 @@ local function TryCombinePartialStacks(bag, depth)
     for i = 1, bag.PartialStackCount do
         local lval = bag.PartialStacks[i]
         if (lval == nil) then
-            X4D.Log:Error{"TryCombinePartialStacks", "INVALID SLOT INDEX " .. i}
+--            X4D.Log:Error{"TryCombinePartialStacks", "INVALID SLOT INDEX " .. i}
         else
             for j = i + 1, (bag.PartialStackCount - 1) do
                 local rval = bag.PartialStacks[j]
@@ -285,7 +286,7 @@ local function TryCombinePartialStacks(bag, depth)
         end
     end
     for i,combine in pairs(combines) do
-        X4D.Log:Verbose{i,combine}
+--        X4D.Log:Verbose{i,combine}
         local lval, rval = combines[i][1], combines[i][2]
         local countToMove = (rval.Item.StackMax - rval.StackCount)
         if (lval.StackCount < countToMove) then
@@ -343,7 +344,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     local totalMoved = 0
     local usedEmptySlot = false
     local partialSlots, emptySlots = FindTargetSlots(sourceSlot, targetBag)
-    --X4D.Log:Verbose{partialSlots, emptySlots}
+--    X4D.Log:Verbose{partialSlots, emptySlots}
     for _, targetSlot in pairs(partialSlots) do
         local countToMove = targetSlot.Item.StackMax - targetSlot.StackCount
         if (countToMove > sourceSlot.StackCount) then
@@ -352,7 +353,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
         CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
 		MRL_Increment(1)
-        X4D.Log:Verbose{"TryMove(topartial)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
+--        X4D.Log:Verbose{"TryMove(topartial)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
         totalMoved = totalMoved + countToMove
         sourceSlot.StackCount = sourceSlot.StackCount - countToMove
         if (sourceSlot.StackCount <= 0) then
@@ -371,7 +372,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
                 CallSecureProtected("PickupInventoryItem", sourceBag.Id, sourceSlot.Id, countToMove)
                 CallSecureProtected("PlaceInInventory", targetBag.Id, targetSlot.Id)
 				MRL_Increment(1)
-                X4D.Log:Verbose{"TryMove(toempty)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
+--                X4D.Log:Verbose{"TryMove(toempty)", sourceBag.Id, sourceSlot.Id, countToMove, targetBag.Id, targetSlot.Id}
                 targetSlot.IsEmpty = false
                 usedEmptySlot = true
                 totalMoved = totalMoved + countToMove
@@ -541,10 +542,8 @@ local function ConductTransactions(transactionState)
 
 	-- HACK: we require at least one "re-entry" in order to continue deposits and withdrawals in the case where we've hit a cap, before v1.27 we would simply loop one addiitonal iteration
 	if (wasAnyChangeMade) then
-		if (not MRL_WouldExceedLimit()) then
-			-- HACK: setting this to 1 ensures that a minimum delay is incurred, improves UX
-			_mrlCountSinceLast = 1;
-		end
+		-- HACK: this reset ensures that we do not wait unnecessarily (the loop above already performed this check, and exiting with `false` would incur a wait we would not otherwise incur, the user will notice.)
+		MRL_ResetRate()
 		return false
 	end
 
@@ -603,6 +602,8 @@ end
 local function OnOpenBank(eventCode)
 --	X4D.Log:Warning("BEGIN OnOpenBank")
 	_isBankOpen = true;
+	local banker = X4D.NPCs:GetOrCreate("interact")
+	X4D.NPCs.CurrentNPC(banker)
 	if (not _isBankBusy) then
 		_isBankBusy = true
 		local transactionState = {
@@ -625,6 +626,11 @@ local function OnCloseBank()
     -- coerce update of bag snapshots on close
     local inventoryState = TryGetBag(BAG_BACKPACK)
     local bankState = TryGetBag(BAG_BANK)
+	X4D.NPCs.CurrentNPC(nil)
+end
+
+function X4D_Bank:GetOrCreateBanker(tag)
+	return X4D.NPCs:GetOrCreate(tag)
 end
 
 local function SetComboboxValue(controlName, value)
@@ -1012,8 +1018,8 @@ local function OnAddOnLoaded(eventCode, addonName)
         return
     end
     local stopwatch = X4D.Stopwatch:StartNew()
-    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Bank.NAME)
-    X4D_Bank.Settings = X4D.Settings(
+--    X4D.Log:Debug({"OnAddonLoaded", eventCode, addonName}, X4D_Bank.NAME)
+    X4D_Bank.Settings = X4D.Settings:Open(
         X4D_Bank.NAME .. "_SV",
         {
             SettingsAre = "Per-Character",
@@ -1042,6 +1048,9 @@ local function OnAddOnLoaded(eventCode, addonName)
             }
         },
         2)
+
+	-- we record banker locations, similar to how we record vendor locations, using the NPC module
+    X4D_Bank.DB = X4D.NPCs
 
     InitializeSettingsUI()
 
