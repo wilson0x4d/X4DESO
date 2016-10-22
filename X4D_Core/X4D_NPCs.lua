@@ -25,33 +25,44 @@ local _currentZoneIndex = nil
 	it provides observables which list all "nearby" NPCs, where "nearby" is determined as a combination of "`Map ID` and `Zone Index`"
 ]]
 
-function X4D_NPCs:Create(tag, npc_type)
-	if (npc_type == nil) then
-		X4D.Log:Warning { "X4D_NPCs:Create", "NPC_TYPE not provided, this will create problems later.", tag }
+function X4D_NPCs:Create(tag)
+	local npcType = GetUnitCaption(tag)
+	local npcName = GetRawUnitName(tag)
+	if (npcName == nil or npcName:len() == 0) then
+		npcName = tag
 	end
-	local unitName = GetRawUnitName(tag)
-	if (unitName == nil or unitName:len() == 0) then
-		unitName = tag
-	end
-	local key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. unitName
-	local entity = {
-		Type = npc_type,
-		Name = unitName,
-		Key = key,
-		MapId = _currentMapId,
-		ZoneIndex = _currentZoneIndex,
-		Position = {
-			X = X4D.Cartography.PlayerX(),
-			Y = X4D.Cartography.PlayerY()
+	local key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. npcName
+	local entity = self:Find(key)
+	if (entity == nil) then
+		entity = {
+			Key = key,
+			Name = npcName,
+			Type = npcType,
+			MapId = _currentMapId,
+			ZoneIndex = _currentZoneIndex,
+			Position = {
+				X = X4D.Cartography.PlayerX(),
+				Y = X4D.Cartography.PlayerY()
+			}
 		}
-	}
+		self:Add(entity)
+	end
 	return entity, entity.Key
+end
+
+function X4D_NPCs:GetOrCreate(tag)
+	local npcName = GetRawUnitName(tag)
+	local npc = self.DB:Find(npcName)
+	if (npc == nil) then
+		npc = X4D.NPCs:Create(tag)
+	end
+	return npc, npc.Key
 end
 
 -- region Nearby NPCs
 
 X4D_NPCs.NearbyNPCs = X4D.Observable(nil) -- NOTE: used by X4D_MiniMap to create "NPC pins", and elsewhere, instead of polling/querying again and again
-X4D_NPCs.CurrentNPC = X4D.Observable(nil) -- NOTE: when another module detects interaction with an NPC, it *may* place a module-specific entity here
+X4D_NPCs.CurrentNPC = X4D.Observable(nil) -- NOTE: when another module detects interaction with an NPC, it *may* place a module-specific entity here, treat this as a read-only/internal-only value
 
 local function IsNPCNearby(npc, key)
 	return npc ~= nil and npc.MapId == _currentMapId and npc.ZoneIndex == _currentZoneIndex
@@ -136,6 +147,27 @@ function X4D_NPCs:Where(predicate, silence)
 	return self.DB:Where(predicate, silence)
 end
 
+function X4D_NPCs:UpdatePosition(entity, mapId, zoneIndex)
+	entity.MapId = mapId or _currentMapId
+	entity.ZoneIndex = zoneIndex or _zoneIndex
+	if (entity.Position ~= nil) then
+		-- we average positions so as to normalize the plot over time, doesn't work for every NPC
+		local entityX = X4D.Cartography.PlayerX()
+		local entityY = X4D.Cartography.PlayerY()
+		entity.Position = {
+			X = (entityX + (entity.Position.X or entityX)) / 2,
+			Y = (entityY + (entity.Position.Y or entityY)) / 2,
+		}
+	else
+		-- first time seen, fresh coordinates
+		entity.Position = {
+			X = X4D.Cartography.PlayerX(),
+			Y = X4D.Cartography.PlayerY(),
+		}
+	end
+	X4D.Log:Verbose { "UpdatePosition", { entity.MapId, entity.ZoneIndex, entity.Position.X, entity.Position.Y } }
+end
+
 -- endregion
 
 EVENT_MANAGER:RegisterForEvent(X4D_NPCs.NAME, EVENT_ADD_ON_LOADED, function(event, name)
@@ -154,16 +186,3 @@ EVENT_MANAGER:RegisterForEvent(X4D_NPCs.NAME, EVENT_ADD_ON_LOADED, function(even
 	-- record module load time
 	X4D_NPCs.Took = stopwatch.ElapsedMilliseconds()
 end)
-
---[[
-
-some additional events to handle since we don't have a module for them (yet)
-
-EVENT_STABLE_INTERACT_END (number eventCode)
-EVENT_STABLE_INTERACT_START (number eventCode)
-
-EVENT_CHATTER_BEGIN (integer eventCode, number optionCount)
-
-
-
-]]
