@@ -112,21 +112,29 @@ function X4D_ETA:Increment(count)
     self.CountSinceReset = self.CountSinceReset + count
 end
 
-function X4D_ETA:Reset(newTargetCount)
+function X4D_ETA:Reset(newTargetCount, initialCount)
+	if (initialCount == nil) then
+		initialCount = 0
+	end
     self.LastResetTime = GetGameTimeMilliseconds()
-    self.CountSinceReset = 0
+    self.CountSinceReset = initialCount
     if (newTargetCount == nil) then
         self.TargetCount = 0
     else
         self.TargetCount = newTargetCount
     end
+    local currentTime = GetGameTimeMilliseconds()
     self.SecondCount = 0
     self.MinuteCount = 0
-    self.HourCount = 0
-    self.DayCount = 0
-    self.WeekCount = 0
-    self.MonthCount = 0
-    self.AllTimeCount = 0
+    self.HourCount = initialCount
+    self.HourSeq = math.floor(currentTime / 3600000)
+    self.DayCount = initialCount
+    self.DaySeq = math.floor(currentTime / 86400000)
+    self.WeekCount = initialCount
+    self.WeekSeq = math.floor(currentTime / 604800000)
+    self.MonthCount = initialCount
+    self.MonthSeq = math.floor(currentTime / 2678400000) -- poor approximation, see lhf's answer http://stackoverflow.com/questions/17872997/how-do-i-convert-seconds-since-epoch-to-current-date-and-time
+    self.AllTimeCount = initialCount
 end
 
 function X4D_ETA:GetSessionAverage(interval) 
