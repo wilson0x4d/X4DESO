@@ -1,8 +1,4 @@
--- TODO: this entire module requires review due to point system changes from 1.6 through 2.6
-
--- TODO: there is a bug (at least for "Destroying the Dark Witnesses") where the XP payout appears in the chat window twice
-
--- possibly there is a bug where monster kills do not show any XP payout
+-- TODO: there may be a "Quest XP" bug (at least for "Destroying the Dark Witnesses") where the XP payout appears in the chat window twice
 
 local X4D_XP = LibStub:NewLibrary("X4D_XP", 1013)
 if (not X4D_XP) then
@@ -16,7 +12,7 @@ X4D_XP.VERSION = "1.13"
 
 local _pointType = "XP"
 local _currentXP = 0
-local _playerIsVeteran = false
+local _playerIsChampion = false
 local _eta = nil
 
 local _expReasons = { }
@@ -58,7 +54,7 @@ _expReasons[PROGRESS_REASON_ALLIANCE_POINTS] = "Alliance Points"
 _expReasons[PROGRESS_REASON_PVP_EMPEROR] = "Emperor"
 _expReasons[PROGRESS_REASON_DUNGEON_CHALLENGE] = "Dungeon Challenge"
 
-local function GetExpReason(reasonIndex)
+local function GetProgressReason(reasonIndex)
 	return _expReasons[reasonIndex]
 end
 
@@ -128,25 +124,25 @@ local function GetStatusBarPanelText()
     local tnl = (_eta.TargetCount - _eta.AllTimeCount)
     if (xpMinute >= 1) then
         message = message .. xpMinute .. " " .. _pointType .. "/minute"
-    if (X4D_XP.Settings:Get("ShowTTL")) then
-        local ttl = (tnl / _eta:GetSessionAverage())
-        local ttlDays = math.floor(ttl / 86400)
-        local shave = (ttlDays * 86400)
-        local ttlHours = math.floor((ttl - shave) / 3600)
-        shave = shave + (ttlHours * 3600)
-        local ttlMinutes = math.floor((ttl - shave) / 60)
-        shave = shave + (ttlMinutes * 60)
-        local ttlSeconds = math.floor(ttl - shave)
-        local ttlString = ""
-        if (ttlDays > 0) then
-            ttlString = string.format("%d:%02d:%02d:%02d", ttlDays, ttlHours, ttlMinutes, ttlSeconds)
-        elseif (ttlHours > 0) then
-            ttlString = string.format("%02d:%02d:%02d", ttlHours, ttlMinutes, ttlSeconds)
-        else
-            ttlString = string.format("%02d:%02d", ttlMinutes, ttlSeconds)
-        end
-        message = message .. ", " .. ttlString
-    end
+		if (X4D_XP.Settings:Get("ShowTTL")) then
+			local ttl = (tnl / _eta:GetSessionAverage())
+			local ttlDays = math.floor(ttl / 86400)
+			local shave = (ttlDays * 86400)
+			local ttlHours = math.floor((ttl - shave) / 3600)
+			shave = shave + (ttlHours * 3600)
+			local ttlMinutes = math.floor((ttl - shave) / 60)
+			shave = shave + (ttlMinutes * 60)
+			local ttlSeconds = math.floor(ttl - shave)
+			local ttlString = ""
+			if (ttlDays > 0) then
+				ttlString = string.format("%d:%02d:%02d:%02d", ttlDays, ttlHours, ttlMinutes, ttlSeconds)
+			elseif (ttlHours > 0) then
+				ttlString = string.format("%02d:%02d:%02d", ttlHours, ttlMinutes, ttlSeconds)
+			else
+				ttlString = string.format("%02d:%02d", ttlMinutes, ttlSeconds)
+			end
+			message = message .. ", " .. ttlString
+		end
     end
     if (X4D_XP.Settings:Get("ShowTNL") and tnl > 0) then
         if (message:len() > 0) then
@@ -157,19 +153,16 @@ local function GetStatusBarPanelText()
     return X4D.Colors.XP .. message
 end
 
-local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reasonIndex)    
-	if (unitTag ~= "player") then
-		return
-	end
-    if (maxExp ~= _eta.TargetCount) then
-        -- TODO: need a 'leveled' event to reset this from (and should also reset anything else set on 'player activation'
-        _eta:Reset(maxExp)
-    end
-	local xpGained = currentExp - _currentXP
+-- TODO: GetPlayerChampionXP
+-- TODO: maxExp = GetNumChampionXPInChampionPoint(numChampionPointsEarned))
+-- TODO: GetLevelOrChampionPointsString(level, championPoints, iconSize)
+
+local function OnExperienceGain(eventCode, reasonIndex, level, previousExperience, currentExperience, championPoints)
+	local xpGained = currentExperience - previousExperience
 	if (xpGained > 0) then
         _eta:Increment(xpGained)
         local message = xpGained .. " " .. _pointType
-		local reason = GetExpReason(reasonIndex)
+		local reason = GetProgressReason(reasonIndex)
 		if (reason ~= nil) then            
             message = message .. " for " .. reason
             local xpMinute = _eta:GetSessionAverage(60000)
@@ -202,6 +195,31 @@ local function OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason
         end
 	end
 	_currentXP = _currentXP + xpGained
+end
+
+local function ResetXPState()
+	local maxExp = 0
+    _playerIsChampion = IsUnitChampion("player")
+	if (_playerIsChampion) then
+		_pointType = "XP"
+		_currentXp = GetPlayerChampionXP()
+		maxExp = GetNumChampionXPInChampionPoint(GetPlayerChampionPointsEarned())
+	else
+		_pointType = "XP"
+    	_currentXP = GetUnitXP("player")        
+		maxExp = GetUnitXPMax("player")
+	end
+	if (_eta ~= nil) then
+		_eta:Reset(maxExp, _currentXP)
+	end
+end
+
+local function OnLevelUpdate(evt, tag, level)
+	X4D.Log:Verbose{"X4D_XP::OnLevelUpdate", evt, tag, level}
+	if (tag ~= "player" or tag == nil) then
+		return
+	end
+	ResetXPState()
 end
 
 local function InitializeSettingsUI()
@@ -243,12 +261,21 @@ local function InitializeSettingsUI()
     )
 end
 
+local function OnChampionPointUpdate(evt, eventCode, unitTag, oldChampionPoints, currentChampionPoints)
+end
+
+local function OnChampionLevelAcheived(eventCode, wasChampionSystemUnlocked)
+end
+
 function X4D_XP.Register()
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_QUEST_COMPLETE, OnQuestCompleteExperience)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_DISCOVERY_EXPERIENCE, OnDiscoveryExperienceGain)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_OBJECTIVE_COMPLETED, OnObjectiveCompleted)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_UPDATE, OnExperienceUpdate)
-	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_VETERAN_POINTS_UPDATE, OnExperienceUpdate)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_GAIN, OnExperienceGain)
+	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_LEVEL_UPDATE, OnLevelUpdate)
+
+	-- TODO: EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_CHAMPION_LEVEL_ACHIEVED, OnChampionLevelAcheived)
+	-- TODO: EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_CHAMPION_POINT_UPDATE, OnChampionPointUpdate)
 end
 
 function X4D_XP.Unregister()
@@ -278,7 +305,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(eventC
     local stopwatch = X4D.Stopwatch:StartNew()
     _eta = X4D.ETA('X4D_XP')
 
-	X4D_XP.Settings = X4D.Settings(
+	X4D_XP.Settings = X4D.Settings:Open(
         X4D_XP.NAME .. "_SV", 
         {
             ShowTNL = true, -- show XP til-next-level (tnl)
@@ -293,15 +320,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_ADD_ON_LOADED, function(eventC
     X4D_XP.Took = stopwatch.ElapsedMilliseconds()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_PLAYER_ACTIVATED, function()
-    _playerIsVeteran = IsUnitVeteran("player")
-	if (_playerIsVeteran) then
-		_pointType = "VP"
-    	_currentXP = GetUnitVeteranPoints("player")
-	else
-		_pointType = "XP"
-    	_currentXP = GetUnitXP("player")        
-	end
-    _eta.AllTimeCount = _currentXP
+	ResetXPState()
 end)
 
 
