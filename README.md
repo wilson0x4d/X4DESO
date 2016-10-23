@@ -1,7 +1,19 @@
 # X4D ESO Add-Ons
 
-A collection of LibStub-compatible Add-Ons that provide minor enhancements.
+A collection of LibStub-compatible Add-Ons that provide minor enhancements to the game "Elder Scrolls Online".
 
+### Until next update, YMMV. Enjoy!
+
+As of 2016-10-22 This code is in a **raw development stage**, a work in progress as **it is being updated for various changes to the Game APIs since last update.** Hooray! 
+
+You can expect another 30 days before all X4D modules have been updated and tested, this code is merely committed "as-is" so there is more than one copy, and so that anyone that wants access to an "experimental dev build" now has it. 
+
+Not all modules have been upgraded (namely: `Mail` and `LibAntiSpam`, all others work for me, however, X4D_XP module has not been tested with a Champion character, but it "should" work.)
+
+Lastly, LibAddonMenu has not been upgraded, but works fine for me as I do not have any other Addons which use a newer version.) The ownership of LAM has been solid in the past, and so I expect LAM to remain backward compatible, but have not verified. Again, YMMV.
+
+The versions, notes, etc in various READMEs, including this one, have not been updated. I only do this as part of public release to http://ESOUI.com -- which will not happen for another 30 days.
+ 
 ### Dependencies
 
 - LibStub *(Optional)*
