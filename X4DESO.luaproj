@@ -110,7 +110,6 @@
     <Compile Include="X4D_Mail\X4D_Mail.lua" />
     <Compile Include="X4D_Core\X4D_Observable.lua" />
     <Compile Include="X4D_MiniMap\X4D_MiniMap.lua" />
-    <Compile Include="X4D_MiniMap\X4D_MiniMapPOI.lua" />
     <Compile Include="X4D_UI\Windows\X4D_ErrorManager.lua" />
     <Compile Include="X4D_UI\Windows\X4D_StatusBar.lua" />
     <Compile Include="X4D_UI\X4D_UI.lua" />
