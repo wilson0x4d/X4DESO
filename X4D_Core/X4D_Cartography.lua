@@ -177,26 +177,28 @@ local function TryUpdateMapState(timer, state)
     if (_currentMapTile ~= mapTile or _currentLocationName ~= locationName) then
         _currentMapTile = mapTile
         _currentLocationName = locationName
-
         local zoneIndex = GetCurrentMapZoneIndex()
         local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
 	    X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil)
         X4D.Cartography.MapIndex(mapIndex)
         X4D.Cartography.ZoneIndex(zoneIndex)
         X4D.Cartography.MapName(GetMapName())
---		X4D.Log:Verbose{"TryUpdateMapState=>GetCurrentMap"}
         local currentMap = X4D.Cartography:GetCurrentMap()
---		X4D.Log:Verbose{"TryUpdateMapState=>SetCurrentMap", mapIndex, zoneIndex}
         X4D.Cartography.CurrentMap(currentMap)
+	else
+		-- when it doesn't look like there is any change, simulate a worldmap update
+		if (SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED) then
+			CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
+		end
     end
-
+end
+local function TryUpdatePlayerState(timer, state)
     local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
     local cameraHeading = GetPlayerCameraHeading()
     X4D.Cartography.PlayerX(playerX)
     X4D.Cartography.PlayerY(playerY)
     X4D.Cartography.PlayerHeading(playerHeading)
     X4D.Cartography.CameraHeading(cameraHeading)
---    X4D.Log:Information({mapIndex,zoneIndex,mapName,locationName,playerX,playerY,playerH,locationName, mapTile}, "Cartography")
 end
 
 local _timer
@@ -221,7 +223,17 @@ function X4D_Cartography:Initialize()
         tex:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
         _private_texture = tex
     end
-    if (_timer == nil) then
-        _timer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/30, {}, "X4D_Cartography")
+    if (_mapTimer == nil) then
+        _mapTimer = X4D.Async:CreateTimer(TryUpdateMapState):Start(250, {}, "X4D_Cartography::TryUpdateMapState")
+    end
+    if (_playerTimer == nil) then
+        _playerTimer = X4D.Async:CreateTimer(TryUpdatePlayerState):Start(1000/30, {}, "X4D_Cartography::TryUpdatePlayerState")
     end
 end
+
+--EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_QUEST_POSITION_REQUEST_COMPLETE, function()
+--	X4D.Log:Warning{"X4D_Cartography::EVENT_QUEST_POSITION_REQUEST_COMPLETE"}
+--end)
+--CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", function()
+--	X4D.Log:Warning{"X4D_Cartography::OnWorldMapChanged"}
+--end)
