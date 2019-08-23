@@ -13,6 +13,12 @@ function X4D_Settings:Get(name)
     if (name == "SettingsAre") then
         return self.Saved.SettingsAre or self.Default.SettingsAre or "Account-Wide"
     else
+        if (type(name) ~= "string") then
+            name = tostring(name)
+            if (name:len() == 0) then
+                X4D.Log:Warning{"X4D_Settings:Get", "'name' parameter is not a string ("..tostring(name)..")", self.Scope, self.Scope58}
+            end
+		end
 	    local scope = self.Saved.SettingsAre or "Account-Wide"
 	    if (scope ~= "Account-Wide") then
             scope = GetUnitName("player")
@@ -50,8 +56,11 @@ function X4D_Settings:Set(name, value)
 		    scoped = {}
 		    self.Saved[self.Scope58] = scoped
 	    end
-		if (type(name) ~= "string") then
-			X4D.Log:Warning{"X4D_Settings:Set", "'name' parameter is not a string.", self.Scope, self.Scope58}
+        if (type(name) ~= "string") then
+            name = tostring(name)
+            if (name:len() == 0) then
+                X4D.Log:Warning{"X4D_Settings:Set", "'name' parameter is not a string ("..tostring(name)..")", self.Scope, self.Scope58}
+            end
 		end
 	    scoped[name] = value
     end
