@@ -168,7 +168,7 @@ local function CheckBagForChange(bagId, reportChanges)
                     if (X4D.Loot.Settings:Get("DisplayLootLevel") and previous.ItemLevel ~= nil and previous.ItemLevel > 0) then
                         levelString = "L" ..  previous.ItemLevel .. " "
                     end
-                    local message = zo_strformat(X4D.Colors.Red .. "Lost " .. previous.ItemColor .. "<<6>><<1>><<t:2>> <<3>> x<<4>>",
+                    local message = zo_strformat(X4D.Colors.Red .. "Removed " .. previous.ItemColor .. "<<6>><<1>><<t:2>> <<3>> x<<4>>",
                         previous.Item:GetItemIcon(), 
 						previous.Item:GetItemLink(), 
 						X4D.Colors.StackCount, 
