@@ -25,4 +25,13 @@ function createAddOnSymLink($addOnName) {
     }
 }
 
+createAddOnSymLink "X4D_Bank"
+createAddOnSymLink "X4D_Chat"
 createAddOnSymLink "X4D_Core"
+createAddOnSymLink "X4D_LibAntiSpam"
+createAddOnSymLink "X4D_Loot"
+createAddOnSymLink "X4D_Mail"
+createAddOnSymLink "X4D_MiniMap"
+createAddOnSymLink "X4D_UI"
+createAddOnSymLink "X4D_Vendors"
+createAddOnSymLink "X4D_XP"

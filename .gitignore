@@ -6,3 +6,5 @@
 *.user
 *.zip
 *.pdn
+
+X4D_*/lib/
