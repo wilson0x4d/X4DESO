@@ -622,7 +622,7 @@ function X4D_LibAntiSpam.OnAddOnLoaded(event, addonName)
                 end,
                 setFunc = function(v)
                     --local v = _G["X4D_LIBANTISPAM_EDIT_PATTERNS"]["edit"]:GetText()
-                    local result = s:Split("\n")
+                    local result = v:Split("\n")
                     -- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
                     for _,x in pairs(result) do
                         if (x:EndsWith("]")) then
