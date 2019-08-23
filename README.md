@@ -12,12 +12,12 @@ As it is I no longer publish to these sites because I'm not publishing regularly
 
 I will be adding scripts to assist other developers with getting setup locally for development/debugging, and also for package & deployment of these AddOns. 
  
-### Dependencies
+## Dependencies
 
 - LibStub *(Optional)*
 - LibAddonMenu-2.0 *(Optional)*
 
-### Modules
+## Modularity
 
 One of the earliest goals of X4DESO was to provide modular add-ons, so users could install only what they wanted.
 
@@ -35,6 +35,36 @@ To that end, the following independent modules exist. When it makes sense they w
 - **X4D_MiniMap** - (ALPHA PREVIEW) Adds a 'minimap' to the game (disabled by default until 'stable' quality.)
 
 All of them are optional, except for X4D_Core, which all other X4D Add-ons depend on and it is thus required.
+
+## Development
+
+### `Create-AddOnSymLinks.ps1`
+
+Creates symlinks for all X4D AddOns from the current repository to the default %USERPROFILE% location.
+
+This is useful for developers that like to keep their projects in a standard location (most of us?)
+
+Q: Pulled from github but not loading when restart ESO?
+A: Run `Create-AddOnSymLinks.ps1` as Administrator.
+
+### `Create-LibrarySymLinks.ps1`
+
+Creates symlinks for all libraries used by AddOns.
+
+Rather than have libraries/dependencies copied multiple times throughout the repository, a single copy of each dependency is maintained in /lib/ and this script is used to create symlinks from /lib/ into each AddOn folder.
+
+Q: I ran `Create-AddOnSumLinks.ps1` but still no workie.
+A: Also run `Create-LibrarySumLinks.ps1` as Administrator.
+
+### Slash Commands
+
+There are slash commands you will find useful when debugging AddOns or Testing changes to X4D AddOns.
+
+| Command | Args | Example | |
+|-|-|-|-|
+| `-debug` | N/A | `/x4d -debug` | Sets the log level to DEBUG (shows all logging/activity), and adds a performance summary in the Chat window.|
+| `-test` | N/A | `/x4d -test` | Sets the log level to VERBOSE (shows most logging/activity, but not all), and then performs a board test of X4D AddOns, each test printing output to the Chat window. Useful for checking to see if anything fundamental has broken that would not throw an API error if misbehaving. |
+
 
 
 ## Support, Assistance, and Bug Reports
