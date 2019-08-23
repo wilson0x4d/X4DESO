@@ -180,7 +180,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_NPCs.NAME, EVENT_ADD_ON_LOADED, function(even
 	X4D_NPCs.DB = X4D.DB:Open(X4D_NPCs.NAME)
 
 	-- observe `CurrentMap` for changes to rebuild lists, consumers must ensure init before use
-	-- X4D.Cartography:Initialize()
+	X4D.Cartography:Initialize()
 	X4D.Cartography.CurrentMap:Observe(OnCurrentMapChanged)
 
 	-- record module load time
