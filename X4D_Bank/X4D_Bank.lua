@@ -734,7 +734,7 @@ local function InitializeSettingsUI()
         [7] =
         {
             type = "slider",
-            name = "Auto-Deposit Down-Time",
+            name = "Auto-Deposit Down-Time", -- TODO: there is a bug where when this setting is changed, the bank deposit expiry times are not recalculated (UX is broken) -- a /reloadui works around this
             tooltip = "If non-zero, will wait specified time (in seconds) between bank interactions before auto-depositing again.",
             min = 0,
             max = 3600,
@@ -861,7 +861,7 @@ local function InitializeSettingsUI()
                     tooltip = itemType.Tooltip or itemType.Canonical,
                     choices = _itemTypeChoices,
                     getFunc = function() 
-                        local v = X4D_Bank.Settings:Get(dropdownName) or X4D_BANKACTION_NONE
+                        local v = X4D_Bank.Settings:Get(itemType.Id) or X4D_BANKACTION_NONE
                         if (v == X4D_BANKACTION_DEPOSIT) then
                             return constDeposit
                         elseif (v == X4D_BANKACTION_WITHDRAW) then
@@ -878,7 +878,7 @@ local function InitializeSettingsUI()
                         else
                             v = X4D_BANKACTION_NONE
                         end
-                        X4D_Bank.Settings:Set(dropdownName, v)
+                        X4D_Bank.Settings:Set(itemType.Id, v)
                     end,
                     width = "half",
                 })
@@ -896,22 +896,15 @@ local function InitializeSettingsUI()
         tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
         choices = _itemTypeChoices,
         getFunc = function() 
-            local v = 0
-            if (v == 1) then
-                return constDeposit
-            elseif (v == 2) then
-                return constWithdraw
-            else
-                return constUnspecified
-            end
+            return constUnspecified
         end,
         setFunc = function(v)
             if (v == constDeposit) then
-                v = 1
+                v = X4D_BANKACTION_DEPOSIT
             elseif (v == constWithdraw) then
-                v = 2
+                v = X4D_BANKACTION_WITHDRAW
             else
-                v = 0
+                v = X4D_BANKACTION_NONE
             end
             for _,itemType in pairs(X4D.Items.ItemTypes) do
                 local dropdownName = CreateSettingsName(itemType)

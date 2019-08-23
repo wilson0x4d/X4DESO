@@ -8,6 +8,10 @@ X4D.Vendors = X4D_Vendors
 X4D_Vendors.NAME = "X4D_Vendors"
 X4D_Vendors.VERSION = "1.11"
 
+X4D_VENDORACTION_NONE = 0
+X4D_VENDORACTION_KEEP = 1
+X4D_VENDORACTION_SELL = 2
+
 local _currentMapId = nil
 local _currentZoneIndex = nil
 
@@ -96,10 +100,6 @@ end
 
     INTERACTION_VENDOR
 ]]
-
-X4D_VENDORACTION_NONE = 0
-X4D_VENDORACTION_KEEP = 1
-X4D_VENDORACTION_SELL = 2
 
 local function GetPatternAction(slot)
 	if (IsSlotIgnoredItem(slot)) then
@@ -298,7 +298,7 @@ local function OnCloseStable()
 	X4D.NPCs.CurrentNPC(nil)
 end
 
-function X4D_Vendors:GetorCreateVendor(tag)
+function X4D_Vendors:GetOrCreateVendor(tag)
 	return X4D.NPCs:GetOrCreate(tag)
 end
 
@@ -427,22 +427,22 @@ local function InitializeSettingsUI()
 					tooltip = itemType.Tooltip or itemType.Canonical,
 					choices = _itemTypeChoices,
 					getFunc = function()
-						local v = X4D_Vendors.Settings:Get(itemType.Id) or 0
-						if (v == 1) then
-							return constLaunder
-						elseif (v == 2) then
+						local v = X4D_Vendors.Settings:Get(itemType.Id) or X4D_VENDORACTION_NONE
+						if (v == X4D_VENDORACTION_KEEP) then
+							return constKeep
+						elseif (v == X4D_VENDORACTION_SELL) then
 							return constSell
 						else
 							return constUnspecified
 						end
 					end,
 					setFunc = function(v)
-						if (v == constLaunder) then
-							v = 1
+						if (v == constKeep) then
+							v = X4D_VENDORACTION_KEEP
 						elseif (v == constSell) then
-							v = 2
+							v = X4D_VENDORACTION_SELL
 						else
-							v = 0
+							v = X4D_VENDORACTION_NONE
 						end
 						X4D_Vendors.Settings:Set(itemType.Id, v)
 					end,
@@ -462,22 +462,15 @@ local function InitializeSettingsUI()
 		tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
 		choices = _itemTypeChoices,
 		getFunc = function()
-			local v = 0
-			if (v == 1) then
-				return constLaunder
-			elseif (v == 2) then
-				return constSell
-			else
-				return constUnspecified
-			end
+			return constUnspecified
 		end,
 		setFunc = function(v)
-			if (v == constLaunder) then
-				v = 1
+			if (v == constKeep) then
+				v = X4D_VENDORACTION_KEEP
 			elseif (v == constSell) then
-				v = 2
+				v = X4D_VENDORACTION_SELL
 			else
-				v = 0
+				v = X4D_VENDORACTION_NONE
 			end
 			for _, itemType in pairs(X4D.Items.ItemTypes) do
 				X4D_Vendors.Settings:Set(itemType.Id, v)
