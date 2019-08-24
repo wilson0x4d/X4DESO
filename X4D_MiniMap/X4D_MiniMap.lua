@@ -91,7 +91,7 @@ local function ConvertNPCToPin(npc, sequence, map)
 	end
 	local textureName = _pinTypeToTextureNameLookup[npc.Type] or _pinTypeToTextureNameLookup["UNKNOWN"]
 	pip:SetTexture(textureName)		
-	pip:SetDimensions(_lastPinPipWidth, _lastPinPipWidth) -- TODO: reset dimensions whenever soom-level/position changes?
+	pip:SetDimensions(_lastPinPipWidth, _lastPinPipWidth) -- TODO: reset dimensions whenever zoom-level/position changes?
 	pip:ClearAnchors()
 	pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (_lastPinPipWidth/2), (npc.Position.Y * map.MapHeight) - (_lastPinPipWidth/2))
 	pip:SetHidden(false)
@@ -360,7 +360,11 @@ local function UpdateLocationNameLabel(v)
 		v = GetPlayerLocationName()
 	end
 	if (_locationNameLabel ~= nil) then
-		_locationNameLabel:SetText(v)
+		if (_currentMap ~= nil and v ~= _currentMap.MapName) then
+			_locationNameLabel:SetText(v)
+		else
+			_locationNameLabel:SetText("")
+		end
 	end
 end
 
@@ -409,10 +413,7 @@ local function UpdateZoomPanState(timer, state)
 			local offsetX = (_playerX * map.MapWidth) - _centerX
 			local offsetY = (_playerY * map.MapHeight) - _centerY
 
-			local pipX = (offsetX + _centerX - (playerPipWidth / 2))
-			local pipY = (offsetY + _centerY - (playerPipWidth / 2))
-
-			-- clamp map position
+			-- calc panning position/offsets
 			if (offsetX < 0) then
 				offsetX = 0
 			elseif (offsetX > (map.MapWidth - (_centerX * 2))) then
@@ -423,11 +424,15 @@ local function UpdateZoomPanState(timer, state)
 			elseif (offsetY > (map.MapHeight - (_centerY * 2))) then
 				offsetY = (map.MapHeight - (_centerY * 2))
 			end
+			
+			local pipX = (offsetX + _centerX - (playerPipWidth / 2))
+			local pipY = (offsetY + _centerY - (playerPipWidth / 2))
+			_playerPip:ClearAnchors()
+			_playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, pipX, pipY) -- TODO: need to interpolate
+
 			_tileContainer:ClearAnchors()
 			_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY) -- TODO: need to interpolate
 
-			_playerPip:ClearAnchors()
-			_playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, pipX, pipY) -- TODO: need to interpolate
 		end
 	end
 end
@@ -435,7 +440,7 @@ end
 local function StartZoomPanController()
 	-- auto-zoom/pan map
 	if (_zoomPanTimer == nil) then
-		_zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState, 1000/12, { ZoomLevel = 1}, "X4D_MiniMap::ZoomPanController"):Start()
+		_zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState, 1000/16, { ZoomLevel = 1 }, "X4D_MiniMap::ZoomPanController"):Start()
 	end
 end
 
@@ -609,7 +614,7 @@ local function InitializeMiniMapWindow()
 	_playerPositionLabel:SetDrawTier(DT_LOW)
 	_playerPositionLabel:SetFont(X4D_MINIMAP_SMALLFONT)
 	_playerPositionLabel:SetAnchor(BOTTOMLEFT, _minimapWindow, BOTTOMLEFT, 8, -8)
-	_playerPositionLabel:SetText("")
+	_playerPositionLabel:SetText("|")
 	UpdatePlayerPositionLabel()
 
 	local scene = X4D.UI.CurrentScene()
@@ -631,10 +636,10 @@ local function InitializeSettingsUI()
 		name = "(ALPHA) Enable MiniMap",
 		tooltip = "When enabled, a minimap is displayed in the bottom-right of the screen (except when interacting with a HUD/Menu/etc.) |cFF0000This is an alpha-grade feature, currently in development. Feel free to use, test, and provide feedback for it. It is disabled by default since I cannot guarantee it will work correctly in all zones in its current state.",
 		getFunc = function()
-			return X4D.XP.Settings:Get("EnableMiniMap")
+			return X4D_MiniMap.Settings:Get("EnableMiniMap")
 		end,
 		setFunc = function()
-			X4D.XP.Settings:Set("EnableMiniMap", not X4D.XP.Settings:Get("EnableMiniMap"))
+			X4D_MiniMap.Settings:Set("EnableMiniMap", not X4D_MiniMap.Settings:Get("EnableMiniMap"))
 		end,
 	})
 
@@ -646,7 +651,7 @@ local function InitializeSettingsUI()
 			return X4D.XP.Settings:Get("UsePlayerHeading")
 		end,
 		setFunc = function()
-			X4D.XP.Settings:Set("UsePlayerHeading", not X4D.XP.Settings:Get("UsePlayerHeading"))
+			X4D_MiniMap.Settings:Set("UsePlayerHeading", not X4D_MiniMap.Settings:Get("UsePlayerHeading"))
 		end,
 	})
 
@@ -686,9 +691,8 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 	X4D_MiniMap.Took = stopwatch.ElapsedMilliseconds()
 end)
 
-X4D.UI.CurrentScene:Observe( function(scene)
+X4D.UI.CurrentScene:Observe(function(scene)
 	if (_minimapWindow ~= nil) then
-		local scene = X4D.UI.CurrentScene()
 		local isHudScene = scene ~= nil and (scene:GetName() == "hud" or scene:GetName() == "hudui")
 		_minimapWindow:SetHidden(not isHudScene)
 	end
