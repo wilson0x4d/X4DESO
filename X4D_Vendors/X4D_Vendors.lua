@@ -324,94 +324,6 @@ local function InitializeSettingsUI()
 		end,
 	})
 
-	table.insert(panelControls, {
-		type = "editbox",
-		name = "'For Keeps' Items",
-		tooltip = "Line-delimited list of 'For Keeps' patterns, items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n",
-		isMultiline = true,
-		width = "half",
-		getFunc = function()
-			local patterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
-			if (patterns == nil or type(patterns) == "string") then
-				patterns = { }
-			end
-			return table.concat(patterns, "\n")
-		end,
-		setFunc = function(v)
-			local result = v:Split("\n")
-			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
-			for _, x in pairs(result) do
-				if (x:EndsWith("]")) then
-					result[_] = x .. "+"
-				end
-			end
-			X4D_Vendors.Settings:Set("ForKeepsItemPatterns", result)
-		end,
-	})
-
-	table.insert(panelControls, {
-		type = "editbox",
-		name = "'For Sale' Items",
-		tooltip = "Line-delimited list of 'For Sale' item patterns, items matching these patterns WILL BE SOLD.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cFFFFC7Note that the 'For Keeps' item list will take precedence over the 'For Sale' list.",
-		isMultiline = true,
-		width = "half",
-		getFunc = function()
-			local patterns = X4D_Vendors.Settings:Get("ForSaleItemPatterns")
-			if (patterns == nil or type(patterns) == "string") then
-				patterns = { }
-			end
-			return table.concat(patterns, "\n")
-		end,
-		setFunc = function(v)
-			local result = v:Split("\n")
-			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
-			for _, x in pairs(result) do
-				if (x:EndsWith("]")) then
-					result[_] = x .. "+"
-				end
-			end
-			X4D_Vendors.Settings:Set("ForSaleItemPatterns", result)
-		end,
-	})
-
-	table.insert(panelControls, {
-		type = "editbox",
-		name = "'Ignored' Items",
-		tooltip = "Line-delimited list of items to ignore using 'lua patterns'case. Ignored items will NOT be laundered nor sold regardless of any other setting.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
-		isMultiline = true,
-		width = "half",
-		getFunc = function()
-			local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
-			if (patterns == nil or type(patterns) == "string") then
-				patterns = { }
-			end
-			return table.concat(patterns, "\n")
-		end,
-		setFunc = function(v)
-			local result = v:Split("\n")
-			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
-			for _, x in pairs(result) do
-				if (x:EndsWith("]")) then
-					result[_] = x .. "+"
-				end
-			end
-			X4D_Vendors.Settings:Set("IgnoredItemPatterns", result)
-		end,
-	})
-
-	table.insert(panelControls, {
-		type = "checkbox",
-		name = "Launder any 'For Sale' worth 0" .. _goldIcon,
-		tooltip = "When enabled, any stolen 'For Sale' items worth 0" .. _goldIcon .. " will be laundered instead. Once laundered if you visit a merchant they will be sold where you have a buyback option if you actually wanted the item. |cFFFFFFThis often includes recipes/materials/bases/etc. If you attempt to sell a 'worthless item' the game will treat it differently and generate an error, which in turn causes X4D to halt until resolved by the user- this option works around THAT problem, and it only matters when you've added a for-sale pattern that results in the sale of stolen items.",
-		width = "half",
-		getFunc = function()
-			return X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold")
-		end,
-		setFunc = function()
-			X4D.Vendors.Settings:Set("LaunderItemsWorth0Gold", not X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold"))
-		end,
-	})
-
 	-- region ItemType Options
 
 	for _, groupName in pairs(X4D.Items.ItemGroups) do
@@ -459,7 +371,7 @@ local function InitializeSettingsUI()
 	table.insert(panelControls, {
 		type = "dropdown",
 		name = "All Item Types",
-		tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
+        tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious. Please be aware that the UI will reload to force the changes to take effect.",
 		choices = _itemTypeChoices,
 		getFunc = function()
 			return constUnspecified
@@ -482,6 +394,104 @@ local function InitializeSettingsUI()
 	})
 
 	-- endregion
+
+	table.insert(panelControls, {
+		type = "header",
+		name = "Advanced Override Settings",
+	})
+	table.insert(panelControls, {
+		type = "description",
+		text = "This section provides advanced options which override the simple keep/sell settings above. Hover the mouse over each option to see a useful description of behavior."
+	})
+
+	table.insert(panelControls, {
+		type = "editbox",
+		name = "Keep/Launder",
+		tooltip = "Line-delimited list of Lua patterns, items matching these patterns will NOT be sold, and they will be laundered if you visit a fence and they are stolen items.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n",
+		isMultiline = true,
+		width = "half",
+		getFunc = function()
+			local patterns = X4D_Vendors.Settings:Get("ForKeepsItemPatterns")
+			if (patterns == nil or type(patterns) == "string") then
+				patterns = { }
+			end
+			return table.concat(patterns, "\n")
+		end,
+		setFunc = function(v)
+			local result = v:Split("\n")
+			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+			for _, x in pairs(result) do
+				if (x:EndsWith("]")) then
+					result[_] = x .. "+"
+				end
+			end
+			X4D_Vendors.Settings:Set("ForKeepsItemPatterns", result)
+		end,
+	})
+
+	table.insert(panelControls, {
+		type = "editbox",
+		name = "Sell",
+		tooltip = "Line-delimited list of Lua patterns, items matching these patterns WILL BE SOLD.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cFFFFC7Note that the 'For Keeps' item list will take precedence over the 'For Sale' list.",
+		isMultiline = true,
+		width = "half",
+		getFunc = function()
+			local patterns = X4D_Vendors.Settings:Get("ForSaleItemPatterns")
+			if (patterns == nil or type(patterns) == "string") then
+				patterns = { }
+			end
+			return table.concat(patterns, "\n")
+		end,
+		setFunc = function(v)
+			local result = v:Split("\n")
+			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+			for _, x in pairs(result) do
+				if (x:EndsWith("]")) then
+					result[_] = x .. "+"
+				end
+			end
+			X4D_Vendors.Settings:Set("ForSaleItemPatterns", result)
+		end,
+	})
+
+	table.insert(panelControls, {
+		type = "editbox",
+		name = "Ignore",
+		tooltip = "Line-delimited list of Lua patterns, items mathching these patterns will be ignored. Ignored items will NOT be laundered nor sold regardless of any other setting.\n|cFFFFFFITEM NAMES ARE NO LONGER SUPPORTED BY THE GAME, USE ID+OPTIONS INSTEAD.\n|cC7C7C7Special patterns exist, such as: STOLEN, item qualities like TRASH, NORMAL, MAGIC, ARCANE, ARTIFACT, LEGENDARY, item types like BLACKSMITHING, CLOTHIER, MATERIALS, etc",
+		isMultiline = true,
+		width = "half",
+		getFunc = function()
+			local patterns = X4D_Vendors.Settings:Get("IgnoredItemPatterns")
+			if (patterns == nil or type(patterns) == "string") then
+				patterns = { }
+			end
+			return table.concat(patterns, "\n")
+		end,
+		setFunc = function(v)
+			local result = v:Split("\n")
+			-- NOTE: this is a hack to deal with the fact that the LUA parser in ESO bugs out processing escaped strings in SavedVars :(
+			for _, x in pairs(result) do
+				if (x:EndsWith("]")) then
+					result[_] = x .. "+"
+				end
+			end
+			X4D_Vendors.Settings:Set("IgnoredItemPatterns", result)
+		end,
+	})
+
+	table.insert(panelControls, {
+		type = "checkbox",
+		name = "Okay to launder items worth 0" .. _goldIcon .. "?",
+		tooltip = "When enabled, any stolen 'For Sale' items worth 0" .. _goldIcon .. " will be 'Laundered' instead. Once laundered if you visit a merchant they will be sold where you have a buyback option if you actually wanted to keep the item. |cFFFFFFThis often includes recipes/materials/bases/etc. If you attempt to sell a 'worthless item' the game will treat it differently and generate an error, which in turn causes X4D to halt until resolved by the user- this option works around THAT problem, and it only matters when you've added a for-sale pattern that results in the sale of stolen items.",
+		width = "full",
+		getFunc = function()
+			return X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold")
+		end,
+		setFunc = function()
+			X4D.Vendors.Settings:Set("LaunderItemsWorth0Gold", not X4D.Vendors.Settings:Get("LaunderItemsWorth0Gold"))
+		end,
+	})
+
 
 	LAM:RegisterOptionControls(
 		"X4D_VENDORS_CPL",

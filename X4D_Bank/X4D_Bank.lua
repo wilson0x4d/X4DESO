@@ -757,11 +757,11 @@ local function InitializeSettingsUI()
                 end
             end,
         },
-        [9] =
-        {
-            type = "header",
-            name = "Item Deposits and Withdrawals",
-        },
+        -- [9] =
+        -- {
+        --     type = "header",
+        --     name = "Item Deposits and Withdrawals",
+        -- },
     }
 
     -- LAM:AddCheckbox(cplId,
@@ -770,6 +770,87 @@ local function InitializeSettingsUI()
     -- function() return X4D_Bank.Settings:Get("StartNewStacks") end,
     -- function() X4D_Bank.Settings:Set("StartNewStacks", not X4D_Bank.Settings:Get("StartNewStacks")) end)
 
+    --region ItemType Options
+
+    for _,groupName in pairs(X4D.Items.ItemGroups) do
+        table.insert(panelControls, {
+            type = "header",
+            name = groupName,
+        })
+        for _,itemType in pairs(X4D.Items.ItemTypes) do
+            if (itemType.Group == groupName) then
+                local dropdownName = CreateSettingsName(itemType)
+                table.insert(panelControls, {
+                    type = "dropdown",
+                    name = itemType.Name,
+                    tooltip = itemType.Tooltip or itemType.Canonical,
+                    choices = _itemTypeChoices,
+                    getFunc = function() 
+                        local v = X4D_Bank.Settings:Get(itemType.Id) or X4D_BANKACTION_NONE
+                        if (v == X4D_BANKACTION_DEPOSIT) then
+                            return constDeposit
+                        elseif (v == X4D_BANKACTION_WITHDRAW) then
+                            return constWithdraw
+                        else
+                            return constUnspecified
+                        end
+                    end,
+                    setFunc = function(v)
+                        if (v == constDeposit) then
+                            v = X4D_BANKACTION_DEPOSIT
+                        elseif (v == constWithdraw) then
+                            v = X4D_BANKACTION_WITHDRAW
+                        else
+                            v = X4D_BANKACTION_NONE
+                        end
+                        X4D_Bank.Settings:Set(itemType.Id, v)
+                    end,
+                    width = "half",
+                })
+            end
+        end
+    end
+
+    table.insert(panelControls, {
+        type = "header",
+        name = 'Reset',
+    })
+    table.insert(panelControls, {
+        type = "dropdown",
+        name = "All Item Types",
+        tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious. Please be aware that the UI will reload to force the changes to take effect.",
+        choices = _itemTypeChoices,
+        getFunc = function() 
+            return constUnspecified
+        end,
+        setFunc = function(v)
+            if (v == constDeposit) then
+                v = X4D_BANKACTION_DEPOSIT
+            elseif (v == constWithdraw) then
+                v = X4D_BANKACTION_WITHDRAW
+            else
+                v = X4D_BANKACTION_NONE
+            end
+            for _,itemType in pairs(X4D.Items.ItemTypes) do
+                local dropdownName = CreateSettingsName(itemType)
+                X4D_Bank.Settings:Set(dropdownName, v)
+            end
+            ReloadUI() -- only necessary because i have no way to force LibAddonMenu to re-get/refresh all options
+        end,
+        width = "half",
+    })
+
+    -- endregion
+
+	table.insert(panelControls, {
+		type = "header",
+		name = "Advanced Override Settings",
+	})
+	table.insert(panelControls, {
+		type = "description",
+		text = "This section provides advanced options which override the simple Deposit/Withdraw settings above. Hover the mouse over each option to see a useful description of behavior."
+    })
+    
     table.insert(panelControls, {
         type = "editbox",
         name = "'For " .. GetString(SI_BANK_WITHDRAW) .. "' Items",
@@ -845,78 +926,6 @@ local function InitializeSettingsUI()
         end,
     })
 
-    --region ItemType Options
-
-    for _,groupName in pairs(X4D.Items.ItemGroups) do
-        table.insert(panelControls, {
-            type = "header",
-            name = groupName,
-        })
-        for _,itemType in pairs(X4D.Items.ItemTypes) do
-            if (itemType.Group == groupName) then
-                local dropdownName = CreateSettingsName(itemType)
-                table.insert(panelControls, {
-                    type = "dropdown",
-                    name = itemType.Name,
-                    tooltip = itemType.Tooltip or itemType.Canonical,
-                    choices = _itemTypeChoices,
-                    getFunc = function() 
-                        local v = X4D_Bank.Settings:Get(itemType.Id) or X4D_BANKACTION_NONE
-                        if (v == X4D_BANKACTION_DEPOSIT) then
-                            return constDeposit
-                        elseif (v == X4D_BANKACTION_WITHDRAW) then
-                            return constWithdraw
-                        else
-                            return constUnspecified
-                        end
-                    end,
-                    setFunc = function(v)
-                        if (v == constDeposit) then
-                            v = X4D_BANKACTION_DEPOSIT
-                        elseif (v == constWithdraw) then
-                            v = X4D_BANKACTION_WITHDRAW
-                        else
-                            v = X4D_BANKACTION_NONE
-                        end
-                        X4D_Bank.Settings:Set(itemType.Id, v)
-                    end,
-                    width = "half",
-                })
-            end
-        end
-    end
-
-    table.insert(panelControls, {
-        type = "header",
-        name = 'Reset',
-    })
-    table.insert(panelControls, {
-        type = "dropdown",
-        name = "All Item Types",
-        tooltip = "Use this to reset ALL item type settings to a specific value. This only exists to make reconfiguration a little less tedious.",
-        choices = _itemTypeChoices,
-        getFunc = function() 
-            return constUnspecified
-        end,
-        setFunc = function(v)
-            if (v == constDeposit) then
-                v = X4D_BANKACTION_DEPOSIT
-            elseif (v == constWithdraw) then
-                v = X4D_BANKACTION_WITHDRAW
-            else
-                v = X4D_BANKACTION_NONE
-            end
-            for _,itemType in pairs(X4D.Items.ItemTypes) do
-                local dropdownName = CreateSettingsName(itemType)
-                X4D_Bank.Settings:Set(dropdownName, v)
-            end
-            ReloadUI() -- only necessary because i have no way to force LibAddonMenu to re-get/refresh all options
-        end,
-        width = "half",
-    })
-
-    -- endregion
-
     LAM:RegisterOptionControls(
         "X4D_BANK_CPL",
         panelControls
@@ -929,11 +938,12 @@ local function formatnum(n)
     return left ..(num:reverse():gsub("(%d%d%d)", "%1,"):reverse()) .. right
 end
 
+-- TODO: move to X4D_Core and share definition between Bank and Loot addons (it is duplicated)
 local _moneyUpdateReason = {
     [0] = { "Looted", "Stored" },
     [1] = { "Earned", "Spent" },
     [2] = { "Received", "Sent" },
-    [4] = { "Gained", "Lost" },
+    [4] = { "Gained", "Spent" },
     [5] = { "Earned", "Spent" },
     [19] = { "Gained", "Spent" },
     [28] = { "Gained", "Spent" },
@@ -941,9 +951,9 @@ local _moneyUpdateReason = {
     [42] = { "Withdrew", "Deposited" },
     [43] = { "Withdrew", "Deposited" },
 }	
-
+-- TODO: move to X4D_Core and share definition between Bank and Loot addons (it is duplicated)
 local function GetMoneyReason(reasonId)
-    return _moneyUpdateReason[reasonId] or { "Gained", "Lost" }
+    return _moneyUpdateReason[reasonId] or { "Gained", "Removed" }
 end
 
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
