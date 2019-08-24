@@ -8,3 +8,4 @@
 *.pdn
 
 X4D_*/lib/
+dist/
