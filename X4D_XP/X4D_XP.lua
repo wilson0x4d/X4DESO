@@ -102,7 +102,7 @@ end
 local function OnDiscoveryExperienceGain(eventCode, areaName, level, previousExperience, currentExperience, rank, previousPoints, currentPoints)
     local xpGained = currentExperience - previousExperience
     _eta:Increment(xpGained)
-	InvokeChatCallback(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for Discovery " .. X4D.Colors.X4D .. areaName)
+	InvokeChatCallback(X4D.Colors.XP, xpGained .. " " .. _pointType .. " for discovering " .. X4D.Colors.X4D .. areaName)
     _currentXP = _currentXP + xpGained
 end
 

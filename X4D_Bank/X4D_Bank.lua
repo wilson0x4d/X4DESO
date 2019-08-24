@@ -938,24 +938,6 @@ local function formatnum(n)
     return left ..(num:reverse():gsub("(%d%d%d)", "%1,"):reverse()) .. right
 end
 
--- TODO: move to X4D_Core and share definition between Bank and Loot addons (it is duplicated)
-local _moneyUpdateReason = {
-    [0] = { "Looted", "Stored" },
-    [1] = { "Earned", "Spent" },
-    [2] = { "Received", "Sent" },
-    [4] = { "Gained", "Spent" },
-    [5] = { "Earned", "Spent" },
-    [19] = { "Gained", "Spent" },
-    [28] = { "Gained", "Spent" },
-    [29] = { "Gained", "Spent" },
-    [42] = { "Withdrew", "Deposited" },
-    [43] = { "Withdrew", "Deposited" },
-}	
--- TODO: move to X4D_Core and share definition between Bank and Loot addons (it is duplicated)
-local function GetMoneyReason(reasonId)
-    return _moneyUpdateReason[reasonId] or { "Gained", "Removed" }
-end
-
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 
 local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
@@ -967,7 +949,7 @@ local function OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
         -- leave display of income/expenses to Vendors Addon when present
         return
     end
-    local reason = GetMoneyReason(reasonId)
+    local reason = X4D.Currency:GetMoneyReason(reasonId)
     local amount = newMoney - oldMoney
     if (amount >= 0) then
         InvokeChatCallback(X4D_Bank.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[1], formatnum(amount), _goldIcon, X4D_Bank.Colors.Subtext, formatnum(newMoney)))

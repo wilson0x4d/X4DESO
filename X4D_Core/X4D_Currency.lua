@@ -5,6 +5,29 @@ end
 local X4D = LibStub("X4D")
 X4D.Currency = X4D_Currency
 
+--region Money Reasons
+
+-- TODO: relocate
+
+X4D_Currency.MoneyUpdateReason = {
+	[0] = { "Looted", "Stored" },
+	[1] = { "Earned", "Spent" },
+	[2] = { "Received", "Sent" },
+	[4] = { "Gained", "Spent" },
+	[5] = { "Earned", "Spent" },
+	[19] = { "Gained", "Spent" },
+	[28] = { "Gained", "Spent" },
+	[29] = { "Gained", "Spent" },
+	[42] = { "Withdrew", "Deposited" },
+	[43] = { "Withdrew", "Deposited" },
+    [63] = { "Fenced", "Laundered" },
+}	
+function X4D_Currency:GetMoneyReason(reasonId)
+	return X4D_Currency.MoneyUpdateReason[reasonId] or { "Gained", "Removed" }
+end
+
+--endregion
+
 X4D_Currency.CurrencyTypes = {
     [CURT_MONEY] = { --1
         Name = GetString(SI_CURRENCY_GOLD),

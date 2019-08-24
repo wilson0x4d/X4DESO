@@ -185,7 +185,7 @@ local function ConductTransactions(vendor)
 				if (not IsSlotIgnoredItem(slot)) then
 					local vendorAction = GetPatternAction(slot)
 					local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-					if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or(slot.IsStolen and(vendorAction == X4D_VENDORACTION_SELL) and(slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
+					if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
 --						 X4D.Log:Verbose({"Launder Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
 						if (vendor.IsFence and slot.IsStolen) then
 							if (laundersUsed < laundersMax) then
@@ -208,7 +208,7 @@ local function ConductTransactions(vendor)
 						end
 					elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
 						if (vendor.IsFence == slot.IsStolen) then
-							if ((not vendor.IsFence) or(vendor.IsFence and(sellsUsed <= sellsMax))) then
+							if ((not vendor.IsFence) or (sellsUsed <= sellsMax)) then
 --								 X4D.Log:Verbose({"Sales Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
 								sellsUsed = sellsUsed + 1
 								-- TODO: if transaction fails, we want to decrement this number, obviously

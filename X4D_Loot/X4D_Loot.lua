@@ -21,29 +21,6 @@ X4D_Loot.Colors = {
 	Subtext = "|c5C5C5C",
 }
 
---region Money Reasons
-
--- TODO: relocate
-
-X4D_Loot.MoneyUpdateReason = {
-	[0] = { "Looted", "Stored" },
-	[1] = { "Earned", "Spent" },
-	[2] = { "Received", "Sent" },
-	[4] = { "Gained", "Lost" },
-	[5] = { "Earned", "Spent" },
-	[19] = { "Gained", "Spent" },
-	[28] = { "Gained", "Spent" },
-	[29] = { "Gained", "Spent" },
-	[42] = { "Withdrew", "Deposited" },
-	[43] = { "Withdrew", "Deposited" },
-    [63] = { "Fenced", "Laundered" },
-}	
-
-local function GetMoneyReason(reasonId)
-	return X4D_Loot.MoneyUpdateReason[reasonId] or { "Gained", "Lost" }
-end
-
---endregion
 --region Chat Callback
 
 local function DefaultCallback(color, text)
@@ -595,7 +572,7 @@ function X4D_Loot.OnMoneyUpdate(eventId, newMoney, oldMoney, reasonId)
     if (not X4D.Loot.Settings:Get("DisplayMoneyUpdates")) then
         return
     end
-	local reason = GetMoneyReason(reasonId)
+    local reason = X4D.Currency:GetMoneyReason(reasonId)
 	local amount = newMoney - oldMoney
 	if (amount >= 0) then
 		InvokeChatCallback(X4D_Loot.Colors.Gold, string.format("%s %s%s %s  (%s on-hand)", reason[1], formatnum(amount), _goldIcon, X4D_Loot.Colors.Subtext, formatnum(newMoney)))
