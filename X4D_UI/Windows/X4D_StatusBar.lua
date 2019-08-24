@@ -20,15 +20,16 @@ local X4D_StatusBarPanel = {}
 
 --- 
 --- param onUpdateStatusCallback == no args, state management onus of caller
-function X4D_StatusBarPanel:New(name, onUpdateStatusCallback, updateFrequency)
+function X4D_StatusBarPanel:New(name, onUpdateStatusCallback, updateFrequency, panelWeight)
     -- TODO: if _statusBarWinow == nil then throw InvalidOperation
     if (updateFrequency == nil) then
         updateFrequency = 3
     end
     local panel = {
+        Name = name,
         OnUpdateStatus = onUpdateStatusCallback,
         Label = CreateControl(name, _statusBarWindow, CT_LABEL),
-        Order = 0,
+        DisplayOrder = panelWeight or 0,
         Width = 0,
         Offset = 0,
         UpdateFrequency = updateFrequency,
@@ -60,16 +61,25 @@ end
 
 --endregion
 
-function X4D_StatusBar:CreatePanel(name, onUpdateStatusCallback, updateFrequency)
+function X4D_StatusBar:CreatePanel(name, onUpdateStatusCallback, updateFrequency, panelWeight)
     self:Initialize()
-    return X4D_StatusBarPanel:New(name, onUpdateStatusCallback, updateFrequency)
+    return X4D_StatusBarPanel:New(name, onUpdateStatusCallback, updateFrequency, panelWeight)
 end
 
 local function UpdateStatusBarPanels(tickCount)
     local leftOffset = 0
-    local rightOffset = 0
-    -- TODO: sort panels by panel.Order first
-    for panelName,statusBarPanel in pairs(X4D_StatusBar.Panels) do
+    local rightOffset = 0  
+    local sortIndex = 0
+
+    -- sort panels by `DisplayOrder` first
+    local sortedPanels = {}
+    for _,statusBarPanel in pairs(X4D_StatusBar.Panels) do
+        sortIndex = sortIndex + 1
+        table.insert(sortedPanels, statusBarPanel)
+    end
+    table.sort(sortedPanels, function(a,b) return a.DisplayOrder < b.DisplayOrder and a.Name < b.Name end)
+
+    for _,statusBarPanel in pairs(sortedPanels) do
         if (statusBarPanel.OnUpdateStatus ~= nil) then
             if (statusBarPanel.AnchorPoint == BOTTOMRIGHT) then
                 statusBarPanel.Offset = rightOffset
@@ -206,7 +216,7 @@ end
 local function OnScreenResized(eventCode, width, height)
     local screenWidth, screenHeight = GuiRoot:GetDimensions()
     _statusBarWindow:SetDimensions(screenWidth, 21)
-    _borderImage:SetDimensions(screenWidth, 3) -- TODO: on window resize, update
+    _borderImage:SetDimensions(screenWidth, 3)
 end
 
 function X4D_StatusBar:Initialize()
