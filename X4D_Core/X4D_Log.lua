@@ -114,37 +114,49 @@ local function LogInternal(source, level, message)
 end
 
 local function TableToString(table, recurse)
-	if (recurse == nil) then
-		recurse = { 
-			[table] = true,
-		}
-	else
-		if (recurse[table]) then
-			return tostring(table)
-		end
-	end
-	local str = ""
-	for k,v in pairs(table) do
-		if (str:len() > 0) then
-			str = str .. ", "
-		end
-		if (type(k) == "table") then
-			k = TableToString(k, recurse)
-		elseif (type(k) == "string") then
-			k = "'" .. k .. "'"
-		else
-			k = tostring(k or "nil")
-		end
+	if (type(table.Observe) == "function") then
+		-- if table looks like an observable, treat it as a value-source, instead
+		local v = table()
 		if (type(v) == "table") then
-			v = TableToString(v, recurse)
+			return TableToString(v)
 		elseif (type(v) == "string") then
-			v = "'" .. v .. "'"
+			return "'" .. v .. "'"
 		else
-			v = tostring(v or "nil")
+			return tostring(v)
 		end
-		str = str .. "[" .. k .. "]" .. "=" .. v
+	else
+		if (recurse == nil) then
+			recurse = { 
+				[table] = true,
+			}
+		else
+			if (recurse[table]) then
+				return tostring(table)
+			end
+		end
+		local str = ""
+		for k,v in pairs(table) do
+			if (str:len() > 0) then
+				str = str .. ", "
+			end
+			if (type(k) == "table") then
+				k = TableToString(k, recurse)
+			elseif (type(k) == "string") then
+				k = "'" .. k .. "'"
+			else
+				k = tostring(k or "nil")
+			end
+			if (type(v) == "table") then
+				v = TableToString(v, recurse)
+			elseif (type(v) == "string") then
+				v = "'" .. v .. "'"
+			else
+				v = tostring(v or "nil")
+			end
+			str = str .. "[" .. k .. "]" .. "=" .. v
+		end
+		return "{ " .. str .. " }"
 	end
-	return "{ " .. str .. " }"
 end
 
 function X4D_Log:LogTable(source, level, table)
