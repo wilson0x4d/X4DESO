@@ -173,11 +173,9 @@ local function GetMapIndexByZoneIndex(zoneIndex)
 end
 
 local function TryUpdateMapState(timer, state)
---    X4D.Log:Warning("TryUpdateMapState")
-    if (ZO_WorldMap_IsWorldMapShowing()) then
-        --NOP
-        --TODO: this doesn't prevent state changes from occurring, since the 'map api calls' exposed by ZO are representative of ZO_WorldMap state prior to closure. le sigh.
-        --TODO: for example, if the user zooms out all the way to top level minimap will be broken until user re-opens/closes
+    local isWorldMapVisible = SCENE_MANAGER:IsShowing("worldMap") or SCENE_MANAGER:IsShowing("gamepad_worldMap")
+    if (isWorldMapVisible) then
+        -- NOP: do not update state when map is open
         return
     end
 
@@ -208,7 +206,8 @@ local function TryUpdateMapState(timer, state)
         X4D_Cartography.MapType(mapType)
     end
 end
-local function TryUpdatePlayerState(timer, state)
+
+local function TryUpdatePlayerState(timer, state)    
     local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
     local cameraHeading = GetPlayerCameraHeading()
     X4D.Cartography.PlayerX(playerX)
