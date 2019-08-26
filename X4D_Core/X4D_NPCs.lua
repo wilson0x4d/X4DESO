@@ -26,7 +26,7 @@ local _currentZoneIndex = nil
 ]]
 
 function X4D_NPCs:GetOrCreate(tag)
-	local npcType = GetUnitCaption(tag)
+	local playerPosition = X4D.Cartography.PlayerPosition() -- TODO: invert the headings
 	local npcName = GetRawUnitName(tag)
 	if (npcName == nil or npcName:len() == 0) then
 		npcName = tag
@@ -34,21 +34,21 @@ function X4D_NPCs:GetOrCreate(tag)
 	local key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. npcName
 	local entity = self:Find(key)
 	if (entity == nil) then
+--		X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "NPC NOT FOUND, CREATING"}
+		local npcType = GetUnitCaption(tag)
 		entity = {
 			Key = key,
 			Name = npcName,
 			Type = npcType,
 			MapId = _currentMapId,
 			ZoneIndex = _currentZoneIndex,
-			Position = {
-				X = X4D.Cartography.PlayerX(),
-				Y = X4D.Cartography.PlayerY()
-			}
+			Position = playerPosition
 		}
 		self.DB:Add(entity.Key, entity)
-		X4D.Log:Verbose{"X4D_NPCs:GetOrCreate(Create)", entity}
+		X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "NEW", entity}
 	else
-		X4D.Log:Verbose{"X4D_NPCs:GetOrCreate(Get)", entity}
+		entity.Position = playerPosition
+		X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "EXISTING", entity}
 	end
 	return entity, entity.Key
 end
@@ -63,7 +63,7 @@ local function IsNPCNearby(npc, key)
 --	X4D.Log:Information{"IsNPCNearby", npc.Key, npc.MapId, npc.ZoneIndex, _currentMapId, _currentZoneIndex}	
 	return result
 end
-local function UpdateNearbyNPCs()
+local function RefreshNearbyNPCs()
 	local nearby = X4D_NPCs.DB:Where(IsNPCNearby, true)
 --	nearby:ForEach(function (e) 
 --		X4D.Log:Information{"UpdateNearbyNPCs", e}	
@@ -74,7 +74,7 @@ local function OnCurrentMapChanged(map, oldMap)
 	_currentMapId = X4D.Cartography.MapIndex()
 	_currentZoneIndex = X4D.Cartography.ZoneIndex()
 	X4D.Log:Verbose { "OnCurrentMapChanged", _currentMapId, _currentZoneIndex, map.IsSubZone, map.MapWidth, map.MapHeight  }
-	UpdateNearbyNPCs()
+	RefreshNearbyNPCs()
 end
 
 -- endregion Nearby NPCs
@@ -126,8 +126,8 @@ function X4D_NPCs:Add(key, value)
 		Y = X4D.Cartography.PlayerY()
 	}
 	local result = self.DB:Add(entity.Key, entity)
-	UpdateNearbyNPCs()
 	return result
+	-- RefreshNearbyNPCs()
 end
 
 function X4D_NPCs:Remove(key)
@@ -149,23 +149,13 @@ end
 function X4D_NPCs:UpdatePosition(entity, mapId, zoneIndex)
 	entity.MapId = mapId or _currentMapId
 	entity.ZoneIndex = zoneIndex or _currentZoneIndex
-	if (entity.Position ~= nil) then
-		-- we average positions so as to normalize the plot over time, doesn't work for every NPC
-		local entityX = X4D.Cartography.PlayerX()
-		local entityY = X4D.Cartography.PlayerY()
-		entity.Position = {
-			X = (entityX + (entity.Position.X or entityX)) / 2,
-			Y = (entityY + (entity.Position.Y or entityY)) / 2,
-		}
-	else
-		-- first time seen, fresh coordinates
-		entity.Position = {
-			X = X4D.Cartography.PlayerX(),
-			Y = X4D.Cartography.PlayerY(),
-		}
-	end
-	X4D.Log:Verbose { "UpdatePosition", { entity.MapId, entity.ZoneIndex, entity.Position.X, entity.Position.Y } }
-	UpdateNearbyNPCs()
+	local playerPosition = X4D.Cartography.PlayerPosition()
+	-- TODO: because NPCs move it would be better to track a list of unique positions (in addition to the 'last seen at' position recorded here)
+	entity.Position = {
+		X = playerPosition.X,
+		Y = playerPosition.Y
+	}
+	RefreshNearbyNPCs()
 end
 
 -- endregion

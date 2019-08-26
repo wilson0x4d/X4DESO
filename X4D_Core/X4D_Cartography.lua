@@ -12,10 +12,7 @@ X4D_Cartography.MapName = X4D.Observable(nil) -- current map name
 X4D_Cartography.MapType = X4D.Observable(nil) -- current map type
 X4D_Cartography.LocationName = X4D.Observable(nil) -- current location name
 X4D_Cartography.ZoneIndex = X4D.Observable(nil) -- current map zone index
-X4D_Cartography.PlayerX = X4D.Observable(0) -- player position (x-coordinate)
-X4D_Cartography.PlayerY = X4D.Observable(0) -- player position (y-coordinate)
-X4D_Cartography.PlayerHeading = X4D.Observable(0) -- player heading
-X4D_Cartography.CameraHeading = X4D.Observable(0) -- camera heading
+X4D_Cartography.PlayerPosition = X4D.Observable(nil) -- { X: 0, Y: 0, Heading: 0, CameraHeading }
 
 X4D_Cartography.CurrentMap = X4D.Observable(nil) -- reference to current map from Cartography DB
 
@@ -210,10 +207,16 @@ end
 local function TryUpdatePlayerState(timer, state)    
     local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
     local cameraHeading = GetPlayerCameraHeading()
-    X4D.Cartography.PlayerX(playerX)
-    X4D.Cartography.PlayerY(playerY)
-    X4D.Cartography.PlayerHeading(playerHeading)
-    X4D.Cartography.CameraHeading(cameraHeading)
+    local playerStateChecksum = playerX + playerY + playerHeading + cameraHeading
+    if (state.Checksum ~= playerStateChecksum) then
+        state.Checksum = playerStateChecksum
+        X4D_Cartography.PlayerPosition({
+            X = playerX,
+            Y = playerY,
+            Heading = playerHeading,
+            CameraHeading = cameraHeading
+        })
+    end
 end
 
 local _timer
