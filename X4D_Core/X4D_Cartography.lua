@@ -14,6 +14,8 @@ X4D_Cartography.LocationName = X4D.Observable(nil) -- current location name
 X4D_Cartography.ZoneIndex = X4D.Observable(nil) -- current map zone index
 X4D_Cartography.PlayerPosition = X4D.Observable(nil) -- { X: 0, Y: 0, Heading: 0, CameraHeading }
 
+X4D_Cartography.CurrentLocation = X4D.Observable(nil) -- reference to current Location from CurrentMap:Locations
+X4D_Cartography.CurrentZone = X4D.Observable(nil) -- reference to current Zone from CurrentMap:Zones
 X4D_Cartography.CurrentMap = X4D.Observable(nil) -- reference to current map from Cartography DB
 
 -- debugging helpers (please note, these are ONLY enabled if you've hand-edited the default log level in `X4D_Log.lua`)
@@ -22,6 +24,8 @@ if (X4D.Log:IsVerboseEnabled() or X4D.Log:IsDebugEnabled()) then
     X4D_Cartography.IsSubZone:Observe(function (v) DebugLogObservable("IsSubZone", v) end)
     X4D_Cartography.MapIndex:Observe(function (v) DebugLogObservable("MapIndex", v) end)
     X4D_Cartography.MapName:Observe(function (v) DebugLogObservable("MapName", v) end)
+    X4D_Cartography.CurrentLocation:Observe(function (v) DebugLogObservable("CurrentLocation", v) end)
+    X4D_Cartography.CurrentZone:Observe(function (v) DebugLogObservable("CurrentZone", v) end)
     if (X4D.Log:IsDebugEnabled()) then
         X4D_Cartography.MapType:Observe(function (v) DebugLogObservable("MapType", v) end)
         X4D_Cartography.PlayerPosition:Observe(function (v) DebugLogObservable("PlayerPosition", v) end)
@@ -42,7 +46,7 @@ function X4D_Cartography:GetTileDimensions(filename)
     return _private_texture:GetTextureFileDimensions()
 end
 
-function X4D_Cartography:GetCurrentMap()
+local function RefreshCurrentMapAndZoneAndLocation()
     --[[
         TODO: "zone fencing" to auto-detect the need for a map transition, each can have zero or more fences, each fence being a collection of coordinates in clockwise order which form a closed loop
     ]]
@@ -66,56 +70,47 @@ function X4D_Cartography:GetCurrentMap()
             Tiles = {},
             Zones = {},
             Locations = {},
-            IsSubZone = tonumber(mapIndex) == nil,
+            IsSubZone = isSubZone
         }
-        local mapZones = X4D.DB:Open(map.Zones)
-        if (mapZones:Count() == 0) then
-            -- not tested and/or bugged temporarily removed
-            --if (isSubZone) then
-            --    -- do not enumerate zones
-            --    local zoneIndex = GetCurrentMapZoneIndex()
-            --    local zoneKey = mapIndex .. "-" .. zoneIndex
-            --    local zone = {
-            --        MapIndex = mapIndex,
-            --        ZoneIndex = mapIndex,
-            --        Description = GetZoneDescription(zoneIndex),
-            --    }
-            --    mapZones:Add(zoneKey, zone)
-            --else
-            --    -- enumerate zones
-            --    for zoneIndex = 1, GetNumZonesForDifficultyLevel(difficulty) do
-            --        local zoneKey = mapIndex .. "-" .. zoneIndex
-            --        local zone = {
-            --            MapIndex = mapIndex,
-            --            ZoneIndex = zoneIndex,
-            --            Description = GetZoneDescription(zoneIndex),
-            --        }
-            --        mapZones:Add(zoneKey, zone)
-            --    end
-            --end
-        end
-        local mapLocations = X4D.DB:Open(map.Locations)
-        if (mapLocations:Count() == 0) then
---            -- attempt to enumerate locations
---            for locationIndex = 1, GetNumMapLocations() do
---                -- location icon
---                local iconFilename, iconWidth, iconHeight = GetMapLocationIcon(locationIndex)
 
---            --    X4D.Log:Warning{GetMapLocation(locationIndex)}
---            --    local locationKey = mapIndex .. "-" .. locationIndex
---            --    local iconFilename, iconX, iconY = GetMapLocationIcon(locationIndex)
---            --    local locationName = GetLocationName(locationIndex)
---            --    local location = {
---            --        MapIndex = mapIndex,
---            --        LocationIndex = locationIndex,
---            --        Name = locationName,
---            --        LocationX = iconX,
---            --        LocationY = iconY,
---            --        Icon58 = X4D.Icons:ToIcon58(iconFilename),
---            --    }
---            --    mapLocations:Add(locationKey, location)
---            end
+        local currentZone = nil
+        local currentZoneIndex = GetCurrentMapZoneIndex()
+        local mapZones = X4D.DB:Open(map.Zones)
+        local playerDifficultyLevel = GetPlayerDifficultyLevel()
+        for zoneIndex = 1, GetNumZonesForDifficultyLevel(playerDifficultyLevel) do                                        
+            local zone = {
+                MapIndex = mapIndex,
+                ZoneIndex = zoneIndex,
+                Description = GetZoneDescription(zoneIndex),
+            }
+            mapZones:Add(zoneIndex, zone)
+            if (zoneIndex == currentZoneIndex) then
+                currentZone = zone
+            end
+        end               
+        X4D_Cartography.CurrentZone(currentZone)
+
+        local currentLocation = nil
+        local currentLocationName = GetPlayerLocationName()
+        local mapLocations = X4D.DB:Open(map.Locations)
+        for locationIndex = 1, GetNumMapLocations() do
+            local iconFilename, iconWidth, iconHeight = GetMapLocationIcon(locationIndex)
+            local locationName = GetLocationName(locationIndex)
+            local location = {
+                MapIndex = mapIndex,
+                LocationIndex = locationIndex,
+                Name = locationName,
+                LocationX = iconX,
+                LocationY = iconY,
+                Icon58 = X4D.Icons:ToIcon58(iconFilename),
+            }
+            mapLocations:Add(locationIndex, location)
+            if (locationName == currentLocationName) then
+                currentLocation = location
+            end
         end
+        X4D_Cartography.CurrentLocation(currentLocation)
+
         if (GetCurrentMapIndex() == mapIndex or isSubZone) then
             local mapTiles = X4D.DB:Open(map.Tiles)
             if (mapTiles:Count() == 0) then
@@ -143,7 +138,7 @@ function X4D_Cartography:GetCurrentMap()
     if (dirty) then
         X4D.Cartography.DB:Add(mapIndex, map)
     end
-    return map
+    X4D_Cartography.CurrentMap(map)
 end
 
 local _zoneMapLookup = {
