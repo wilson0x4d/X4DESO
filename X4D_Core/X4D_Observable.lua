@@ -42,7 +42,7 @@ function X4D_Observable:CreateObservable(initialValue)
     end
     observable.Observe = function (self, observer, rateLimit)
 		if (rateLimit ~= nil) then
-			rateLimit = nil
+			_rateLimit = rateLimit
 		end
 		if (observer ~= nil and type(observer) == "function") then
 	        table.insert(_observers, observer)
@@ -57,8 +57,8 @@ function X4D_Observable:CreateObservable(initialValue)
             local pre = _value
             if (pre ~= v) then
                 _value = v
-                if ((_rateLimit == nil) or ((now - _timestamp) > _rateLimit)) then
-					local now = GetGameTimeMilliseconds()
+                local now = GetGameTimeMilliseconds()
+                if ((_rateLimit == nil or _timestamp == nil) or ((now - _timestamp) > _rateLimit)) then
                     _timestamp = now
 					for _,observer in pairs(_observers) do
 						-- TODO: pcall
