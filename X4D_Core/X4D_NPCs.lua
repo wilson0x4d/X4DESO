@@ -103,31 +103,29 @@ function X4D_NPCs:ForEach(visitor)
 end
 
 function X4D_NPCs:Add(key, value)
-	local entity = value
-	if (entity == nil) then
-		entity = key
-	else
-		X4D.Log:Warning { "X4D_NPCs:Add", "The NPC DB does not accept caller-supplied keys, keys are always inferred using NPC-specific conventions.", key }
-	end
-	if (entity.Name == nil) then
-		X4D.Log:Error { "X4D_NPCs:Add", "The NPC entity provided does not have a Name property, the NPC is not saved." }
-		return nil
-	end
-	if (entity.Type == nil) then
-		X4D.Log:Error { "X4D_NPCs:Add", "The NPC entity provided does not have a Type property, the NPC is not saved." }
-		return nil
-	end
-	-- TODO: there may be special NPCs which we do not do this for, or we may one day track multiple locations?
-	entity.Key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. entity.Name
-	entity.MapId = _currentMapId
-	entity.ZoneIndex = _currentZoneIndex
-	entity.Position = {
-		X = X4D.Cartography.PlayerX(),
-		Y = X4D.Cartography.PlayerY()
-	}
-	local result = self.DB:Add(entity.Key, entity)
-	return result
+	X4D.Log:Error("Calls to X4D.NPC:Add() are not allowed")
+	-- local entity = value
+	-- if (entity == nil) then
+	-- 	entity = key
+	-- else
+	-- 	X4D.Log:Warning { "X4D_NPCs:Add", "The NPC DB does not accept caller-supplied keys, keys are always inferred using NPC-specific conventions.", key }
+	-- end
+	-- if (entity.Name == nil) then
+	-- 	X4D.Log:Error { "X4D_NPCs:Add", "The NPC entity provided does not have a Name property, the NPC is not saved." }
+	-- 	return nil
+	-- end
+	-- if (entity.Type == nil) then
+	-- 	X4D.Log:Error { "X4D_NPCs:Add", "The NPC entity provided does not have a Type property, the NPC is not saved." }
+	-- 	return nil
+	-- end
+	-- -- TODO: there may be special NPCs which we do not do this for, or we may one day track multiple locations?
+	-- entity.Key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. entity.Name
+	-- entity.MapId = _currentMapId
+	-- entity.ZoneIndex = _currentZoneIndex
+	-- entity.Position = X4D.Cartography.PlayerPosition(),
+	-- local result = self.DB:Add(entity.Key, entity)
 	-- RefreshNearbyNPCs()
+	-- return result
 end
 
 function X4D_NPCs:Remove(key)
