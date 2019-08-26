@@ -9,6 +9,7 @@ X4D.Cartography = X4D_Cartography
 X4D_Cartography.IsSubZone = X4D.Observable(nil) -- current is a 'sub zone' (one in which we have to rely on non-standard mechanisms for map determination)
 X4D_Cartography.MapIndex = X4D.Observable(nil) -- current map index
 X4D_Cartography.MapName = X4D.Observable(nil) -- current map name
+X4D_Cartography.MapType = X4D.Observable(nil) -- current map type
 X4D_Cartography.LocationName = X4D.Observable(nil) -- current location name
 X4D_Cartography.ZoneIndex = X4D.Observable(nil) -- current map zone index
 X4D_Cartography.PlayerX = X4D.Observable(0) -- player position (x-coordinate)
@@ -25,6 +26,7 @@ if (X4D.Log:IsVerboseEnabled() or X4D.Log:IsDebugEnabled()) then
     X4D_Cartography.MapIndex:Observe(function (v) DebugLogObservable("MapIndex", v) end)
     X4D_Cartography.MapName:Observe(function (v) DebugLogObservable("MapName", v) end)
     if (X4D.Log:IsDebugEnabled()) then
+        X4D_Cartography.MapType:Observe(function (v) DebugLogObservable("MapType", v) end)
         X4D_Cartography.LocationName:Observe(function (v) DebugLogObservable("LocationName", v) end)
         X4D_Cartography.ZoneIndex:Observe(function (v) DebugLogObservable("ZoneIndex", v) end)
     end
@@ -189,6 +191,7 @@ local function TryUpdateMapState(timer, state)
     if (_currentMapTile ~= mapTile or _currentLocationName ~= locationName) then
         _currentMapTile = mapTile
         _currentLocationName = locationName
+        local mapType = GetMapType()
         local zoneIndex = GetCurrentMapZoneIndex()
         local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
 	    X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil)
@@ -202,6 +205,7 @@ local function TryUpdateMapState(timer, state)
 		if (SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED) then
 			CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
 		end
+        X4D_Cartography.MapType(mapType)
     end
 end
 local function TryUpdatePlayerState(timer, state)
