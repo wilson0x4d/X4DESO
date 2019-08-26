@@ -98,7 +98,7 @@ function X4D_DB:Add(key, value)
         value = key
         key = value.Id or value.Key or value.id or value.key or value.ID
     end
-	X4D.Log:Verbose{"X4D_DB:Add", self._table._name, key}
+	X4D.Log:Debug{"X4D_DB:Add", self._table._name, key}
     self._table[key] = value
     self._table._count = self._table._count + 1
     return value, key

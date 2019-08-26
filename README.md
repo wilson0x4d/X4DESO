@@ -60,11 +60,17 @@ A: Also run `Create-LibrarySumLinks.ps1` as Administrator.
 
 There are slash commands you will find useful when debugging AddOns or Testing changes to X4D AddOns.
 
-| Command | Args | Example | |
-|-|-|-|-|
-| `-debug` | N/A | `/x4d -debug` | Sets the log level to DEBUG (shows all logging/activity), and adds a performance summary in the Chat window.|
-| `-test` | N/A | `/x4d -test` | Sets the log level to VERBOSE (shows most logging/activity, but not all), and then performs a board test of X4D AddOns, each test printing output to the Chat window. Useful for checking to see if anything fundamental has broken that would not throw an API error if misbehaving. |
+| Command | |
+|-|-|
+| `/x4d -test` | Sets the log level to VERBOSE (shows 'useful' logging/activity, but not 'all'), and then performs a broad test of X4D_Core module. If you're doing any development that uses X4D_Core you will usually use this command after performing a `/reloadui`. |
+| `/x4d -debug` | Sets the log level to DEBUG (shows all logging/activity), and adds a performance summary in the Chat window. You will not use this command often/ever. |
 
+Additionally, the `X4D_DB` module exposes its own commands:
+
+| Command | Args | |
+|-|-|
+| `/x4db count [DBNAME]` | Writes the count for the specified database. If no database is specified then "all" DBs are enumerated. Please be aware that 'transient' databases may be enumerated by this command. |
+| `/x4db reset <DBNAME>` | Resets the target database such that it contains no items, no keys. Nothing. WARNING! Performing this against a "Core" DB may have unintended side-effects that will require you to manually delete savedvars. You should only use this to reset your OWN databases. |
 
 
 ## Support, Assistance, and Bug Reports
