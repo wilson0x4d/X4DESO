@@ -27,6 +27,7 @@ if (X4D.Log:IsVerboseEnabled() or X4D.Log:IsDebugEnabled()) then
     X4D_Cartography.MapName:Observe(function (v) DebugLogObservable("MapName", v) end)
     if (X4D.Log:IsDebugEnabled()) then
         X4D_Cartography.MapType:Observe(function (v) DebugLogObservable("MapType", v) end)
+        X4D_Cartography.PlayerPosition:Observe(function (v) DebugLogObservable("PlayerPosition", v) end)
         X4D_Cartography.LocationName:Observe(function (v) DebugLogObservable("LocationName", v) end)
         X4D_Cartography.ZoneIndex:Observe(function (v) DebugLogObservable("ZoneIndex", v) end)
     end
@@ -192,18 +193,17 @@ local function TryUpdateMapState(timer, state)
         local mapType = GetMapType()
         local zoneIndex = GetCurrentMapZoneIndex()
         local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
-	    X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil)
-        X4D.Cartography.MapIndex(mapIndex)
-        X4D.Cartography.ZoneIndex(zoneIndex)
-        X4D.Cartography.MapName(GetMapName())
-        local currentMap = X4D.Cartography:GetCurrentMap()
-        X4D.Cartography.CurrentMap(currentMap)
-	else
-		-- when it doesn't look like there is any change, simulate a worldmap update
-		if (SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED) then
-			CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
-		end
         X4D_Cartography.MapType(mapType)
+	    X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil or mapType == 1)
+        X4D_Cartography.MapIndex(mapIndex)
+        X4D_Cartography.ZoneIndex(zoneIndex)
+        X4D_Cartography.MapName(GetMapName())
+        -- NOTE: this MUST ALWAYS be done last
+        RefreshCurrentMapAndZoneAndLocation()
+    else
+        if (SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED) then
+            CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
+        end
     end
 end
 
