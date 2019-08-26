@@ -14,6 +14,8 @@
 
 - Option to display loot from deconstructed items.
 - Option to show/hide AP (Alliance Point) gains
+- BUG: when you swap rings, then go loot something, the swap registers as a loss of an item. probably need to test item swap scenarios but this may be specific to swapping rings (a game-dev optimization.)
+- BUG: because of inventory changes (crafting bag) when looting mats we no longer get notifications. we may also see breaks in other modules (vendor sales, laundering, etc?)
 
 ## Installation
 

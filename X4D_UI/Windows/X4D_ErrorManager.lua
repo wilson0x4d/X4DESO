@@ -8,15 +8,11 @@ X4D.ErrorManager = X4D_ErrorManager
 local _errorId = 0
 local _errors = {}
 
-function PrettyPrint(errorString)
-    X4D.Log:Error(errorString)
-end
-
 function OnUIError(eventCode, errorString)
     local errorId = tostring(_errorId)
     _errorId = _errorId + 1
     _errors[tostring(GetGameTimeMilliseconds()/1000) .. "-" .. errorId] = errorString
-    PrettyPrint(errorString)
+    X4D.Log:Error(errorString)
 end
 
 EVENT_MANAGER:RegisterForEvent("X4D_ErrorManager_OnLoaded", EVENT_ADD_ON_LOADED, function(event, name)

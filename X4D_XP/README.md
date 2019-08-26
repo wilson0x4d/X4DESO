@@ -17,6 +17,8 @@ X4D XP is LibStub-compatible Add-On that reports XP gains.
 
 - If user is idle for 5 minutes or more, reset session start time and session count to avoid skew.
 
+- Add support for guild/reputation gains (Fx. "Dark Brotherhood Points" -- new since I last explored the API)
+
 
 ## Installation
 

@@ -18,6 +18,18 @@ X4D_Cartography.CameraHeading = X4D.Observable(0) -- camera heading
 
 X4D_Cartography.CurrentMap = X4D.Observable(nil) -- reference to current map from Cartography DB
 
+-- debugging helpers (please note, these are ONLY enabled if you've hand-edited the default log level in `X4D_Log.lua`)
+if (X4D.Log:IsVerboseEnabled() or X4D.Log:IsDebugEnabled()) then
+    local function DebugLogObservable(k, v) if (v == nil) then v = "nil" end X4D.Log:Debug(tostring(k).."="..tostring(v)) end
+    X4D_Cartography.IsSubZone:Observe(function (v) DebugLogObservable("IsSubZone", v) end)
+    X4D_Cartography.MapIndex:Observe(function (v) DebugLogObservable("MapIndex", v) end)
+    X4D_Cartography.MapName:Observe(function (v) DebugLogObservable("MapName", v) end)
+    if (X4D.Log:IsDebugEnabled()) then
+        X4D_Cartography.LocationName:Observe(function (v) DebugLogObservable("LocationName", v) end)
+        X4D_Cartography.ZoneIndex:Observe(function (v) DebugLogObservable("ZoneIndex", v) end)
+    end
+end
+
 local _currentMapTile
 local _currentLocationName
 

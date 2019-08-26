@@ -1,3 +1,20 @@
+
+-- TODO: minimap shows misbehavior when user opens map window and
+--		  zooms out several times, then closes map window. there's
+--		  no reason for minimap state to be updated like this when
+--		  the map window is open.
+
+-- TODO: switch to using a "composite texture" control for minimap
+--		  tiles and pips, possibly also for driving position within
+--		  the minimap view (less jitter than anchoring child in 
+--		  the parent/container?)
+
+-- TODO: player pip in minimap does not match map window inside 
+--		  dark brotherhood sanctuary, possibly other locations. this
+--		  location's exit door is a better point of reference than
+--		  map contents (clearly showing POI/exit PIP is accurate even
+--		  when Player PIP is not.)
+
 local X4D_MiniMap = LibStub:NewLibrary("X4D_MiniMap", 1006)
 if (not X4D_MiniMap) then
 	return
@@ -40,8 +57,8 @@ local _pipcache = { }
 local _pins = { }
 local _lastPinPipWidth = nil
 
--- TODO: localize table index values, I believe these are only valid for an en-US game client
-local _pinTypeToTextureNameLookup = {
+-- TODO: localize/abstract table keys, I believe these are only valid for an en-US game client
+local _npcTypeToTextureNameLookup = {
 	["UNKNOWN"] = "esoui/art/progression/progression_tabicon_backup_active.dds",
 	-- NPCs 
 	["Vendor"] = "EsoUI/Art/Icons/ServiceMapPins/servicepin_vendor.dds",
@@ -69,32 +86,33 @@ local _pinTypeToTextureNameLookup = {
 
 	["Chef"] = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_craftbag_provisioning.dds",
 
-	[""] = "EsoUI/Art/Vendor/tabIcon_mounts_down.dds", 
-
---	-- WorldMap Pins (aka. POIs, other than NPCs)
---	["Skyshard"] = "X4D_MiniMap/art/x4d_skyshard.dds",
+	[""] = "EsoUI/Art/Vendor/tabIcon_mounts_down.dds",
 }
 
 local function ConvertNPCToPin(npc, sequence, map)
 	if (npc.IsFence) then
-		X4D.Log:Verbose{"ConvertNPCToPin !Excluded!", sequence, npc.Name}
-		return nil -- currently, we rely on worldmap pins since we want BOTH the POI markers *and* the NPC markers and this is just the easiest way to accomplish it
+		-- NOTE: "fence" NPCs appear as "ZO WorldMap Pins", thus, we exclude them by returning nil
+		X4D.Log:Debug{"ConvertNPCToPin !Excluded!", sequence, npc}
+		return nil
 	end
 --	X4D.Log:Warning{ "ConvertNPCToPin", npc.Name, npc.Position, npc}
+
+	local textureName = _npcTypeToTextureNameLookup[npc.Type] or _npcTypeToTextureNameLookup["UNKNOWN"]
+
+	-- every "X4D MiniMap Pin" has a corresponding texture, currently loaded into a single CT_TEXTURE control
     local pip = _pipcache[sequence]
 	if (pip == nil) then
 		pip = WINDOW_MANAGER:CreateControl(nil, _tileContainer, CT_TEXTURE)
+		pip:SetTexture(textureName)
+		pip:SetDimensions(_lastPinPipWidth, _lastPinPipWidth) -- TODO: reset dimensions whenever zoom-level/position changes?
 		pip:SetDrawLayer(DL_BACKGROUND)
 		pip:SetDrawTier(DT_MEDIUM)
 		pip:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
+		pip:ClearAnchors()
+		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (_lastPinPipWidth/2), (npc.Position.Y * map.MapHeight) - (_lastPinPipWidth/2))
+		pip:SetHidden(false)
 		_pipcache[sequence] = pip
 	end
-	local textureName = _pinTypeToTextureNameLookup[npc.Type] or _pinTypeToTextureNameLookup["UNKNOWN"]
-	pip:SetTexture(textureName)		
-	pip:SetDimensions(_lastPinPipWidth, _lastPinPipWidth) -- TODO: reset dimensions whenever zoom-level/position changes?
-	pip:ClearAnchors()
-	pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (_lastPinPipWidth/2), (npc.Position.Y * map.MapHeight) - (_lastPinPipWidth/2))
-	pip:SetHidden(false)
 	return {
 		PIP = pip, 
 		NPC = npc,
@@ -118,7 +136,7 @@ local function ConvertPOIToPin(poi, sequence, map)
 	end
 	local zoPinType = poi:GetPinType()
 	if (zoPinType == nil or zoPinType == "") then
---		X4D.Log:Error{"ConvertPOIToPin", sequence, "pinType=(nil)" }
+ 		X4D.Log:Error{"ConvertPOIToPin", sequence, "pinType=(nil)" }
 		_gameNotReady = true
 		if (poi.__x4d_retry) then
 			poi.__x4d_ignore = true --optimization for next call
@@ -145,7 +163,7 @@ local function ConvertPOIToPin(poi, sequence, map)
 	-- here we apply some exclusions because we intend to map certain pins separate from ZO (otherwise they appear as dupes on the map)
 	-- TODO: when inside a hideout, do not render fence POI, but when outside of a hideout, rander hideout POI
 	if (zoPinTexture:EndsWith("_vendor.dds") or zoPinTexture:EndsWith("_bank.dds") or zoPinTexture:EndsWith("_inn.dds") or zoPinTexture:EndsWith("_woodworking.dds") or zoPinTexture:EndsWith("_alchemy.dds")  or zoPinTexture:EndsWith("_stable.dds")) then
-		X4D.Log:Verbose{"ConvertPOIToPin !Excluded!", sequence, zoPinType, zoPinTexture, size, zoPinData}
+		X4D.Log:Debug{"ConvertPOIToPin !ExcludedByDesign!", sequence, zoPinType, zoPinTexture, size, zoPinData}
 		poi.__x4d_ignore = true --optimization for next call
 		return nil
 	end
@@ -231,11 +249,15 @@ local function LayoutMapPins(state)
 	end
 end
 
-local ScheduleRetryForMapPins = nil
-local ScheduleRetryForNPCPins = nil
-local function OnNearbyNPCsChangedAsync(nearbyNPCs)
+local ScheduleUpdateForPOIPins = nil
+
+local function RecalculateMiniMapPinsAsync()
+	local nearbyNPCs = X4D.NPCs.NearbyNPCs()
+
 	_gameNotReady = false
+
 	-- reclaim pin controls
+	X4D.Log:Warning("OnNearbyNPCsChanged - reclaiming pins")
 	local L_pins = _pins
 	if (L_pins ~= nil) then
 		for _,pin in pairs(L_pins) do
@@ -255,16 +277,18 @@ local function OnNearbyNPCsChangedAsync(nearbyNPCs)
 			local pin = ConvertNPCToPin(npc, sequence, _currentMap)
 			if (pin ~= nil) then
 				table.insert(pins, pin)
-			elseif (_gameNotReady) then
-				ScheduleRetryForNPCPins()
-				return
+			-- NOTE: unlike POI pins, NPC pins should always resolve non-nil (not game controlled), thus, no retry logic when nil is returned (since it's a valid case)
+			-- elseif (_gameNotReady) then
+			-- 	ScheduleUpdateForNPCPins()
+			-- 	X4D.Log:Warning("RecalculateMiniMapPinsAsync - game was not ready for ConvertNPCToPin call sequence #"..sequence)
+			-- 	return
 			else
 				sequence = sequence - 1 -- ensure we use correct pipcache slot on next NPC, since some NPCs may not be rendered
 			end
 		end
 	end)
 
-	-- TODO: perform this only once when map changes, before processing NPCs, if we then record "start sequence #" from POIs processed we can perform NPC processing without much concern
+	-- TODO: perform this only once when map changes, before processing NPCs, if we then record "start sequence #" from POIs processed we can perform NPC (re-)processing without much concern for the POIs (which should be relatively static for the current map)
 	local poiCount = ZO_WorldMapContainer:GetNumChildren()
 	for poiIndex=1,poiCount do
 		local worldMapContainerChild = ZO_WorldMapContainer:GetChild(poiIndex)
@@ -274,7 +298,8 @@ local function OnNearbyNPCsChangedAsync(nearbyNPCs)
 			if (pin ~= nil) then
 				table.insert(pins, pin)
 			elseif (_gameNotReady) then
-				ScheduleRetryForMapPins()
+				ScheduleUpdateForPOIPins()
+				X4D.Log:Warning("RecalculateMiniMapPinsAsync - game was not ready for ConvertPOIToPin call sequence #"..sequence)
 				return
 			else
 				sequence = sequence - 1 -- ensure we use correct pipcache slot on next POI, since some POIs may not be rendered
@@ -284,18 +309,6 @@ local function OnNearbyNPCsChangedAsync(nearbyNPCs)
 
 	_pins = pins
 	LayoutMapPins(_zoomPanState)
-end
-
-local _timerForScheduledRetryMapPins = nil
-ScheduleRetryForMapPins = function (fullRetry)
-	X4D.Log:Verbose{"X4D_MiniMap::ScheduleRetryForMapPins"}
-	if (_timerForScheduledRetryMapPins == nil) then
-		_timerForScheduledRetryMapPins = X4D.Async:CreateTimer(function (timer, state) 
-			timer:Stop()
-			OnNearbyNPCsChangedAsync(X4D.NPCs.NearbyNPCs()) -- TODO: use a secondary pincache specific to POIs and refactor all code to no longer require NPCs to be refresh when refreshing POIs (and vice verse)
-		end, 1000, {}, "X4D_MiniMap::ScheduleRetryForMapPins")
-	end
-	_timerForScheduledRetryMapPins:Start()
 end
 
 local function ResetMapPinIgnores()
@@ -308,16 +321,17 @@ local function ResetMapPinIgnores()
 	end	
 end
 
-local _timerForScheduledRetryNPCPins = nil
-ScheduleRetryForNPCPins = function ()
-	X4D.Log:Verbose{"X4D_MiniMap::ScheduleRetryForNPCPins"}
-	if (_timerForScheduledRetryNPCPins == nil) then
-		_timerForScheduledRetryNPCPins = X4D.Async:CreateTimer(function (timer, state) 
+local _timerForScheduledUpdateNPCPins = nil
+ScheduleUpdateForPOIPins = function ()
+	if (_timerForScheduledUpdateNPCPins == nil) then
+		_timerForScheduledUpdateNPCPins = X4D.Async:CreateTimer(function (timer, state) 
 			timer:Stop()
-			OnNearbyNPCsChangedAsync(X4D.NPCs.NearbyNPCs()) -- NOTE: this is correct. the function above, however, should not use this same code
-		end, 500, {}, "X4D_MiniMap::ScheduleRetryForNPCPins")
+			X4D.Log:Verbose{"X4D_MiniMap::ScheduleUpdateForPOIPins"}
+			-- NOTE: this misnomer exists due to a series of refactors
+			RecalculateMiniMapPinsAsync()
+		end, 850, {}, "X4D_MiniMap::ScheduleUpdateForPOIPins")
 	end
-	_timerForScheduledRetryNPCPins:Start()
+	_timerForScheduledUpdateNPCPins:Start()
 end
 
 local taskOnNearbyNPCsChanged = nil
@@ -326,7 +340,7 @@ local function OnNearbyNPCsChanged(nearbyNPCs)
 		taskOnNearbyNPCsChanged = X4D.Async:CreateTimer(function(timer, state)
 			if (_currentMap ~= nil and _lastPinPipWidth ~= nil) then -- only reason we go async is to wait for state to pop
 				timer:Stop()
-				OnNearbyNPCsChangedAsync(state)
+				RecalculateMiniMapPinsAsync()
 				taskOnNearbyNPCsChanged = nil
 			end
 		end, 250, nearbyNPCs, "X4D_MiniMap::OnNearbyNPCsChanged"):Start()
@@ -425,14 +439,13 @@ local function UpdateZoomPanState(timer, state)
 				offsetY = (map.MapHeight - (_centerY * 2))
 			end
 			
+			_tileContainer:ClearAnchors()
+			_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY) -- TODO: need to interpolate
+
 			local pipX = (offsetX + _centerX - (playerPipWidth / 2))
 			local pipY = (offsetY + _centerY - (playerPipWidth / 2))
 			_playerPip:ClearAnchors()
 			_playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, pipX, pipY) -- TODO: need to interpolate
-
-			_tileContainer:ClearAnchors()
-			_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY) -- TODO: need to interpolate
-
 		end
 	end
 end
@@ -448,15 +461,18 @@ local function StartWorldMapController()
 	-- test world map
 	if (_mapControllerTimer == nil) then
 		_mapControllerTimer = X4D.Async:CreateTimer(function(timer, state)
-			if (_playerX == 0 or _playerY == 0 or ZO_WorldMap_IsWorldMapShowing()) then
+		    local isWorldMapVisible = SCENE_MANAGER:IsShowing("worldMap") or SCENE_MANAGER:IsShowing("gamepad_worldMap")
+			if (isWorldMapVisible or _playerX == 0 or _playerY == 0) then
 				return
 			end
-			if ((_playerX <= 0.04 or _playerX >= 0.96) or(_playerY <= 0.04 or _playerY >= 0.96)) then
+			if ((_playerX <= 0.04 or _playerX >= 0.96) or (_playerY <= 0.04 or _playerY >= 0.96)) then
 				if (MapZoomOut() == SET_MAP_RESULT_MAP_CHANGED) then
+					X4D.Log:Verbose{"FIRE! MapZoomOut"}
 					CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
 				end
 			else
 				if (ProcessMapClick(_playerX, _playerY) == SET_MAP_RESULT_MAP_CHANGED) then
+					X4D.Log:Verbose{"FIRE! ProcessMapClick"}
 					CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
 				end
 			end
@@ -465,28 +481,17 @@ local function StartWorldMapController()
 	end
 end
 
-X4D.Cartography.PlayerX:Observe(function(v)
-	_playerX = v
-end)
-
-
-X4D.Cartography.PlayerY:Observe(function(v)
-	_playerY = v
-end)
-
-X4D.Cartography.PlayerHeading:Observe(function(v)
+X4D.Cartography.PlayerPosition:Observe(function(v)
+	_playerX = v.X
+	_playerY = v.Y
+	_playerH = v.Heading
+	_cameraH = v.CameraHeading
 	if (X4D_MiniMap.Settings:Get("UsePlayerHeading")) then
-		_playerH = v
-		UpdatePlayerPip(v)
+		UpdatePlayerPip(_playerH)
+	else
+		UpdatePlayerPip(_cameraH)
 	end
-end, 30)
-
-X4D.Cartography.CameraHeading:Observe(function(v)
-	if (not X4D_MiniMap.Settings:Get("UsePlayerHeading")) then
-		_cameraH = v
-		UpdatePlayerPip(v)
-	end
-end, 30)
+end, 1000/30)
 
 local _customMapScalingFactors = {
 	['porthunding_base'] = 1
@@ -703,12 +708,12 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_PLAYER_ACTIVATED, functio
 	StartWorldMapController()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_QUEST_COMPLETE, function (...) 
-	ScheduleRetryForMapPins()
+	ScheduleUpdateForPOIPins()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_OBJECTIVE_COMPLETED, function (...) 
-	ScheduleRetryForMapPins()
+	ScheduleUpdateForPOIPins()
 end)
 EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ZONE_CHANGED, function()
 	ResetMapPinIgnores()
-	ScheduleRetryForMapPins()
+	ScheduleUpdateForPOIPins()
 end)
