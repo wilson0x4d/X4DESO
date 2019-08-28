@@ -58,23 +58,51 @@ end
 X4D_NPCs.NearbyNPCs = X4D.Observable(nil) -- NOTE: used by X4D_MiniMap to create "NPC pins", and elsewhere, instead of polling/querying again and again
 X4D_NPCs.CurrentNPC = X4D.Observable(nil) -- NOTE: when another module detects interaction with an NPC, it *may* place a module-specific entity here, treat this as a read-only/internal-only value
 
+local ScheduleRefreshNearbyNPCs = nil
+
 local function IsNPCNearby(npc, key)
 	local result = npc ~= nil and npc.MapId == _currentMapId and npc.ZoneIndex == _currentZoneIndex
---	X4D.Log:Information{"IsNPCNearby", npc.Key, npc.MapId, npc.ZoneIndex, _currentMapId, _currentZoneIndex}	
+	-- if (result) then
+	-- 	X4D.Log:Debug{"IsNPCNearBy? Yes =>", npc}
+	-- end
 	return result
 end
 local function RefreshNearbyNPCs()
 	local nearby = X4D_NPCs.DB:Where(IsNPCNearby, true)
---	nearby:ForEach(function (e) 
---		X4D.Log:Information{"UpdateNearbyNPCs", e}	
---	end)
 	X4D_NPCs.NearbyNPCs(nearby)
 end
+
+-- this is basically a sync->async debounce for `RefreshNearbyNPCs`. could be leaner, yes.
+local _timerForScheduledUpdateNearbyNPCs = nil
+ScheduleRefreshNearbyNPCs = function(delayMilliseconds)
+	if (delayMilliseconds == nil) then
+		delayMilliseconds = 100
+	end
+	if (_timerForScheduledUpdateNearbyNPCs ~= nil) then
+		_timerForScheduledUpdateNearbyNPCs:Stop()
+	else
+		_timerForScheduledUpdateNearbyNPCs = X4D.Async:CreateTimer(function (timer, state) 
+			timer:Stop()
+			-- X4D.Log:Debug{"X4D_MiniMap::ScheduleRefreshNearbyNPCs"}
+			RefreshNearbyNPCs()
+		end, delayMilliseconds, {}, "X4D_MiniMap::ScheduleRefreshNearbyNPCs")
+	end
+	_timerForScheduledUpdateNearbyNPCs:Start(delayMilliseconds)
+end
+
+local function OnMapIndexChanged(mapId)
+	-- X4D.Log:Debug("OnMapIndexChanged", "NPCs")
+	_currentMapId = mapId
+end
+
 local function OnCurrentMapChanged(map, oldMap)
-	_currentMapId = X4D.Cartography.MapIndex()
-	_currentZoneIndex = X4D.Cartography.ZoneIndex()
-	X4D.Log:Verbose { "OnCurrentMapChanged", _currentMapId, _currentZoneIndex, map.IsSubZone, map.MapWidth, map.MapHeight  }
-	RefreshNearbyNPCs()
+	-- X4D.Log:Debug("OnCurrentMapChanged", "NPCs")
+	ScheduleRefreshNearbyNPCs()
+end
+
+local function OnZoneIndexChanged(zoneIndex)
+	-- X4D.Log:Debug("OnZoneIndexChanged", "NPCs")
+	_currentZoneIndex = zoneIndex
 end
 
 -- endregion Nearby NPCs
@@ -147,13 +175,9 @@ end
 function X4D_NPCs:UpdatePosition(entity, mapId, zoneIndex)
 	entity.MapId = mapId or _currentMapId
 	entity.ZoneIndex = zoneIndex or _currentZoneIndex
-	local playerPosition = X4D.Cartography.PlayerPosition()
 	-- TODO: because NPCs move it would be better to track a list of unique positions (in addition to the 'last seen at' position recorded here)
-	entity.Position = {
-		X = playerPosition.X,
-		Y = playerPosition.Y
-	}
-	RefreshNearbyNPCs()
+	entity.Position = X4D.Cartography.PlayerPosition()
+	ScheduleRefreshNearbyNPCs(15000) -- NOTE: non-critical update
 end
 
 -- endregion
@@ -169,6 +193,9 @@ EVENT_MANAGER:RegisterForEvent(X4D_NPCs.NAME, EVENT_ADD_ON_LOADED, function(even
 
 	-- observe `CurrentMap` for changes to rebuild lists, consumers must ensure init before use
 	X4D.Cartography:Initialize()
+
+	X4D.Cartography.MapIndex:Observe(OnMapIndexChanged)
+	X4D.Cartography.ZoneIndex:Observe(OnZoneIndexChanged)
 	X4D.Cartography.CurrentMap:Observe(OnCurrentMapChanged)
 
 	-- record module load time
