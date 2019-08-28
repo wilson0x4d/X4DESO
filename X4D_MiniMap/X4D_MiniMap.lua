@@ -44,18 +44,11 @@ local _lastPlayerX, _lastPlayerY = 0, 0
 local _playerX, _playerY, _playerH = 0, 0, 0
 local _cameraH
 
-local _zoomPanTimer
-local _zoomPanState = { ZoomLevel = 1 } 
-
-local _minZoomLevel = 0.1 -- TODO: theoretical max, actual max is determined by ability to keep minimap window entirely covered with map contents
-local _maxZoomLevel = 1
-local _maxPipWidth = 24
-local _maxPlayerPipWidth = 16
 local _miniMapInteractor
 local _worldMapInteractor
+
 local DEFAULT_PIP_WIDTH = 20
 
-local _lastPinPipWidth = nil
 local _pipcache = { } -- 'pips' are the controls used in-game, they are recycled
 local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than the number of pips in the cache
 
@@ -102,19 +95,21 @@ local function ConvertNPCToPin(npc, sequence, map)
 	local textureName = _npcTypeToTextureNameLookup[npc.Type] or _npcTypeToTextureNameLookup["UNKNOWN"]
 
 	-- every "X4D MiniMap Pin" has a corresponding texture, currently loaded into a single CT_TEXTURE control
-    local pip = _pipcache[sequence]
+    local pip = _pipcache["pip:"..sequence]
 	if (pip == nil) then
 		pip = WINDOW_MANAGER:CreateControl(nil, _tileContainer, CT_TEXTURE)
-		pip:SetTexture(textureName)
-		pip:SetDimensions(_lastPinPipWidth, _lastPinPipWidth) -- TODO: reset dimensions whenever zoom-level/position changes?
 		pip:SetDrawLayer(DL_BACKGROUND)
 		pip:SetDrawTier(DT_MEDIUM)
 		pip:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
-		pip:ClearAnchors()
-		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (_lastPinPipWidth/2), (npc.Position.Y * map.MapHeight) - (_lastPinPipWidth/2))
-		pip:SetHidden(false)
-		_pipcache[sequence] = pip
+		_pipcache["pip:"..sequence] = pip
 	end
+	-- NOTE: just because we're using a cached pip does not mean it has the state we require
+	pip:SetTexture(textureName)
+	pip:SetDimensions(DEFAULT_PIP_WIDTH, DEFAULT_PIP_WIDTH) -- TODO: reset dimensions whenever zoom-level/position changes?
+	pip:ClearAnchors()
+	pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (npc.Position.Y * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+	pip:SetHidden(false)
+
 	return {
 		PIP = pip, 
 		NPC = npc,
@@ -221,36 +216,27 @@ function RebuildMiniMapPins()
 	_gameNotReady = false
 
 	-- reclaim pin controls
-	X4D.Log:Warning("OnNearbyNPCsChanged - reclaiming pins")
-	local L_pins = _pins
-	if (L_pins ~= nil) then
-		for _,pin in pairs(L_pins) do
+	local pins = _pins
+	if (pins ~= nil) then
+		for _,pin in pairs(pins) do
 			ReclaimPin(pin)
 		end
 	end
-	if (nearbyNPCs == nil) then
---		X4D.Log:Warning{"OnNearbyNPCsChanged", "nearbyNPCs == nil, not creating pins"}
-		return
-	end
-	_lastPinPipWidth = _maxPipWidth
+
 	local sequence = 0
 	local pins = { }
-	nearbyNPCs:ForEach(function (npc)
-		if (not _gameNotReady) then
+
+	local nearbyNPCs = X4D.NPCs.NearbyNPCs()
+	if (nearbyNPCs ~= nil) then
+		-- X4D.Log:Debug("Enumerating Nearby NPCs", "MiniMap")
+		nearbyNPCs:ForEach(function (npc)
 			sequence = sequence + 1
 			local pin = ConvertNPCToPin(npc, sequence, _currentMap)
 			if (pin ~= nil) then
-				table.insert(pins, pin)
-			-- NOTE: unlike POI pins, NPC pins should always resolve non-nil (not game controlled), thus, no retry logic when nil is returned (since it's a valid case)
-			-- elseif (_gameNotReady) then
-			-- 	ScheduleUpdateForNPCPins()
-			-- 	X4D.Log:Warning("RecalculateMiniMapPinsAsync - game was not ready for ConvertNPCToPin call sequence #"..sequence)
-			-- 	return
-			else
-				sequence = sequence - 1 -- ensure we use correct pipcache slot on next NPC, since some NPCs may not be rendered
+				pins["pip:"..sequence] = pin
 			end
-		end
-	end)
+		end)
+	end
 
 	-- TODO: perform this only once when map changes, before processing NPCs, if we then record "start sequence #" from POIs processed we can perform NPC (re-)processing without much concern for the POIs (which should be relatively static for the current map)
 	local poiCount = ZO_WorldMapContainer:GetNumChildren()
@@ -522,6 +508,9 @@ local function OnCurrentMapChangedAsync(timer, state)
 					tile:SetDrawTier(DT_LOW)
 					tile:SetDrawLevel(DL_BELOW)
 					table.insert(_tiles, tile)
+	-- layout tiles
+	-- X4D.Log:Debug("LayoutTiles", "MiniMap")
+	if (map.Tiles ~= nil) then
 				end
 			end
 		end
