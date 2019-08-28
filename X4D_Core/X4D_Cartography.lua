@@ -5,6 +5,8 @@ end
 local X4D = LibStub("X4D")
 X4D.Cartography = X4D_Cartography
 
+X4D_Cartography.IsWorldMapVisible = X4D.Observable(nil) -- when the world map is visible there is functionality we must disable (or enable)
+
 -- current player map, zone and position
 X4D_Cartography.IsSubZone = X4D.Observable(nil) -- current is a 'sub zone' (one in which we have to rely on non-standard mechanisms for map determination)
 X4D_Cartography.MapIndex = X4D.Observable(nil) -- current map index
@@ -33,6 +35,34 @@ if (X4D.Log:IsVerboseEnabled() or X4D.Log:IsDebugEnabled()) then
         X4D_Cartography.ZoneIndex:Observe(function (v) DebugLogObservable("ZoneIndex", v) end)
     end
 end
+
+local function OnIsWorldMapVisibleChanged(isWorldMapVisible)
+    -- while the ZO World Map is visible we want to freeze some state
+    if (not isWorldMapVisible) then
+        X4D_Cartography.IsSubZone:Thaw()
+        X4D_Cartography.MapIndex:Thaw()
+        X4D_Cartography.MapName:Thaw()
+        X4D_Cartography.MapType:Thaw()
+        X4D_Cartography.LocationName:Thaw()
+        X4D_Cartography.ZoneIndex:Thaw()
+        X4D_Cartography.PlayerPosition:Thaw()
+        X4D_Cartography.CurrentLocation:Thaw()
+        X4D_Cartography.CurrentZone:Thaw()
+        X4D_Cartography.CurrentMap:Thaw()
+    else
+        X4D_Cartography.IsSubZone:Freeze()
+        X4D_Cartography.MapIndex:Freeze()
+        X4D_Cartography.MapName:Freeze()
+        X4D_Cartography.MapType:Freeze()
+        X4D_Cartography.LocationName:Freeze()
+        X4D_Cartography.ZoneIndex:Freeze()
+        X4D_Cartography.PlayerPosition:Freeze()
+        X4D_Cartography.CurrentLocation:Freeze()
+        X4D_Cartography.CurrentZone:Freeze()
+        X4D_Cartography.CurrentMap:Freeze()
+    end
+end
+X4D_Cartography.IsWorldMapVisible:Observe(OnIsWorldMapVisibleChanged)
 
 local _currentMapTile
 local _currentLocationName
@@ -167,6 +197,7 @@ end
 
 local function TryUpdateMapState(timer, state)
     local isWorldMapVisible = SCENE_MANAGER:IsShowing("worldMap") or SCENE_MANAGER:IsShowing("gamepad_worldMap")
+    X4D_Cartography.IsWorldMapVisible(isWorldMapVisible)
     if (isWorldMapVisible) then
         -- NOP: do not update state when map is open
         return
