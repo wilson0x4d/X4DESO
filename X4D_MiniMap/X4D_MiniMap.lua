@@ -52,10 +52,11 @@ local _minZoomLevel = 0.1 -- TODO: theoretical max, actual max is determined by 
 local _maxZoomLevel = 1
 local _maxPipWidth = 24
 local _maxPlayerPipWidth = 16
+local DEFAULT_PIP_WIDTH = 20
 
-local _pipcache = { }
-local _pins = { }
 local _lastPinPipWidth = nil
+local _pipcache = { } -- 'pips' are the controls used in-game, they are recycled
+local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than the number of pips in the cache
 
 -- TODO: localize/abstract table keys, I believe these are only valid for an en-US game client
 local _npcTypeToTextureNameLookup = {
@@ -117,7 +118,7 @@ local function ConvertNPCToPin(npc, sequence, map)
 		PIP = pip, 
 		NPC = npc,
 		Texture = textureName,
-		Size = _lastPinPipWidth,
+		Size = DEFAULT_PIP_WIDTH,
 	}
 end
 
@@ -130,8 +131,8 @@ local function ConvertPOIToPin(poi, sequence, map)
 	end
 	if (poi:IsUnit()) then
 		-- TODO: add support for these? does this include group members?
-		X4D.Log:Verbose{"ConvertPOIToPin", sequence, "IsUnit"}
-		poi.__x4d_ignore = true --optimization for next call
+		-- X4D.Log:Verbose{"ConvertWorldMapPinToMiniMapPin !EXCLUDE! IS_UNIT", sequence, poi}
+		-- poi.__x4d_excluded = true
 		return nil
 	end
 	local zoPinType = poi:GetPinType()
@@ -167,45 +168,6 @@ local function ConvertPOIToPin(poi, sequence, map)
 		poi.__x4d_ignore = true --optimization for next call
 		return nil
 	end
-
---	X4D.Log:Warning{"ConvertPOIToPin", sequence, zoPinType, zoPinTexture, size, zoPinData}
---	if (tag == "") then
---		if(poi:IsPOI()) then
---			self:MapPinLookupToPinKey("poi", poi:GetPOIZoneIndex(), poi:GetPOIIndex(), pinKey)
---		elseif(pin:IsLocation()) then
---			self:MapPinLookupToPinKey("loc", poi:GetLocationIndex(), poi:GetLocationIndex(), pinKey)
---		elseif(pin:IsQuest()) then
---			self:MapPinLookupToPinKey("quest", poi:GetQuestIndex(), pinTag, pinKey)
---		elseif(pin:IsAvAObjective()) then
---			self:MapPinLookupToPinKey("ava", poi:GetAvAObjectiveKeepId(), pinTag, pinKey)
---		elseif(pin:IsKeepOrDistrict())  then
---			self:MapPinLookupToPinKey("keep", poi:GetKeepId(), poi:IsUnderAttackPin(), pinKey)
---		elseif(pin:IsImperialCityGate())  then
---			self:MapPinLookupToPinKey("imperialCity", pinType, pinTag, pinKey)
---		elseif(pin:IsMapPing())  then
---			self:MapPinLookupToPinKey("pings", pinType, pinTag, pinKey)
---		elseif(pin:IsKillLocation())  then
---			self:MapPinLookupToPinKey("killLocation", pinType, pinTag, pinKey)
---		elseif(pin:IsFastTravelKeep()) then
---			self:MapPinLookupToPinKey("fastTravelKeep", poi:GetFastTravelKeepId(), poi:GetFastTravelKeepId(), pinKey)
---		elseif(pin:IsFastTravelWayShrine()) then
---			self:MapPinLookupToPinKey("fastTravelWayshrine", pinType, pinTag, pinKey)
---		elseif(pin:IsForwardCamp()) then
---			self:MapPinLookupToPinKey("forwardCamp", pinType, pinTag, pinKey)
---		elseif(pin:IsAvARespawn()) then
---			self:MapPinLookupToPinKey("AvARespawn", pinType, pinTag, pinKey)
---		elseif(pin:IsGroup()) then
---			self:MapPinLookupToPinKey("group", pinType, pinTag, pinKey)
---		elseif(pin:IsRestrictedLink()) then
---			self:MapPinLookupToPinKey("restrictedLink", pinType, pinTag, pinKey)
---		else
---			local customPinData = self.customPins[pinType]
---			if(customPinData) then
---				self:MapPinLookupToPinKey(customPinData.pinTypeString, pinType, pinTag, pinKey)
---			end
---		end
---	end
-
     local pip = _pipcache[sequence]
 	if (pip == nil) then
 		pip = WINDOW_MANAGER:CreateControl(nil, _tileContainer, CT_TEXTURE)
@@ -228,13 +190,16 @@ local function ConvertPOIToPin(poi, sequence, map)
 end
 
 local function ReclaimPin(pin)
-	-- return each texture control back to a pool for re-use
+	-- assume the pin will be left unused in the pool, so hide it
 	pin.PIP:SetHidden(true)
 end
 
-local function LayoutMapPins(state)
-	local pinPipWidth = (_maxPipWidth / _maxZoomLevel) * state.ZoomLevel
-	_lastPinPipWidth = pinPipWidth
+local function LayoutMapPins()
+	-- X4D.Log:Debug("LayoutMapPins", "MiniMap")
+	if (_currentMap == nil) then
+		X4D.Log:Warning("LayoutMapPins - Not Initialized", "MiniMap")
+		return
+	end
 	local pins = _pins
 	for _,pin in pairs(pins) do
 		pin.PIP:SetDimensions(pin.Size or pinPipWidth, pin.Size or pinPipWidth)
@@ -249,10 +214,8 @@ local function LayoutMapPins(state)
 	end
 end
 
-local ScheduleUpdateForPOIPins = nil
-
-local function RecalculateMiniMapPinsAsync()
-	local nearbyNPCs = X4D.NPCs.NearbyNPCs()
+function RebuildMiniMapPins()
+	-- X4D.Log:Debug("RebuildMiniMapPins")
 
 	_gameNotReady = false
 
@@ -308,7 +271,7 @@ local function RecalculateMiniMapPinsAsync()
 	end
 
 	_pins = pins
-	LayoutMapPins(_zoomPanState)
+	LayoutMapPins()
 end
 
 local function ResetWorldMapPinExclusions()
@@ -354,34 +317,24 @@ local function UpdatePlayerPip(heading)
 	end
 end 
 
-local function UpdatePlayerPositionLabel()
-	if (_playerPositionLabel ~= nil) then
-		local playerPositionString = string.format("(%.02f,%.02f)",
-			(_playerX or 1) * 100, 
-			(_playerY or 1) * 100)
-		_playerPositionLabel:SetText(playerPositionString)
+local function OnMapNameChanged(mapName)
+	if (_mapNameLabel ~= nil) then
+		_mapNameLabel:SetText(mapName)
+	else
+		X4D.Log:Warning("OnMapNameChanged - Label Not Ready", "MiniMap")
 	end
 end
 
-local function UpdateMapNameLabel()
-	local map = _currentMap
-	if (map ~= nil and _mapNameLabel ~= nil) then
-		_mapNameLabel:SetText(map.MapName)
-	end
-end
-
-local function UpdateLocationNameLabel(v)
-	if (v == nil) then
-		v = GetPlayerLocationName()
-	end
+local function OnLocationNameChanged(locationName)
 	if (_locationNameLabel ~= nil) then
-		if (_currentMap ~= nil and v ~= _currentMap.MapName) then
-			_locationNameLabel:SetText(v)
-		else
-			_locationNameLabel:SetText("")
-		end
+		_locationNameLabel:SetText(locationName)
+	else
+		X4D.Log:Warning("OnLocationNameChanged - Label Not Ready", "MiniMap")
 	end
 end
+
+	end
+	end
 
 local _lastPlayerPipWidth = 0
 local function UpdateZoomPanState(timer, state)
@@ -482,21 +435,26 @@ local function StartWorldMapController()
 	end
 end
 
-X4D.Cartography.PlayerPosition:Observe(function(v)
-	_playerX = v.X
-	_playerY = v.Y
-	_playerH = v.Heading
-	_cameraH = v.CameraHeading
+local function OnPlayerPositionChanged(playerPosition)
+	-- X4D.Log:Debug{"OnPlayerPositionChanged", v}
+	_playerX = playerPosition.X
+	_playerY = playerPosition.Y
+	_playerH = playerPosition.Heading
+	_cameraH = playerPosition.CameraHeading
 	if (X4D_MiniMap.Settings:Get("UsePlayerHeading")) then
 		UpdatePlayerPip(_playerH)
 	else
 		UpdatePlayerPip(_cameraH)
 	end
-end, 1000/30)
-
-local _customMapScalingFactors = {
-	['porthunding_base'] = 1
-}
+	if (_playerPositionLabel ~= nil) then
+		local playerPositionString = string.format("(%.02f,%.02f)",
+			(playerPosition.X or 1) * 100,
+			(playerPosition.Y or 1) * 100)
+		_playerPositionLabel:SetText(playerPositionString)
+	else
+		X4D.Log:Warning("UpdatePlayerPositionLabel - Label Not Ready", "MiniMap")
+	end
+end
 
 local function OnCurrentMapChangedAsync(timer, state)
 	timer:Stop()
@@ -504,13 +462,14 @@ local function OnCurrentMapChangedAsync(timer, state)
 	if (_minimapWindow == nil or _tileScroll == nil) then
 		X4D.Log:Error("Tile Container not initialized", "MiniMap")
 		return
+	-- X4D.Log:Debug("OnCurrentMapChangedAsync", "MiniMap")
+	if (timer ~= nil) then
+		timer:Stop()
 	end
-	UpdateMapNameLabel()
-	UpdateLocationNameLabel()
+
 	-- release old tiles
 	if (_tiles ~= nil) then
 		for _, tile in pairs(_tiles) do
-			tile:ClearAnchors()
 			tile:SetHidden(true)
 		end
 	end
@@ -565,10 +524,6 @@ local function OnCurrentMapChanged(map)
 		ResetWorldMapPinExclusions()
 end
 
-X4D.Cartography.CurrentMap:Observe(OnCurrentMapChanged)
-X4D.Cartography.MapName:Observe(UpdateMapNameLabel)
-X4D.Cartography.LocationName:Observe(UpdateLocationNameLabel)
-
 local function InitializeMiniMapWindow()
 	_minimapWindow = WINDOW_MANAGER:CreateTopLevelWindow("X4D_MiniMap")
 	X4D_MiniMap.Window = _minimapWindow -- NOTE: so that it can be accessed by X4D_MiniMapPOI
@@ -595,7 +550,7 @@ local function InitializeMiniMapWindow()
 	_tileContainer = WINDOW_MANAGER:CreateControl("X4D_MiniMap_TileContainer", _tileScroll, CT_CONTROL)
 	_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, 0, 0)
 	_playerPip = WINDOW_MANAGER:CreateControl("X4D_MiniMap_playerHeading", _tileContainer, CT_TEXTURE)
-	_playerPip:SetDimensions(_maxPlayerPipWidth, _maxPlayerPipWidth) -- TODO: invert scaling factor and apply when scaling factor changes
+	_playerPip:SetDimensions(DEFAULT_PIP_WIDTH-4, DEFAULT_PIP_WIDTH-4)
 	_playerPip:SetTexture("EsoUI/Art/MapPins/UI-WorldMapPlayerPip.dds")
 	_playerPip:SetDrawLayer(DL_BACKGROUND)
 	_playerPip:SetDrawTier(DT_HIGH)
@@ -622,12 +577,23 @@ local function InitializeMiniMapWindow()
 	_playerPositionLabel:SetFont(X4D_MINIMAP_SMALLFONT)
 	_playerPositionLabel:SetAnchor(BOTTOMLEFT, _minimapWindow, BOTTOMLEFT, 8, -8)
 	_playerPositionLabel:SetText("|")
-	UpdatePlayerPositionLabel()
 
 	local scene = X4D.UI.CurrentScene()
 	local isHudScene = scene ~= nil and(scene:GetName() == "hud" or scene:GetName() == "hudui")
 	_minimapWindow:SetHidden(not isHudScene)
 end
+
+local function OnNearbyNPCsChanged(nearbyNPCs)
+	RebuildMiniMapPins()
+end
+
+local function OnCurrentSceneChanged(scene) 
+	-- TODO: is this the preferred way to detect hud visibility?
+	if (_minimapWindow ~= nil) then
+		local isHudScene = scene ~= nil and (scene:GetName() == "hud" or scene:GetName() == "hudui")
+		_minimapWindow:SetHidden(not isHudScene)
+	end
+end	
 
 local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
@@ -673,7 +639,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 		return
 	end
 
-	X4D.Log:Debug( { "OnAddonLoaded", eventCode, addonName }, X4D_MiniMap.NAME)
+	X4D.Log:Debug("EVENT_ADD_ON_LOADED", "MiniMap")
 	local stopwatch = X4D.Stopwatch:StartNew()
 
 	X4D_MiniMap.Settings = X4D.Settings:Open(
@@ -686,28 +652,32 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 		ShowLocationName = true,
 	})
 
+	InitializeSettingsUI()
+
+	InitializeMiniMapWindow()
+
+	-- hooks of interest
+	X4D.Cartography.CurrentMap:Observe(OnCurrentMapChanged)
+	X4D.Cartography.LocationName:Observe(OnLocationNameChanged)
+	X4D.Cartography.MapName:Observe(OnMapNameChanged)
+	X4D.Cartography.PlayerPosition:Observe(OnPlayerPositionChanged)	
+	X4D.NPCs.NearbyNPCs:Observe(OnNearbyNPCsChanged)
+	X4D.UI.CurrentScene:Observe(OnCurrentSceneChanged)	
+
 	-- explicit carto initialization by consumer(s)
 	X4D.Cartography:Initialize()
-	X4D.NPCs.NearbyNPCs:Observe(OnNearbyNPCsChanged)
+	
 
-	InitializeSettingsUI()
-	InitializeMiniMapWindow()
 	StartZoomPanController()
 	StartWorldMapController()
 
 	X4D_MiniMap.Took = stopwatch.ElapsedMilliseconds()
 end)
 
-X4D.UI.CurrentScene:Observe(function(scene)
-	if (_minimapWindow ~= nil) then
-		local isHudScene = scene ~= nil and (scene:GetName() == "hud" or scene:GetName() == "hudui")
-		_minimapWindow:SetHidden(not isHudScene)
-	end
-end)
-
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_PLAYER_ACTIVATED, function()
 	StartZoomPanController()
 	StartWorldMapController()
+	X4D.Log:Debug("EVENT_PLAYER_ACTIVATED", "MiniMap")
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_QUEST_COMPLETE, function (...) 
 	X4D.Log:InformDebugation("EVENT_QUEST_COMPLETE", "MiniMap")
@@ -718,7 +688,6 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_OBJECTIVE_COMPLETED, func
 	ScheduleUpdateForPOIPins()
 end)
 EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ZONE_CHANGED, function()
-	ResetMapPinIgnores()
 	X4D.Log:Debug("EVENT_ZONE_CHANGED", "MiniMap")
 	ResetWorldMapPinExclusions()
 	ScheduleUpdateForPOIPins()
