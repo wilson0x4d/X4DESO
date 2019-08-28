@@ -46,12 +46,13 @@ local _cameraH
 
 local _zoomPanTimer
 local _zoomPanState = { ZoomLevel = 1 } 
-local _mapControllerTimer
 
 local _minZoomLevel = 0.1 -- TODO: theoretical max, actual max is determined by ability to keep minimap window entirely covered with map contents
 local _maxZoomLevel = 1
 local _maxPipWidth = 24
 local _maxPlayerPipWidth = 16
+local _miniMapInteractor
+local _worldMapInteractor
 local DEFAULT_PIP_WIDTH = 20
 
 local _lastPinPipWidth = nil
@@ -404,11 +405,12 @@ local function UpdateZoomPanState(timer, state)
 	end
 end
 
-local function StartZoomPanController()
+local function StartMiniMapInteractor()
 	-- auto-zoom/pan map
-	if (_zoomPanTimer == nil) then
-		_zoomPanTimer = X4D.Async:CreateTimer(UpdateZoomPanState, 1000/16, { ZoomLevel = 1 }, "X4D_MiniMap::ZoomPanController"):Start()
+	if (_miniMapInteractor == nil) then
+		_miniMapInteractor = X4D.Async:CreateTimer(OnInteractWithMiniMap, 1000/16, { }, "X4D_MiniMap::ZoomPanController")
 	end
+	_miniMapInteractor:Start()
 end
 
 local function StartWorldMapController()
@@ -433,6 +435,15 @@ local function StartWorldMapController()
 			UpdatePlayerPositionLabel()
 		end, 250, { }, "X4D_MiniMap::WorldMapController"):Start()
 	end
+end
+		
+local function StartWorldMapInteractor()
+	if (_worldMapInteractor ~= nil) then
+		_worldMapInteractor:Stop()
+	else
+		_worldMapInteractor = X4D.Async:CreateTimer(OnInteractWithWorldMap, 250, { }, "X4D_MiniMap::WorldMapInteractor")
+	end
+	_worldMapInteractor:Start()
 end
 
 local function OnPlayerPositionChanged(playerPosition)
@@ -667,17 +678,17 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 	-- explicit carto initialization by consumer(s)
 	X4D.Cartography:Initialize()
 	
+	StartMiniMapInteractor()
+	StartWorldMapInteractor()
 
-	StartZoomPanController()
-	StartWorldMapController()
 
 	X4D_MiniMap.Took = stopwatch.ElapsedMilliseconds()
 end)
 
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_PLAYER_ACTIVATED, function()
-	StartZoomPanController()
-	StartWorldMapController()
 	X4D.Log:Debug("EVENT_PLAYER_ACTIVATED", "MiniMap")
+	StartMiniMapInteractor()
+	StartWorldMapInteractor()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_QUEST_COMPLETE, function (...) 
 	X4D.Log:InformDebugation("EVENT_QUEST_COMPLETE", "MiniMap")
