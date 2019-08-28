@@ -32,6 +32,7 @@ X4D.Observable = X4D_Observable
 ]]
 function X4D_Observable:CreateObservable(initialValue)
     local _value = initialValue
+    local _isFrozen = nil
     local _timestamp = GetGameTimeMilliseconds()
     local _rateLimit = nil
     local _observers = {}
@@ -53,21 +54,29 @@ function X4D_Observable:CreateObservable(initialValue)
     end
     observable.GetOrSet = function (self, ...)
         if (select("#", ...) > 0) then
-            local v = select(1, ...)
-            local pre = _value
-            if (pre ~= v) then
-                _value = v
-                local now = GetGameTimeMilliseconds()
-                if ((_rateLimit == nil or _timestamp == nil) or ((now - _timestamp) > _rateLimit)) then
-                    _timestamp = now
-					for _,observer in pairs(_observers) do
-						-- TODO: pcall
-						observer(v, pre)
-					end
+            if (not _isFrozen) then
+                local v = select(1, ...)
+                local pre = _value
+                if (pre ~= v) then
+                    _value = v
+                    local now = GetGameTimeMilliseconds()
+                    if ((_rateLimit == nil or _timestamp == nil) or ((now - _timestamp) > _rateLimit)) then
+                        _timestamp = now
+                        for _,observer in pairs(_observers) do
+                            -- TODO: pcall
+                            observer(v, pre)
+                        end
+                    end
                 end
             end
         end
         return _value
+    end
+    observable.Freeze = function (self)
+        _isFrozen = true
+    end
+    observable.Thaw = function (self)
+        _isFrozen = nil
     end
     setmetatable(observable, { __call = observable.GetOrSet })
     return observable
