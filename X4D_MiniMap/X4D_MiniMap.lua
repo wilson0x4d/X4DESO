@@ -467,6 +467,7 @@ local function OnPlayerPositionChanged(playerPosition)
 	end
 end
 
+local _onCurrentMapChangedAsyncTask = nil
 local function OnCurrentMapChangedAsync(timer, state)
 	timer:Stop()
 	local map = state.Map or _currentMap
@@ -529,10 +530,18 @@ local function OnCurrentMapChangedAsync(timer, state)
 		LayoutMapPins(_zoomPanState)
 	end
 end
-local function OnCurrentMapChanged(map)
-	_currentMap = map
-	X4D.Async:CreateTimer(OnCurrentMapChangedAsync, 1, { Map = map }, "X4D_MiniMap!OnCurrentMapChanged"):Start()
+local function OnCurrentMapChanged(map)	
+	if (_currentMap ~= map) then
+		_currentMap = map
 		ResetWorldMapPinExclusions()
+		ScheduleUpdateForPOIPins()
+		if (_onCurrentMapChangedAsyncTask == nil) then
+			_onCurrentMapChangedAsyncTask = X4D.Async:CreateTimer(OnCurrentMapChangedAsync, 250, { }, "X4D_MiniMap!OnCurrentMapChanged")
+		else
+			_onCurrentMapChangedAsyncTask:Stop()
+		end
+		_onCurrentMapChangedAsyncTask:Start()
+	end
 end
 
 local function InitializeMiniMapWindow()
