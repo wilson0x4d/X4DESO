@@ -311,7 +311,8 @@ local function RecalculateMiniMapPinsAsync()
 	LayoutMapPins(_zoomPanState)
 end
 
-local function ResetMapPinIgnores()
+local function ResetWorldMapPinExclusions()
+	-- NOTE: this ensures that when we change the current map, zone, location, OR when we detect unexpected game state/etc we attempt to create state for all "ZO World Map Pins" (aveoi 'false exclusions' due to caching)
 	local poiCount = ZO_WorldMapContainer:GetNumChildren()
 	for poiIndex=1,poiCount do
 		local worldMapContainerChild = ZO_WorldMapContainer:GetChild(poiIndex)
@@ -561,6 +562,7 @@ end
 local function OnCurrentMapChanged(map)
 	_currentMap = map
 	X4D.Async:CreateTimer(OnCurrentMapChangedAsync, 1, { Map = map }, "X4D_MiniMap!OnCurrentMapChanged"):Start()
+		ResetWorldMapPinExclusions()
 end
 
 X4D.Cartography.CurrentMap:Observe(OnCurrentMapChanged)
@@ -708,12 +710,16 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_PLAYER_ACTIVATED, functio
 	StartWorldMapController()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_QUEST_COMPLETE, function (...) 
+	X4D.Log:InformDebugation("EVENT_QUEST_COMPLETE", "MiniMap")
 	ScheduleUpdateForPOIPins()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_OBJECTIVE_COMPLETED, function (...) 
+	X4D.Log:Debug("EVENT_OBJECTIVE_COMPLETED", "MiniMap")
 	ScheduleUpdateForPOIPins()
 end)
 EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ZONE_CHANGED, function()
 	ResetMapPinIgnores()
+	X4D.Log:Debug("EVENT_ZONE_CHANGED", "MiniMap")
+	ResetWorldMapPinExclusions()
 	ScheduleUpdateForPOIPins()
 end)
