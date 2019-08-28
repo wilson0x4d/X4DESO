@@ -146,22 +146,23 @@ local function RefreshCurrentMapAndZoneAndLocation()
             if (mapTiles:Count() == 0) then
                 local numHorizontalTiles, numVerticalTiles = GetMapNumTiles()
                 if (numHorizontalTiles ~= nil and numVerticalTiles ~= nil) then
-                    map.VerticalTileCount = numVerticalTiles
-                    map.HorizontalTileCount = numHorizontalTiles
-                    for i = 1, (map.VerticalTileCount * map.HorizontalTileCount) do
+                    for i = 1, (numVerticalTiles * numHorizontalTiles) do
                         local tileTexture = GetMapTileTexture(i)
                         if (tileTexture ~= nil) then
                             mapTiles:Add(i, tileTexture)
                             if (map.TileWidth == nil or map.TileHeight == nil) then
                                 map.TileWidth, map.TileHeight = X4D_Cartography:GetTileDimensions(tileTexture)
                                 if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
-                                    map.MapWidth = map.TileWidth * map.HorizontalTileCount
-                                    map.MapHeight = map.TileHeight * map.VerticalTileCount
+                                    map.MapWidth = map.TileWidth * numHorizontalTiles
+                                    map.MapHeight = map.TileHeight * numVerticalTiles
                                 end
                             end
                         end
                     end
                 end
+                -- NOTE: this is done last so consumers can know that the above tile allocation is complete
+                map.VerticalTileCount = numVerticalTiles
+                map.HorizontalTileCount = numHorizontalTiles
             end
         end
     end
@@ -189,9 +190,6 @@ local function GetMapIndexByZoneIndex(zoneIndex)
             mapIndex = gcmi
         end
     end
-    if (mapIndex ~= _currentMapIndex) then
-        _currentMapIndex = mapIndex
-    end
     return mapIndex
 end
 
@@ -205,17 +203,19 @@ local function TryUpdateMapState(timer, state)
 
     -- relying on map tile and location name changes to determine if there was a map/zone change before updating relevant properties - not crucial, just an optimization
     local locationName = GetPlayerLocationName()
-    X4D.Cartography.LocationName(locationName)
+    X4D_Cartography.LocationName(locationName)
     local mapTile = GetMapTileTexture()
     if (mapTile ~= nil) then
         mapTile = mapTile:match("maps/[%w%-]+/(.-)_0.dds")
     end
-    if (_currentMapTile ~= mapTile or _currentLocationName ~= locationName) then
+    
+    local zoneIndex = GetCurrentMapZoneIndex()
+    local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
+    if (_currentMapIndex ~= mapIndex or _currentMapTile ~= mapTile or _currentLocationName ~= locationName) then
+        _currentMapIndex = mapIndex
         _currentMapTile = mapTile
         _currentLocationName = locationName
         local mapType = GetMapType()
-        local zoneIndex = GetCurrentMapZoneIndex()
-        local mapIndex = GetMapIndexByZoneIndex(zoneIndex)
         X4D_Cartography.MapType(mapType)
 	    X4D_Cartography.IsSubZone(tonumber(mapIndex) == nil or mapType == 1)
         X4D_Cartography.MapIndex(mapIndex)
@@ -223,18 +223,23 @@ local function TryUpdateMapState(timer, state)
         X4D_Cartography.MapName(GetMapName())
         -- NOTE: this MUST ALWAYS be done last
         RefreshCurrentMapAndZoneAndLocation()
-    else
-        if (SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED) then
-            CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
-        end
+    end
+
+    --X4D.Log:Debug("TryUpdateMapState -> ZO_WorldMap_UpdateMap")
+    if (SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED) then
+        -- local mapMode = ZO_WorldMap_GetMode()
+        -- ZO_WorldMap_UpdateMap(mapMode)
+        -- CALLBACK_MANAGER:FireCallbacks("OnWorldMapModeChanged", mapMode)
+        CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged", 1)
     end
 end
 
-local function TryUpdatePlayerState(timer, state)    
+local function TryUpdatePlayerPosition(timer, state)
     local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
     local cameraHeading = GetPlayerCameraHeading()
     local playerStateChecksum = playerX + playerY + playerHeading + cameraHeading
     if (state.Checksum ~= playerStateChecksum) then
+        -- X4D.Log:Debug("TryUpdatePlayerPosition", "MiniMap")
         state.Checksum = playerStateChecksum
         X4D_Cartography.PlayerPosition({
             X = playerX,
@@ -268,10 +273,10 @@ function X4D_Cartography:Initialize()
         _private_texture = tex
     end
     if (_mapTimer == nil) then
-        _mapTimer = X4D.Async:CreateTimer(TryUpdateMapState):Start(250, {}, "X4D_Cartography::TryUpdateMapState")
+        _mapTimer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/10, {}, "X4D_Cartography::TryUpdateMapState")
     end
     if (_playerTimer == nil) then
-        _playerTimer = X4D.Async:CreateTimer(TryUpdatePlayerState):Start(1000/30, {}, "X4D_Cartography::TryUpdatePlayerState")
+        _playerTimer = X4D.Async:CreateTimer(TryUpdatePlayerPosition):Start(1000/20, {}, "X4D_Cartography::TryUpdatePlayerPosition")
     end
 end
 
