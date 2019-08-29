@@ -45,9 +45,9 @@ local _playerX, _playerY, _playerH = 0, 0, 0
 local _cameraH
 
 local _miniMapInteractor
-local _worldMapInteractor
 
-local DEFAULT_PIP_WIDTH = 20
+local DEFAULT_PIP_WIDTH = 30
+local PLAYER_PIP_WIDTH = 15
 
 local _pipcache = { } -- 'pips' are the controls used in-game, they are recycled
 local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than the number of pips in the cache
@@ -55,6 +55,7 @@ local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than t
 -- TODO: localize/abstract table keys, I believe these are only valid for an en-US game client
 local _npcTypeToTextureNameLookup = {
 	["UNKNOWN"] = "esoui/art/progression/progression_tabicon_backup_active.dds",
+	
 	-- NPCs 
 	["Vendor"] = "EsoUI/Art/Icons/ServiceMapPins/servicepin_vendor.dds",
 	["Banker"] = "EsoUI/Art/Icons/ServiceMapPins/servicepin_bank.dds",
@@ -78,108 +79,55 @@ local _npcTypeToTextureNameLookup = {
 	["Mystic"] = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_craftbag_alchemy.dds",
 	["Leatherworker"] = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_apparel.dds",
 	["Grocer"] = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_craftbag_provisioning.dds",
-
 	["Chef"] = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_craftbag_provisioning.dds",
 
 	[""] = "EsoUI/Art/Vendor/tabIcon_mounts_down.dds",
 }
 
-local function ConvertNPCToPin(npc, sequence, map)
-	local textureName = _npcTypeToTextureNameLookup[npc.Type] or _npcTypeToTextureNameLookup["UNKNOWN"]
+local _nextPipCacheId = 1
 
-	-- every "X4D MiniMap Pin" has a corresponding texture, currently loaded into a single CT_TEXTURE control
-    local pip = _pipcache["pip:"..sequence]
+local function ResetPipCache()
+	_nextPipCacheId = 1
+end
+
+local function GetNextPipCacheId()
+	local result = _nextPipCacheId
+	_nextPipCacheId = _nextPipCacheId + 1
+	return result
+end
+
+local function CreateMiniMapPin(texture)
+	local id = GetNextPipCacheId()
+    local pip = _pipcache["pip:"..id]
 	if (pip == nil) then
 		pip = WINDOW_MANAGER:CreateControl(nil, _tileContainer, CT_TEXTURE)
 		pip:SetDrawLayer(DL_BACKGROUND)
 		pip:SetDrawTier(DT_MEDIUM)
 		pip:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
-		_pipcache["pip:"..sequence] = pip
+		_pipcache["pip:"..id] = pip
 	end
 	-- NOTE: just because we're using a cached pip does not mean it has the state we require
-	pip:SetTexture(textureName)
+	pip:SetTexture(texture)
 	pip:SetDimensions(DEFAULT_PIP_WIDTH, DEFAULT_PIP_WIDTH) -- TODO: reset dimensions whenever zoom-level/position changes?
-	pip:ClearAnchors()
-	pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (npc.Position.Y * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
-	pip:SetHidden(false)
-
 	return {
-		PIP = pip, 
-		NPC = npc,
-		Texture = textureName,
-		Size = DEFAULT_PIP_WIDTH,
+		PIP = pip,
+		Texture = texture,
+		Size = DEFAULT_PIP_WIDTH
 	}
 end
 
-local ScheduleUpdateForPOIPins = nil
-
-local function ConvertWorldMapPinToMiniMapPin(poi, sequence, map)
-	-- NOTE: `poi` == `m_pin` from worldmap
-
-	if (poi.m_Control ~= nil and poi.m_Control:IsControlHidden()) then
-		--X4D.Log:Information{"ConvertWorldMapPinToMiniMapPin !SKIP! POI HIDDEN", sequence}
-		return nil
+local function ConvertNPCToPin(npc, map)
+	local textureName = _npcTypeToTextureNameLookup[npc.Type] or _npcTypeToTextureNameLookup["UNKNOWN"]
+	local pin = CreateMiniMapPin(textureName)
+	if (pin ~= nil) then
+		pin.NPC = npc
+		local pip = pin.PIP
+		pip:ClearAnchors()
+		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (npc.Position.Y * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+		pip:SetHidden(false)
 	end
 
-	if (poi:IsUnit()) then
-		-- TODO: add support for these? does this include group members?
-		-- X4D.Log:Verbose{"ConvertWorldMapPinToMiniMapPin !EXCLUDE! IS_UNIT", sequence, poi}
-		-- poi.__x4d_excluded = true
-		return nil
-	end
-
-	-- NOTE: X4D_MiniMap injects this member into POI because POI 
-	if (poi.m_PinData == nil or poi.m_PinData.m_PinType ~= poi.m_PinType) then
-		-- try to resolve ZO Pin Type
-		local zoPinType = poi.m_PinType
-		if (zoPinType == nil) then
-			poi.m_PinData = nil
-			X4D.Log:Error{"ConvertWorldMapPinToMiniMapPin !SKIP! NO_PIN_TYPE", sequence, poi}
-			-- if there was no pin type set on the control, schedule an update
-			ScheduleUpdateForPOIPins()
-			return nil
-		end
-
-		local zoPinData = ZO_MapPin.PIN_DATA[zoPinType]
-		zoPinData.m_PinType = poi.m_PinType
-		poi.m_PinData = zoPinData
-		if (zoPinData == nil) then
-			-- NOTE: this is not a scenario for deferred refresh, because this should never happen
-			X4D.Log:Error{"ConvertWorldMapPinToMiniMapPin !SKIP! NO_DATA", sequence, poi}
-			return nil
-		end
-
-		zoPinData.size = zoPinData.size or zoPinData.minSize or 20
-	end
-	if (poi.m_PinTag == nil or poi.m_PinData == nil or poi.m_PinData.texture == nil or poi.m_PinData.size == nil) then
-		-- failed to look up required pin data
-		X4D.Log:Verbose{"ConvertWorldMapPinToMiniMapPin !SKIP! BAD_PIN_DATA", sequence, poi}
-		return nil
-	end
-	local pip = _pipcache["pip:"..sequence]
-	if (pip == nil) then
-		pip = WINDOW_MANAGER:CreateControl(nil, _tileContainer, CT_TEXTURE)
-		_pipcache["pip:"..sequence] = pip
-		pip:SetDrawLayer(DL_BACKGROUND)
-		pip:SetDrawTier(DT_MEDIUM)
-		pip:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
-	end
-	-- NOTE: just because we're using a cached pip does not mean it has the state we require
-	local zoPinTexture = poi.m_PinData.texture
-	if (type(zoPinTexture) == "function") then
-		zoPinTexture = zoPinTexture(poi)
-	end
-	pip:SetTexture(zoPinTexture)
-	pip:SetDimensions(poi.m_PinData.size, poi.m_PinData.size) -- TODO: reset dimensions whenever soom-level/position changes?
-	pip:ClearAnchors()
-	pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (poi.normalizedX * map.MapWidth) - (poi.m_PinData.size/2), (poi.normalizedY * map.MapHeight) - (poi.m_PinData.size/2))
-	pip:SetHidden(false)
-	return {
-		PIP = pip,
-		POI = poi,
-		Texture = poi.m_PinData.texture,
-		Size = poi.m_PinData.size,
-	}
+	return pin
 end
 
 local function ReclaimPin(pin)
@@ -206,7 +154,7 @@ local function LayoutMapPins()
 				pin.PIP:SetHidden(true)
 			end
 		elseif (pin.POI ~= nil) then
-			if (pin.POI.normalizedX ~= nil) then
+			if (pin.POI.normalizedX ~= nil and pin.POI.normalizedY ~= nil) then
 				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.POI.normalizedX * _currentMap.MapWidth) - (DEFAULT_PIP_WIDTH/2), (pin.POI.normalizedY * _currentMap.MapHeight) - (DEFAULT_PIP_WIDTH/2))
 				pin.PIP:SetHidden(false)
 			else
@@ -217,6 +165,8 @@ local function LayoutMapPins()
 	end
 end
 
+local RebuildMiniMapPOIPins = nil
+
 function RebuildMiniMapPins()
 	-- X4D.Log:Debug("RebuildMiniMapPins")
 
@@ -224,6 +174,8 @@ function RebuildMiniMapPins()
 		X4D.Log:Warning("RebuildMiniMapPins - `_currentMap` was not set yet", "MiniMap")
 		return
 	end
+
+	ResetPipCache()
 
 	-- reclaim pin controls
 	local pins = _pins
@@ -233,54 +185,57 @@ function RebuildMiniMapPins()
 		end
 	end
 
-	local sequence = 0
 	local pins = { }
 
+	X4D.Log:Verbose("Rebuilding MiniMap NPC Pins", "MiniMap")
+	local npcIndex = 0 -- TODO: use npc name as pin key
 	local nearbyNPCs = X4D.NPCs.NearbyNPCs()
 	if (nearbyNPCs ~= nil) then
-		-- X4D.Log:Debug("Enumerating Nearby NPCs", "MiniMap")
 		nearbyNPCs:ForEach(function (npc)
-			sequence = sequence + 1
-			local pin = ConvertNPCToPin(npc, sequence, _currentMap)
+			local pin = ConvertNPCToPin(npc, _currentMap)
 			if (pin ~= nil) then
-				pins["pip:"..sequence] = pin
+				npcIndex = npcIndex + 1
+				pins["npc:"..npcIndex] = pin
 			end
 		end)
 	end
 
-	-- TODO: perform this only once when map changes, before processing NPCs, if we then record "start sequence #" from POIs processed we can perform NPC (re-)processing without much concern for the POIs (which should be relatively static for the current map)
-	local poiCount = ZO_WorldMapContainer:GetNumChildren()
-	if (poiCount > 0) then
-		-- X4D.Log:Debug("Enumerating POIs", "MiniMap")
-		for poiIndex=1,poiCount do
-			local worldMapContainerChild = ZO_WorldMapContainer:GetChild(poiIndex)
-			if (worldMapContainerChild.m_Pin ~= nil) then
-				sequence = sequence + 1
-				local pin = ConvertWorldMapPinToMiniMapPin(worldMapContainerChild.m_Pin, sequence, _currentMap)
-				if (pin ~= nil) then
-					pins["pip:"..sequence] = pin
-				end
-			end
-		end
-	end
+	X4D.Log:Verbose("Rebuilding MiniMap POI Pins", "MiniMap")
+	RebuildMiniMapPOIPins(pins, _currentMap)
 
 	_pins = pins
 	LayoutMapPins()
 end
 
-local function ResetWorldMapPinExclusions()
-	-- NOTE: this ensures that when we change the current map, zone, location, OR when we detect unexpected game state/etc we attempt to create state for all "ZO World Map Pins" (aveoi 'false exclusions' due to caching)
-	local poiCount = ZO_WorldMapContainer:GetNumChildren()
-	for poiIndex=1,poiCount do
-		local worldMapContainerChild = ZO_WorldMapContainer:GetChild(poiIndex)
-		if (worldMapContainerChild ~= nil and worldMapContainerChild.m_Pin ~= nil) then
-			worldMapContainerChild.m_Pin.__x4d_excluded = nil
-		end
-	end	
+local function ConvertPOIMapInfoToPin(poi, map)	
+	local pin = CreateMiniMapPin(poi.texture)
+	if (pin ~= nil) then
+		pin.POI = poi
+		local pip = pin.PIP
+		pip:ClearAnchors()
+		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (poi.normalizedX * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (poi.normalizedY * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+		pip:SetHidden(false)
+	end
+	return pin
+end
+
+RebuildMiniMapPOIPins = function(pins, map)
+	-- X4D.Log:Verbose("RebuildMiniMapPOIPins", "MiniMap")
+	local zoneIndex = GetCurrentMapZoneIndex()
+	local poiCount = GetNumPOIs(zoneIndex)
+	for poiIndex = 1, poiCount do
+		local normalizedX, normalizedY, pinType, texture, isShownInCurrentMap, linkedCollectibleIsLocked, isDiscovered, isNearby = GetPOIMapInfo(zoneIndex, poiIndex)
+		local pin = ConvertPOIMapInfoToPin({
+			normalizedX = normalizedX,
+			normalizedY = normalizedY,
+			texture = texture
+		}, map)		
+		pins["poi:"..poiIndex] = pin
+	end
 end
 
 local _timerForScheduledUpdatePOIPins = nil
-ScheduleUpdateForPOIPins = function (delayMilliseconds)
+local ScheduleUpdateForPOIPins = function (delayMilliseconds)
 	if (delayMilliseconds == nil) then
 		delayMilliseconds = 500
 	end
@@ -360,8 +315,8 @@ local function OnInteractWithMiniMap(timer, state)
 	_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY) -- TODO: need to interpolate
 
 	-- X4D.Log:Debug("LayoutPlayerPip", "MiniMap")
-	local playerPipX = (offsetX + _centerX - (DEFAULT_PIP_WIDTH / 2))
-	local playerPipY = (offsetY + _centerY - (DEFAULT_PIP_WIDTH / 2))
+	local playerPipX = (offsetX + _centerX - (PLAYER_PIP_WIDTH / 2))
+	local playerPipY = (offsetY + _centerY - (PLAYER_PIP_WIDTH / 2))
 	_playerPip:ClearAnchors()
 	_playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, playerPipX, playerPipY) -- TODO: need to interpolate
 end
@@ -372,58 +327,6 @@ local function StartMiniMapInteractor()
 		_miniMapInteractor = X4D.Async:CreateTimer(OnInteractWithMiniMap, 1000/16, { }, "X4D_MiniMap::ZoomPanController")
 	end
 	_miniMapInteractor:Start()
-end
-
-local _worldMapVisibleTime = 0
-local function OnInteractWithWorldMap(timer, state)
-	if (_playerX == 0 or _playerY == 0) then
-		-- interesting; we do this to gate against default/unintiialized 
-		--		  values, but, we don't do this between map changes.
-		return
-	end
-
-	-- NOTE: do not interact with "ZO World Map" if user has it open
-	local ts = GetGameTimeMilliseconds()
-	local wasWorldMapVisibleRecently = (ts - _worldMapVisibleTime) < 1000
-	if (wasWorldMapVisibleRecently) then
-		return
-	end
-	local isWorldMapVisible = SCENE_MANAGER:IsShowing("worldMap") or SCENE_MANAGER:IsShowing("gamepad_worldMap")
-	if (isWorldMapVisible) then
-		_worldMapVisibleTime = ts
-		return
-	end
-
-	--X4D.Log:Verbose("OnInteractWithWorldMap", "MiniMap")
-
--- 	-- NOTE: it is necessary to interact with "ZO World Map", for now
--- 	if ((_playerX <= 0.04 or _playerX >= 0.96) or (_playerY <= 0.04 or _playerY >= 0.96)) then
--- 		-- NOTE: this is a bit of a kludge, what we *really* should do is 
--- 		--		  enable a task dedicate to firing 
--- 		--		  `CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")`
--- 		--		  every one second. it would only fire when we set a
--- 		--		  dirty flag.
--- --		if (ZO_WorldMap_IsMapChangingAllowed(2)) then
--- 			if (MapZoomOut() == SET_MAP_RESULT_MAP_CHANGED) then
--- 				CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
--- 			end
--- --		end
--- 	else
--- --		if (ZO_WorldMap_IsMapChangingAllowed(1)) then
--- 			-- if (ProcessMapClick(_playerX, _playerY) == SET_MAP_RESULT_MAP_CHANGED) then
--- 			-- 	CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
--- 			-- end
--- --		end
--- 	end
-end
-		
-local function StartWorldMapInteractor()
-	if (_worldMapInteractor ~= nil) then
-		_worldMapInteractor:Stop()
-	else
-		_worldMapInteractor = X4D.Async:CreateTimer(OnInteractWithWorldMap, 250, { }, "X4D_MiniMap::WorldMapInteractor")
-	end
-	_worldMapInteractor:Start()
 end
 
 local function OnPlayerPositionChanged(playerPosition)
@@ -492,24 +395,25 @@ local function OnCurrentMapChangedAsync(timer, state)
 			for tileCol = 0,(map.HorizontalTileCount - 1) do
 				local tileIndex = (tileRow * map.HorizontalTileCount) + (tileCol + 1)
 				local tileFilename = map.Tiles[tileIndex]
+				
 				local tile = WINDOW_MANAGER:GetControlByName("TILE" .. tileIndex)
 				if (tile == nil) then
 					tile = WINDOW_MANAGER:CreateControl("TILE" .. tileIndex, _tileContainer, CT_TEXTURE)
+					tile:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
+					tile:SetDrawLayer(DL_BACKGROUND)
+					tile:SetDrawTier(DT_LOW)
+					tile:SetDrawLevel(DL_BELOW)
 				end
-				tile:SetTexture(tileFilename)
-				tile:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
-				tile:SetDimensions(map.TileWidth, map.TileHeight)
+				table.insert(tiles, tile)
 				tile:ClearAnchors()
 				tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, tileCol * map.TileWidth, tileRow * map.TileHeight)
-				tile:SetDrawLayer(DL_BACKGROUND)
-				tile:SetDrawTier(DT_LOW)
-				tile:SetDrawLevel(DL_BELOW)
-				table.insert(tiles, tile)
+				tile:SetTexture(tileFilename)
+				tile:SetDimensions(map.TileWidth, map.TileHeight)
 				tile:SetHidden(false)
 			end
 		end
 		_tiles = tiles
-		
+
 		OnInteractWithMiniMap(_miniMapInteractor, {})
 		-- RebuildMiniMapPins()
 		-- LayoutMapPins()
@@ -518,8 +422,7 @@ end
 local function OnCurrentMapChanged(map)	
 	if (_currentMap ~= map) then
 		_currentMap = map
-		ResetWorldMapPinExclusions()
-		ScheduleUpdateForPOIPins()
+		-- ScheduleUpdateForPOIPins()
 		if (_onCurrentMapChangedAsyncTask == nil) then
 			_onCurrentMapChangedAsyncTask = X4D.Async:CreateTimer(OnCurrentMapChangedAsync, 250, { }, "X4D_MiniMap!OnCurrentMapChanged")
 		else
@@ -555,7 +458,7 @@ local function InitializeMiniMapWindow()
 	_tileContainer = WINDOW_MANAGER:CreateControl("X4D_MiniMap_TileContainer", _tileScroll, CT_CONTROL)
 	_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, 0, 0)
 	_playerPip = WINDOW_MANAGER:CreateControl("X4D_MiniMap_playerHeading", _tileContainer, CT_TEXTURE)
-	_playerPip:SetDimensions(DEFAULT_PIP_WIDTH-4, DEFAULT_PIP_WIDTH-4)
+	_playerPip:SetDimensions(PLAYER_PIP_WIDTH, PLAYER_PIP_WIDTH)
 	_playerPip:SetTexture("EsoUI/Art/MapPins/UI-WorldMapPlayerPip.dds")
 	_playerPip:SetDrawLayer(DL_BACKGROUND)
 	_playerPip:SetDrawTier(DT_HIGH)
@@ -672,22 +575,15 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 	-- explicit carto initialization by consumer(s)
 	X4D.Cartography:Initialize()
 	
-	StartMiniMapInteractor()
-	StartWorldMapInteractor()
-
-	-- RebuildMiniMapPins()
-
 	X4D_MiniMap.Took = stopwatch.ElapsedMilliseconds()
 end)
 
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_PLAYER_ACTIVATED, function()
 	X4D.Log:Debug("EVENT_PLAYER_ACTIVATED", "MiniMap")
 	StartMiniMapInteractor()
-	StartWorldMapInteractor()
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_QUEST_COMPLETE, function (...) 
-	X4D.Log:InformDebugation("EVENT_QUEST_COMPLETE", "MiniMap")
-	ScheduleUpdateForPOIPins()
+	X4D.Log:Debug("EVENT_QUEST_COMPLETE", "MiniMap")
 end)
 EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_OBJECTIVE_COMPLETED, function (...) 
 	X4D.Log:Debug("EVENT_OBJECTIVE_COMPLETED", "MiniMap")
@@ -695,6 +591,33 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_OBJECTIVE_COMPLETED, func
 end)
 EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ZONE_CHANGED, function()
 	X4D.Log:Debug("EVENT_ZONE_CHANGED", "MiniMap")
-	ResetWorldMapPinExclusions()
 	ScheduleUpdateForPOIPins()
 end)
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_POIS_INITIALIZED, function(...)
+	X4D.Log:Debug("EVENT_POIS_INITIALIZED", "MiniMap")
+	ScheduleUpdateForPOIPins()
+end)
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_POI_DISCOVERED, function(...)
+	X4D.Log:Debug("EVENT_POI_DISCOVERED", "MiniMap")
+	ScheduleUpdateForPOIPins()
+end)
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_POI_UPDATED, function(...)
+	X4D.Log:Debug("EVENT_POI_UPDATED", "MiniMap")
+	ScheduleUpdateForPOIPins()
+end)
+
+
+-- EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_OBJECTIVE_COMPLETED, function (...) 
+-- 	X4D.Log:Information("EVENT_OBJECTIVE_COMPLETED", "MiniMap")
+-- 	ScheduleUpdateForPOIPins()
+-- end)
+--[[
+
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_CADWELL_PROGRESSION_LEVEL_CHANGED, function(...)
+	X4D.Log:Information("EVENT_CADWELL_PROGRESSION_LEVEL_CHANGED", "MiniMap")
+end)
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ZONE_UPDATE, function(...)
+	X4D.Log:Information("EVENT_ZONE_UPDATE", "MiniMap")
+end)
+
+]]
