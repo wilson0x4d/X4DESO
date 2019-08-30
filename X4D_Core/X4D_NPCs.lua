@@ -61,7 +61,7 @@ X4D_NPCs.CurrentNPC = X4D.Observable(nil) -- NOTE: when another module detects i
 local ScheduleRefreshNearbyNPCs = nil
 
 local function IsNPCNearby(npc, key)
-	local result = npc ~= nil and npc.MapId == _currentMapId and npc.ZoneIndex == _currentZoneIndex
+	local result = npc ~= nil and npc.MapId == _currentMapId --and npc.ZoneIndex == _currentZoneIndex
 	-- if (result) then
 	-- 	X4D.Log:Debug{"IsNPCNearBy? Yes =>", npc}
 	-- end
