@@ -72,7 +72,7 @@ local function RefreshNearbyNPCs()
 	X4D_NPCs.NearbyNPCs(nearby)
 end
 
--- this is basically a sync->async debounce for `RefreshNearbyNPCs`. could be leaner, yes.
+-- this is basically a debounce for `RefreshNearbyNPCs`. could be leaner, yes.
 local _timerForScheduledUpdateNearbyNPCs = nil
 ScheduleRefreshNearbyNPCs = function(delayMilliseconds)
 	if (delayMilliseconds == nil) then
@@ -172,12 +172,12 @@ function X4D_NPCs:Where(predicate, silence)
 	return self.DB:Where(predicate, silence)
 end
 
-function X4D_NPCs:UpdatePosition(entity, mapId, zoneIndex)
+function X4D_NPCs:UpdatePosition(entity, mapId, zoneIndex, position)
 	entity.MapId = mapId or _currentMapId
 	entity.ZoneIndex = zoneIndex or _currentZoneIndex
 	-- TODO: because NPCs move it would be better to track a list of unique positions (in addition to the 'last seen at' position recorded here)
-	entity.Position = X4D.Cartography.PlayerPosition()
-	ScheduleRefreshNearbyNPCs(15000) -- NOTE: non-critical update
+	entity.Position = position or X4D.Cartography.PlayerPosition()
+	ScheduleRefreshNearbyNPCs()
 end
 
 -- endregion
