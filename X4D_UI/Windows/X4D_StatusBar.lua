@@ -13,6 +13,8 @@ local _private_label
 
 X4D_StatusBar.Panels = {}
 
+X4D_StatusBar.PaddingRight = X4D.Observable(0)
+
 local X4D_STATUSBAR_DEFAULTFONT = "ZoFontGameSmall"
 
 --region X4D_StatusBarPanel
@@ -70,7 +72,7 @@ end
 
 local function UpdateStatusBarPanels(tickCount)
     local leftOffset = 0
-    local rightOffset = 0  
+    local rightOffset = X4D_StatusBar.PaddingRight() or 0  
     local sortIndex = 0
 
     -- sort panels by `DisplayOrder` first

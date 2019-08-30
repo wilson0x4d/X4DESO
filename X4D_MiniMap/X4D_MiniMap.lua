@@ -448,8 +448,9 @@ end
 local function InitializeMiniMapWindow()
 	_minimapWindow = WINDOW_MANAGER:CreateTopLevelWindow("X4D_MiniMap")
 	X4D_MiniMap.Window = _minimapWindow -- NOTE: so that it can be accessed by X4D_MiniMapPOI
-	_minimapWindow:SetDimensions(240, 240) -- TODO: allow resize? affects minimum scaling, may require map recalc as if new map load
-	_minimapWindow:SetAnchor(BOTTOMRIGHT, GuiRoot, BOTTOMRIGHT, -32, -32)
+	_minimapWindow:SetDimensions(300, 240)
+	_minimapWindow:SetAnchor(BOTTOMRIGHT, GuiRoot, BOTTOMRIGHT, -4, -3)
+	X4D.UI.StatusBar.PaddingRight(298)
 	_minimapWindow:SetDrawLayer(DL_BACKGROUND)
 	_minimapWindow:SetDrawTier(DT_LOW)
 	local backgroundImage = WINDOW_MANAGER:CreateControl("X4D_MiniMap_Background", _minimapWindow, CT_TEXTURE)
