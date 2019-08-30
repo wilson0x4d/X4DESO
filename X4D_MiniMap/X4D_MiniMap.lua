@@ -52,33 +52,36 @@ local _pipcache = { } -- 'pips' are the controls used in-game, they are recycled
 local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than the number of pips in the cache
 
 -- TODO: localize/abstract table keys, I believe these are only valid for an en-US game client
-local _npcTypeToTextureNameLookup = {
-	["UNKNOWN"] = "esoui/art/progression/progression_tabicon_backup_active.dds",
-	
+local _npcTypeToTextureLookup = {
+	["UNKNOWN"] = { 
+		Icon = "esoui/art/progression/progression_tabicon_backup_active.dds",
+		ScalingFactor = 1
+	},
+
 	-- NPCs 
-	["Alchemist"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_alchemist.dds",
-	["Armorer"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_heavyarmor.dds",
-	["Banker"] = "EsoUI/Art/Icons/ServiceMapPins/servicepin_bank.dds",
-	["Blacksmith"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_weaponsmith.dds",
-	["Brewer"] = "EsoUI/Art/Crafting/provisioner_indexIcon_beer_down.dds",
-	["Carpenter"] = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_woodworker.dds",
-	["Chef"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_provisioner.dds",
-	["Clothier"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_armorsmith.dds",
-	["Enchanter"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_enchanter.dds",
-	["Fence"] = "EsEsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_fence.dds",
-	["Grocer"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_generalgoods.dds",
-	["Hall Steward"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_hallsteward.dds",
-	["Innkeeper"] = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_consumables.dds",
-	["Leatherworker"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_mediumarmor.dds",
-	["Magus"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_magesguild.dds",
-	["Merchant"] = "EsoUI/Art/Icons/ServiceMapPins/servicepin_vendor.dds",
-	["Moneylender"] = "EsoUI/Art/Icons/ServiceMapPins/servicepin_bank.dds",
-	["Mystic"] = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_arcanist.dds",
-	["Stablemaster"] = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_stablemaster.dds",
-	["Tailor"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_lightarmor.dds",
-	["Weaponsmith"] = "EsoUI/Art//Icons/ServiceTooltipIcons/servicetooltipicon_swords.dds",
-	["Woodworker"] = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_woodworker.dds",
-	["Vendor"] = "EsoUI/Art/Icons/ServiceMapPins/servicepin_vendor.dds",
+	["Alchemist"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_alchemist.dds", ScalingFactor = 1 },
+	["Armorer"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_heavyarmor.dds", ScalingFactor = 1 },
+	["Banker"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_bank.dds", ScalingFactor = 0.75 },
+	["Blacksmith"] = { Icon = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_craftbag_blacksmithing.dds", ScalingFactor = 0.8 },
+	["Brewer"] = { Icon = "EsoUI/Art/Crafting/provisioner_indexIcon_beer_down.dds", ScalingFactor = 1 },
+	["Carpenter"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_woodworker_new.dds", ScalingFactor = 1 },
+	["Chef"] = { Icon = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_craftbag_provisioning.dds", ScalingFactor = 0.75 },
+	["Clothier"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_clothier.dds", ScalingFactor = 0.70 },
+	["Enchanter"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_enchanter.dds", ScalingFactor = 1 },
+	["Fence"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_fence.dds", ScalingFactor = 0.75 },
+	["Grocer"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_generalgoods.dds", ScalingFactor = 1 },
+	["Hall Steward"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_hallsteward.dds", ScalingFactor = 1 },
+	["Innkeeper"] = { Icon = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_consumables.dds", ScalingFactor = 1 },
+	["Leatherworker"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_mediumarmor.dds", ScalingFactor = 1.15 },
+	["Magus"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_magesguild.dds", ScalingFactor = 1 },
+	["Merchant"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_vendor.dds", ScalingFactor = 0.75 },
+	["Moneylender"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_bank.dds", ScalingFactor = 0.75 },
+	["Mystic"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_arcanist.dds", ScalingFactor = 1 },
+	["Stablemaster"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_stable.dds", ScalingFactor = 0.75 },
+	["Tailor"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_lightarmor.dds", ScalingFactor = 1.1 },
+	["Weaponsmith"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_swords.dds", ScalingFactor = 1 },
+	["Woodworker"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_woodworker_new.dds", ScalingFactor = 1 },
+	["Vendor"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_vendor.dds", ScalingFactor = 0.75 },
 
 	-- these still need review
 
@@ -97,7 +100,7 @@ local function GetNextPipCacheId()
 	return result
 end
 
-local function CreateMiniMapPin(texture)
+local function CreateMiniMapPin(texture, size)	
 	local id = GetNextPipCacheId()
     local pip = _pipcache["pip:"..id]
 	if (pip == nil) then
@@ -109,22 +112,24 @@ local function CreateMiniMapPin(texture)
 	end
 	-- NOTE: just because we're using a cached pip does not mean it has the state we require
 	pip:SetTexture(texture)
-	pip:SetDimensions(DEFAULT_PIP_WIDTH, DEFAULT_PIP_WIDTH) -- TODO: reset dimensions whenever zoom-level/position changes?
+	pip:SetDimensions(size, size)
 	return {
 		PIP = pip,
 		Texture = texture,
-		Size = DEFAULT_PIP_WIDTH
+		Size = size
 	}
 end
 
 local function ConvertNPCToPin(npc, map)
-	local textureName = _npcTypeToTextureNameLookup[npc.Type] or _npcTypeToTextureNameLookup["UNKNOWN"]
-	local pin = CreateMiniMapPin(textureName)
+	local texture = _npcTypeToTextureLookup[npc.Type] or _npcTypeToTextureLookup["UNKNOWN"]
+	local pipSize = texture.ScalingFactor * DEFAULT_PIP_WIDTH
+	local pipCenter = pipSize / 2;
+	local pin = CreateMiniMapPin(texture.Icon, pipSize)
 	if (pin ~= nil) then
 		pin.NPC = npc
 		local pip = pin.PIP
 		pip:ClearAnchors()
-		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (npc.Position.Y * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - pipCenter, (npc.Position.Y * map.MapHeight) - pipCenter)
 		pip:SetHidden(false)
 	end
 
@@ -144,11 +149,11 @@ local function LayoutMapPins()
 	end
 	local pins = _pins
 	for _,pin in pairs(pins) do
-		pin.PIP:SetDimensions(DEFAULT_PIP_WIDTH, DEFAULT_PIP_WIDTH)
+		pin.PIP:SetDimensions(pin.Size, pin.Size)
 		pin.PIP:ClearAnchors()
 		if (pin.NPC ~= nil) then
 			if (pin.NPC.Position ~= nil) then
-				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.NPC.Position.X * _currentMap.MapWidth) - (DEFAULT_PIP_WIDTH/2), (pin.NPC.Position.Y * _currentMap.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.NPC.Position.X * _currentMap.MapWidth) - (pin.Size/2), (pin.NPC.Position.Y * _currentMap.MapHeight) - (pin.Size/2))
 				pin.PIP:SetHidden(false)
 			else
 				X4D.Log:Error("LayoutMapPins cannot access `NPC::Position`", "MiniMap")
@@ -156,7 +161,7 @@ local function LayoutMapPins()
 			end
 		elseif (pin.POI ~= nil) then
 			if (pin.POI.normalizedX ~= nil and pin.POI.normalizedY ~= nil) then
-				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.POI.normalizedX * _currentMap.MapWidth) - (DEFAULT_PIP_WIDTH/2), (pin.POI.normalizedY * _currentMap.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.POI.normalizedX * _currentMap.MapWidth) - (pin.Size/2), (pin.POI.normalizedY * _currentMap.MapHeight) - (pin.Size/2))
 				pin.PIP:SetHidden(false)
 			else
 				X4D.Log:Error("LayoutMapPins cannot access `POI::normalizedX`", "MiniMap")
@@ -180,7 +185,7 @@ local X4D_MiniMap_BuildNPCPins = function(pins, map)
 end
 
 local function ConvertPOIMapInfoToPin(poi, map)	
-	local pin = CreateMiniMapPin(poi.texture)
+	local pin = CreateMiniMapPin(poi.texture, 1)
 	if (pin ~= nil) then
 		pin.POI = poi
 		local pip = pin.PIP
@@ -246,7 +251,7 @@ local ScheduleUpdateForPOIPins = function (delayMilliseconds)
 	else
 		_timerForScheduledUpdatePOIPins = X4D.Async:CreateTimer(function (timer, state) 
 			timer:Stop()
-			-- X4D.Log:Debug{"X4D_MiniMap::ScheduleUpdateForPOIPins"}
+			-- X4D.Log:Debug{"X4D_MiniMap::ScheduleUpdateForPOIPins" }
 			X4D_MiniMap_RebuildAllPins()
 		end, delayMilliseconds, {}, "X4D_MiniMap::ScheduleUpdateForPOIPins")
 		_timerForScheduledUpdatePOIPins:Start(delayMilliseconds)
