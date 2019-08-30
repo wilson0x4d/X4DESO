@@ -40,7 +40,6 @@ local _playerPip
 local _centerX, _centerY = 0, 0
 
 local _currentMap
-local _lastPlayerX, _lastPlayerY = 0, 0
 local _playerX, _playerY, _playerH = 0, 0, 0
 local _cameraH
 
@@ -167,13 +166,51 @@ local function LayoutMapPins()
 	end
 end
 
-local RebuildMiniMapPOIPins = nil
+local X4D_MiniMap_BuildNPCPins = function(pins, map)
+	local nearbyNPCs = X4D.NPCs.NearbyNPCs()
+	if (nearbyNPCs ~= nil) then
+		nearbyNPCs:ForEach(function (npc)
+			X4D.Log:Warning(npc, "MiniMap")
+			local pin = ConvertNPCToPin(npc, map)
+			if (pin ~= nil) then
+				pins[npc.Key] = pin
+			end
+		end)
+	end
+end
 
-function RebuildMiniMapPins()
-	-- X4D.Log:Debug("RebuildMiniMapPins")
+local function ConvertPOIMapInfoToPin(poi, map)	
+	local pin = CreateMiniMapPin(poi.texture)
+	if (pin ~= nil) then
+		pin.POI = poi
+		local pip = pin.PIP
+		pip:ClearAnchors()
+		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (poi.normalizedX * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (poi.normalizedY * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+		pip:SetHidden(false)
+	end
+	return pin
+end
+
+local X4D_MiniMap_BuildPOIPins = function(pins, map)
+	-- X4D.Log:Verbose("X4D_MiniMap_BuildPOIPins", "MiniMap")
+	local zoneIndex = GetCurrentMapZoneIndex()
+	local poiCount = GetNumPOIs(zoneIndex)
+	for poiIndex = 1, poiCount do
+		local normalizedX, normalizedY, pinType, texture, isShownInCurrentMap, linkedCollectibleIsLocked, isDiscovered, isNearby = GetPOIMapInfo(zoneIndex, poiIndex)
+		local pin = ConvertPOIMapInfoToPin({
+			normalizedX = normalizedX,
+			normalizedY = normalizedY,
+			texture = texture
+		}, map)		
+		pins["poi:"..poiIndex] = pin
+	end
+end
+
+function X4D_MiniMap_RebuildAllPins()
+	-- X4D.Log:Debug("X4D_MiniMap_RebuildAllPins")
 
 	if (_currentMap == nil) then
-		X4D.Log:Warning("RebuildMiniMapPins - `_currentMap` was not set yet", "MiniMap")
+		X4D.Log:Warning("X4D_MiniMap_RebuildAllPins - `_currentMap` was not set yet", "MiniMap")
 		return
 	end
 
@@ -190,50 +227,13 @@ function RebuildMiniMapPins()
 	local pins = { }
 
 	X4D.Log:Verbose("Rebuilding MiniMap NPC Pins", "MiniMap")
-	local npcIndex = 0 -- TODO: use npc name as pin key
-	local nearbyNPCs = X4D.NPCs.NearbyNPCs()
-	if (nearbyNPCs ~= nil) then
-		nearbyNPCs:ForEach(function (npc)
-			local pin = ConvertNPCToPin(npc, _currentMap)
-			if (pin ~= nil) then
-				npcIndex = npcIndex + 1
-				pins["npc:"..npcIndex] = pin
-			end
-		end)
-	end
+	X4D_MiniMap_BuildNPCPins(pins, _currentMap)
 
 	X4D.Log:Verbose("Rebuilding MiniMap POI Pins", "MiniMap")
-	RebuildMiniMapPOIPins(pins, _currentMap)
+	X4D_MiniMap_BuildPOIPins(pins, _currentMap)
 
 	_pins = pins
 	LayoutMapPins()
-end
-
-local function ConvertPOIMapInfoToPin(poi, map)	
-	local pin = CreateMiniMapPin(poi.texture)
-	if (pin ~= nil) then
-		pin.POI = poi
-		local pip = pin.PIP
-		pip:ClearAnchors()
-		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (poi.normalizedX * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (poi.normalizedY * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
-		pip:SetHidden(false)
-	end
-	return pin
-end
-
-RebuildMiniMapPOIPins = function(pins, map)
-	-- X4D.Log:Verbose("RebuildMiniMapPOIPins", "MiniMap")
-	local zoneIndex = GetCurrentMapZoneIndex()
-	local poiCount = GetNumPOIs(zoneIndex)
-	for poiIndex = 1, poiCount do
-		local normalizedX, normalizedY, pinType, texture, isShownInCurrentMap, linkedCollectibleIsLocked, isDiscovered, isNearby = GetPOIMapInfo(zoneIndex, poiIndex)
-		local pin = ConvertPOIMapInfoToPin({
-			normalizedX = normalizedX,
-			normalizedY = normalizedY,
-			texture = texture
-		}, map)		
-		pins["poi:"..poiIndex] = pin
-	end
 end
 
 local _timerForScheduledUpdatePOIPins = nil
@@ -247,7 +247,7 @@ local ScheduleUpdateForPOIPins = function (delayMilliseconds)
 		_timerForScheduledUpdatePOIPins = X4D.Async:CreateTimer(function (timer, state) 
 			timer:Stop()
 			-- X4D.Log:Debug{"X4D_MiniMap::ScheduleUpdateForPOIPins"}
-			RebuildMiniMapPins()
+			X4D_MiniMap_RebuildAllPins()
 		end, delayMilliseconds, {}, "X4D_MiniMap::ScheduleUpdateForPOIPins")
 		_timerForScheduledUpdatePOIPins:Start(delayMilliseconds)
 	end
@@ -279,11 +279,13 @@ end
 
 local function OnInteractWithMiniMap(timer, state)
 	-- X4D.Log:Debug("OnInteractWithMiniMap", "MiniMap")
-	local map = _currentMap
-	
-	-- these are expected cases, we are effectively waiting for state to pop
-	if (map == nil) then
+
+	if (_currentMap == nil) then
 		-- X4D.Log:Debug("OnInteractWithMiniMap - _currentMap is nil", "MiniMap")
+		return
+	end
+	if (_currentMap.MapWidth == nil or _currentMap.MapHeight == nil) then
+		-- X4D.Log:Debug("OnInteractWithMiniMap - Map Width/Height Unknown", "MiniMap")
 		return
 	end
 	if (_playerX == nil or _playerY == nil) then
@@ -291,27 +293,19 @@ local function OnInteractWithMiniMap(timer, state)
 		return
 	end
 
-	_lastPlayerX = _playerX
-	_lastPlayerY = _playerY
-
-	if (map.MapWidth == nil or map.MapHeight == nil) then
-		-- X4D.Log:Debug("OnInteractWithMiniMap - Map Width/Height Unknown", "MiniMap")
-		return
-	end
-
-	local offsetX = (_playerX * map.MapWidth) - _centerX
-	local offsetY = (_playerY * map.MapHeight) - _centerY
+	local offsetX = (_playerX * _currentMap.MapWidth) - _centerX
+	local offsetY = (_playerY * _currentMap.MapHeight) - _centerY
 
 	-- calc panning position/offsets
-	if (offsetX < 0) then
+	if (offsetX < 0 or offsetX == nil) then
 		offsetX = 0
-	elseif (offsetX > (map.MapWidth - (_centerX * 2))) then
-		offsetX = (map.MapWidth - (_centerX * 2))
+	elseif (offsetX > (_currentMap.MapWidth - (_centerX * 2))) then
+		offsetX = (_currentMap.MapWidth - (_centerX * 2))
 	end
-	if (offsetY < 0) then
+	if (offsetY < 0 or offsetX == nil) then
 		offsetY = 0
-	elseif (offsetY > (map.MapHeight - (_centerY * 2))) then
-		offsetY = (map.MapHeight - (_centerY * 2))
+	elseif (offsetY > (_currentMap.MapHeight - (_centerY * 2))) then
+		offsetY = (_currentMap.MapHeight - (_centerY * 2))
 	end
 	
 	-- X4D.Log:Debug("LayoutTileScroll", "MiniMap")
@@ -354,12 +348,63 @@ local function OnPlayerPositionChanged(playerPosition)
 	end
 end
 
-local _onCurrentMapChangedAsyncTask = nil
-local function OnCurrentMapChangedAsync(timer, state)
-	-- X4D.Log:Debug("OnCurrentMapChangedAsync", "MiniMap")
-	if (timer ~= nil) then
-		timer:Stop()
+local function OnCurrentMapChanged(map)	
+	-- X4D.Log:Debug("OnCurrentMapChanged", "MiniMap")
+	if (_currentMap == map) then
+		return
 	end
+	_currentMap = map	
+	if (_currentMap == nil) then
+		return
+	end
+
+	-- determine if MiniMap UI initialized yet, or defer processing
+	if (_minimapWindow == nil or _tileScroll == nil) then
+		X4D.Log:Error("Tile Container Not Ready", "MiniMap")
+		return
+	end
+
+	-- determine if Tile Dimensions initialized yet, or defer processing
+	if (_currentMap.VerticalTileCount == nil or _currentMap.HorizontalTileCount == nil) then
+		X4D.Log:Error("Tiles Not Ready", "MiniMap")
+		return
+	end
+
+	-- layout tiles
+	-- X4D.Log:Debug("LayoutTiles", "MiniMap")
+	if (map.Tiles == nil) then
+		return
+	end
+
+	-- small optimization to ensure player position is accurate for map
+	_playerX, _playerY, _ = GetMapPlayerPosition("player")
+
+	local offsetX = (_playerX * _currentMap.MapWidth) - _centerX
+	local offsetY = (_playerY * _currentMap.MapHeight) - _centerY
+
+	-- calc panning position/offsets
+	if (offsetX < 0 or offsetX == nil) then
+		offsetX = 0
+	elseif (offsetX > (_currentMap.MapWidth - (_centerX * 2))) then
+		offsetX = (_currentMap.MapWidth - (_centerX * 2))
+	end
+	if (offsetY < 0 or offsetX == nil) then
+		offsetY = 0
+	elseif (offsetY > (_currentMap.MapHeight - (_centerY * 2))) then
+		offsetY = (_currentMap.MapHeight - (_centerY * 2))
+	end
+
+	X4D_MiniMap_RebuildAllPins()
+
+	-- X4D.Log:Debug("LayoutPlayerPip", "MiniMap")
+	local playerPipX = (offsetX + _centerX - (PLAYER_PIP_WIDTH / 2))
+	local playerPipY = (offsetY + _centerY - (PLAYER_PIP_WIDTH / 2))
+	_playerPip:ClearAnchors()
+	_playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, playerPipX, playerPipY) -- TODO: need to interpolate
+
+	-- X4D.Log:Debug("LayoutTileScroll", "MiniMap")
+	_tileContainer:ClearAnchors()
+	_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY) -- TODO: need to interpolate
 
 	-- release old tiles
 	if (_tiles ~= nil) then
@@ -369,70 +414,34 @@ local function OnCurrentMapChangedAsync(timer, state)
 	end
 	_tiles = nil
 
-	-- determine if map has been set yet, or defer processing
-	local map = _currentMap
-	if (map == nil) then
-		X4D.Log:Error("Current Map Not Set", "MiniMap")
-		_onCurrentMapChangedAsyncTask:Start(250)
-		return
-	end
-
-	-- determine if MiniMap UI initialized yet, or defer processing
-	if (_minimapWindow == nil or _tileScroll == nil) then
-		X4D.Log:Error("Tile Container Not Ready", "MiniMap")
-		_onCurrentMapChangedAsyncTask:Start(250)
-		return
-	end
-
-	-- determine if Tile Dimensions initialized yet, or defer processing
-	if (map.VerticalTileCount == nil or map.HorizontalTileCount == nil) then
-		X4D.Log:Error("Tiles Not Ready", "MiniMap")
-		_onCurrentMapChangedAsyncTask:Start(250)
-		return
-	end
-
-	-- layout tiles
-	-- X4D.Log:Debug("LayoutTiles", "MiniMap")
-	if (map.Tiles ~= nil) then
-		local tiles = { }
-		for tileRow = 0,(map.VerticalTileCount - 1) do
-			for tileCol = 0,(map.HorizontalTileCount - 1) do
-				local tileIndex = (tileRow * map.HorizontalTileCount) + (tileCol + 1)
-				local tileFilename = map.Tiles[tileIndex]
-				
-				local tile = WINDOW_MANAGER:GetControlByName("TILE" .. tileIndex)
-				if (tile == nil) then
-					tile = WINDOW_MANAGER:CreateControl("TILE" .. tileIndex, _tileContainer, CT_TEXTURE)
-					tile:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
-					tile:SetDrawLayer(DL_BACKGROUND)
-					tile:SetDrawTier(DT_LOW)
-					tile:SetDrawLevel(DL_BELOW)
-				end
-				table.insert(tiles, tile)
-				tile:ClearAnchors()
-				tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, tileCol * map.TileWidth, tileRow * map.TileHeight)
-				tile:SetTexture(tileFilename)
-				tile:SetDimensions(map.TileWidth, map.TileHeight)
-				tile:SetHidden(false)
+	local tiles = { }
+	for tileRow = 0,(map.VerticalTileCount - 1) do
+		for tileCol = 0,(map.HorizontalTileCount - 1) do
+			local tileIndex = (tileRow * map.HorizontalTileCount) + (tileCol + 1)
+			local tileFilename = map.Tiles[tileIndex]
+			
+			local tile = WINDOW_MANAGER:GetControlByName("TILE" .. tileIndex)
+			if (tile == nil) then
+				tile = WINDOW_MANAGER:CreateControl("TILE" .. tileIndex, _tileContainer, CT_TEXTURE)
+				tile:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
+				tile:SetDrawLayer(DL_BACKGROUND)
+				tile:SetDrawTier(DT_LOW)
+				tile:SetDrawLevel(DL_BELOW)
 			end
+			table.insert(tiles, tile)
+			tile:ClearAnchors()
+			tile:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, tileCol * map.TileWidth, tileRow * map.TileHeight)
+			tile:SetTexture(tileFilename)
+			tile:SetDimensions(map.TileWidth, map.TileHeight)
+			tile:SetHidden(true)
 		end
-		_tiles = tiles
-
-		OnInteractWithMiniMap(_miniMapInteractor, {})
-		-- RebuildMiniMapPins()
-		-- LayoutMapPins()
 	end
-end
-local function OnCurrentMapChanged(map)	
-	if (_currentMap ~= map) then
-		_currentMap = map
-		-- ScheduleUpdateForPOIPins()
-		if (_onCurrentMapChangedAsyncTask == nil) then
-			_onCurrentMapChangedAsyncTask = X4D.Async:CreateTimer(OnCurrentMapChangedAsync, 250, { }, "X4D_MiniMap!OnCurrentMapChanged")
-		else
-			_onCurrentMapChangedAsyncTask:Stop()
+	_tiles = tiles
+
+	if (_tiles ~= nil) then
+		for _, tile in pairs(_tiles) do
+			tile:SetHidden(false)
 		end
-		_onCurrentMapChangedAsyncTask:Start()
 	end
 end
 
@@ -496,7 +505,7 @@ local function InitializeMiniMapWindow()
 end
 
 local function OnNearbyNPCsChanged(nearbyNPCs)
-	RebuildMiniMapPins()
+	X4D_MiniMap_RebuildAllPins()
 end
 
 local function OnCurrentSceneChanged(scene) 
