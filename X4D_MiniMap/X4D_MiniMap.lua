@@ -170,7 +170,7 @@ local X4D_MiniMap_BuildNPCPins = function(pins, map)
 	local nearbyNPCs = X4D.NPCs.NearbyNPCs()
 	if (nearbyNPCs ~= nil) then
 		nearbyNPCs:ForEach(function (npc)
-			X4D.Log:Warning(npc, "MiniMap")
+			-- X4D.Log:Debug(npc, "MiniMap")
 			local pin = ConvertNPCToPin(npc, map)
 			if (pin ~= nil) then
 				pins[npc.Key] = pin
