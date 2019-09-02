@@ -31,7 +31,6 @@ function X4D_Timer:New(callback, interval, state, name)
 	local proto = {
         _id = timerId,
         _timestamp = 0,
---        _memory = 0, -- for diagnostic purposes only, requires retuning of GC to be of any value, and so commented out for Release
 		_enabled = false,
 		_callback = callback or (function(L_timer) self:Stop() end),
 		_interval = interval or DEFAULT_TIMER_INTERVAL,
@@ -66,14 +65,9 @@ function X4D_Timer:Elapsed(expectedId)
 			self:Elapsed(expectedId)
 		end, self._interval)
 	end
---    memory = (collectgarbage("count") - memory)
---    if (memory >= 100 or memory <= -100) then
---        X4D.Log:Debug(self.Name .. " memory delta: " .. (memory * 1024))
---    end
---    self._memory = memory
 
 	if (self._id ~= expectedId) then
-		--X4D.Log:Debug("Timer'"..expectedId.."' was NOT intercepted/cancelled, and may have overlapped with a later event.")
+		X4D.Log:Debug("Timer'"..expectedId.."' was NOT intercepted/cancelled, and may have overlapped with a later event.")
 		return
 	end
 
@@ -126,3 +120,48 @@ setmetatable(X4D_Timer, { __call = X4D_Timer.New })
 function X4D_Async:CreateTimer(callback, interval, state, name)
     return X4D_Timer:New(callback, interval, state, name)
 end
+
+--- generic debounce helper, prevents re-activation of the callback within the specified period
+local _debounces = {}
+function X4D_Async:Debounce(id, debounceTimeMilliseconds, callback)
+	local ts = GetGameTimeMilliseconds()
+	local key = "debounce:"..id
+	local exists = _debounces[key]
+	_debounces[id] = { Timestamp = ts, DebounceTimeMilliseconds = debounceTimeMilliseconds }
+	if ((exists == nil) or ((ts - exists.Timestamp) > debounceTimeMilliseconds)) then
+		callback()
+		return true
+	else
+		return false
+	end
+	-- NOTE: not required for current usage, but, here we scavenge `_debounces` table
+	local scavenged = {}
+	for k,v in ipairs(_debounces) do
+		if ((ts - v.Timestamp) <= v.DebounceTimeMilliseconds) then
+			scavenged[k] = v
+		end
+	end
+	_debounces = scavenged
+end
+
+-- generic deferral helper, mitigates activation of the callback until no new activations within the specified period.
+local _deferrals = {}
+function X4D_Async:Defer(id, deferralTimeMilliseconds, callback, state)
+	local ts = GetGameTimeMilliseconds()
+	local key = "deferral"..id
+	local exists = _deferrals[key]
+	if (exists ~= nil and exists.Timer ~= nil) then
+		exists.Timer:Stop()
+	end
+	_deferrals[key] = {
+		Timer = X4D_Async:CreateTimer(function (timer, L_state)
+			timer:Stop()
+			if (L_state.Timestamp == ts) then
+				_deferrals[L_state.Key] = nil
+				L_state.Callback(L_state.State)
+			end
+		end):Start(deferralTimeMilliseconds, { Key = key, Callback = callback, State = state, Timestamp = ts }, key),
+		Timestamp = ts
+	}
+end
+
