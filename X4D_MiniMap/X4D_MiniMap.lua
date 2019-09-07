@@ -127,10 +127,10 @@ local function ConvertNPCToPin(npc, map)
 	local pin = CreateMiniMapPin(texture.Icon, pipSize)
 	if (pin ~= nil) then
 		pin.NPC = npc
-		local pip = pin.PIP
-		pip:ClearAnchors()
-		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - pipCenter, (npc.Position.Y * map.MapHeight) - pipCenter)
-		pip:SetHidden(false)
+		-- local pip = pin.PIP
+		-- pip:ClearAnchors()
+		-- pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - pipCenter, (npc.Position.Y * map.MapHeight) - pipCenter)
+		-- pip:SetHidden(false)
 	end
 
 	return pin
@@ -188,10 +188,10 @@ local function ConvertPOIMapInfoToPin(poi, map)
 	local pin = CreateMiniMapPin(poi.texture, 1)
 	if (pin ~= nil) then
 		pin.POI = poi
-		local pip = pin.PIP
-		pip:ClearAnchors()
-		pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (poi.normalizedX * map.MapWidth) - (DEFAULT_PIP_WIDTH/2), (poi.normalizedY * map.MapHeight) - (DEFAULT_PIP_WIDTH/2))
-		pip:SetHidden(false)
+		-- local pip = pin.PIP
+		-- pip:ClearAnchors()
+		-- pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (poi.normalizedX * currentMap.MapWidth) - (DEFAULT_PIP_WIDTH/2), (poi.normalizedY * currentMap.MapHeight) - (DEFAULT_PIP_WIDTH/2))
+		-- pip:SetHidden(false)
 	end
 	return pin
 end
@@ -215,7 +215,7 @@ function X4D_MiniMap_RebuildAllPins()
 	-- X4D.Log:Debug("X4D_MiniMap_RebuildAllPins")
 
 	if (_currentMap == nil) then
-		X4D.Log:Warning("X4D_MiniMap_RebuildAllPins - `_currentMap` was not set yet", "MiniMap")
+		X4D.Log:Verbose("X4D_MiniMap_RebuildAllPins - `_currentMap` was not set yet", "MiniMap")
 		return
 	end
 
@@ -231,10 +231,10 @@ function X4D_MiniMap_RebuildAllPins()
 
 	local pins = { }
 
-	X4D.Log:Verbose("Rebuilding MiniMap NPC Pins", "MiniMap")
+	-- X4D.Log:Verbose("Rebuilding MiniMap NPC Pins", "MiniMap")
 	X4D_MiniMap_BuildNPCPins(pins, _currentMap)
 
-	X4D.Log:Verbose("Rebuilding MiniMap POI Pins", "MiniMap")
+	-- X4D.Log:Verbose("Rebuilding MiniMap POI Pins", "MiniMap")
 	X4D_MiniMap_BuildPOIPins(pins, _currentMap)
 
 	_pins = pins
@@ -608,7 +608,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_OBJECTIVE_COMPLETED, func
 	X4D.Log:Debug("EVENT_OBJECTIVE_COMPLETED", "MiniMap")
 	ScheduleUpdateForPOIPins()
 end)
-EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ZONE_CHANGED, function()
+EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ZONE_CHANGED, function()
 	X4D.Log:Debug("EVENT_ZONE_CHANGED", "MiniMap")
 	ScheduleUpdateForPOIPins()
 end)
