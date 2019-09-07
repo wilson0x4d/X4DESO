@@ -67,13 +67,18 @@ X4D_Cartography.IsWorldMapVisible:Observe(OnIsWorldMapVisibleChanged)
 local _currentMapTile
 local _currentLocationName
 
-local _private_texture
 function X4D_Cartography:GetTileDimensions(filename)
-     if (_private_texture == nil) then
-        return nil, nil
-     end
-    _private_texture:SetTexture(filename)
-    return _private_texture:GetTextureFileDimensions()
+    local tex = WINDOW_MANAGER:GetControlByName("X4D_PVT_TEX")
+    if (tex == nil) then
+        tex = WINDOW_MANAGER:CreateControl("X4D_PVT_TEX", GuiRoot, CT_TEXTURE)
+    end
+    tex:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
+    tex:SetTexture(filename)
+    local tx, ty = tex:GetTextureFileDimensions();
+    tex:SetTexture(nil)
+    tex:SetHidden(true)
+    X4D.Log:Debug("GetTileDimensions("..filename..") x="..tx.." y="..ty, "Cartography")
+    return tx, ty
 end
 
 local function RefreshCurrentMapAndZoneAndLocation()
@@ -263,15 +268,6 @@ EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ADD_ON_LOADED, function(
 end)
 
 function X4D_Cartography:Initialize()
-    if (_private_texture == nil) then
-        local tex = WINDOW_MANAGER:GetControlByName("X4D_PVT_TEX")
-        if (tex == nil) then
-            tex = WINDOW_MANAGER:CreateControl("X4D_PVT_TEX", GuiRoot, CT_TEXTURE)
-        end
-        tex:SetHidden(true)
-        tex:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
-        _private_texture = tex
-    end
     if (_mapTimer == nil) then
         _mapTimer = X4D.Async:CreateTimer(TryUpdateMapState):Start(1000/10, {}, "X4D_Cartography::TryUpdateMapState")
     end
