@@ -274,8 +274,6 @@ function X4D_XP.Register()
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_EXPERIENCE_GAIN, OnExperienceGain)
 	EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_LEVEL_UPDATE, OnLevelUpdate)
 
-	-- TODO: EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_CHAMPION_LEVEL_ACHIEVED, OnChampionLevelAcheived)
-	-- TODO: EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_CHAMPION_POINT_UPDATE, OnChampionPointUpdate)
 end
 
 function X4D_XP.Unregister()
@@ -323,4 +321,13 @@ EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_PLAYER_ACTIVATED, function()
 	ResetXPState()
 end)
 
+
+--[[
+TODO:
+
+	-- TODO: EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_CHAMPION_LEVEL_ACHIEVED, OnChampionLevelAcheived)
+    -- TODO: EVENT_MANAGER:RegisterForEvent(X4D_XP.NAME, EVENT_CHAMPION_POINT_UPDATE, OnChampionPointUpdate)
+    * EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE (*luaindex* _categoryIndex_, *luaindex* _collectionIndex_, *luaindex* _bookIndex_, *luaindex* _guildIndex_, *[SkillType|#SkillType]* _skillType_, *luaindex* _skillLineIndex_, *luaindex* _rank_, *integer* _previousXP_, *integer* _currentXP_)
+
+]]
 

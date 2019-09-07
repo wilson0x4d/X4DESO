@@ -284,3 +284,11 @@ end
 --CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", function()
 --	X4D.Log:Warning{"X4D_Cartography::OnWorldMapChanged"}
 --end)
+
+--[[
+* GetMapFloorInfo()
+** _Returns:_ *luaindex* _currentFloor_, *integer* _numFloors_
+
+* SetMapFloor(*luaindex* _desiredFloorIndex_)
+** _Returns:_ *[SetMapResultCode|#SetMapResultCode]* _setMapResult_
+]]

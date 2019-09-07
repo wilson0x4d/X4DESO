@@ -90,7 +90,7 @@ function X4D_Settings:Open(savedVarsName, defaults, version)
     end
     version = math.floor(version) + X4D_SETTINGS_IMPLEMENTATION_VERSION
     local saved = ZO_SavedVars:NewAccountWide(savedVarsName, version, nil, {})
-	X4D.Log:Verbose{"X4D_Settings:Open", savedVarsName, version}
+	X4D.Log:Debug{"X4D_Settings:Open", savedVarsName, version}
     saved.SettingsAre = saved.SettingsAre or defaults.SettingsAre or "Account-Wide"
 	local scope = saved.SettingsAre
 	if (scope ~= "Account-Wide") then

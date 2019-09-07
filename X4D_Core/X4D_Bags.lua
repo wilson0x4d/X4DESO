@@ -158,3 +158,23 @@ function X4D_Bags:GetNormalizedString(slot)
     end
     return normalized
 end
+
+--[[
+TODO:
+
+* EVENT_JUSTICE_STOLEN_ITEMS_REMOVED
+
+* EVENT_INVENTORY_BAG_CAPACITY_CHANGED (*integer* _previousCapacity_, *integer* _currentCapacity_, *integer* _previousUpgrade_, *integer* _currentUpgrade_)
+* EVENT_INVENTORY_BANK_CAPACITY_CHANGED (*integer* _previousCapacity_, *integer* _currentCapacity_, *integer* _previousUpgrade_, *integer* _currentUpgrade_)
+
+* EVENT_INVENTORY_ITEMS_AUTO_TRANSFERRED_TO_CRAFT_BAG
+* EVENT_INVENTORY_ITEM_DESTROYED (*[ItemUISoundCategory|#ItemUISoundCategory]* _itemSoundCategory_)
+* EVENT_INVENTORY_ITEM_USED (*[ItemUISoundCategory|#ItemUISoundCategory]* _itemSoundCategory_)
+* EVENT_INVENTORY_SINGLE_SLOT_UPDATE (*[Bag|#Bag]* _bagId_, *integer* _slotId_, *bool* _isNewItem_, *[ItemUISoundCategory|#ItemUISoundCategory]* _itemSoundCategory_, *integer* _inventoryUpdateReason_, *integer* _stackCountChange_)
+* EVENT_INVENTORY_SLOT_LOCKED (*[Bag|#Bag]* _bagId_, *integer* _slotId_)
+* EVENT_INVENTORY_SLOT_UNLOCKED (*[Bag|#Bag]* _bagId_, *integer* _slotId_)
+
+
+
+
+]]

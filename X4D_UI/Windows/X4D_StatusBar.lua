@@ -243,7 +243,6 @@ function X4D_StatusBar:Initialize()
         _borderImage:SetTexture("X4D_UI/FizzBuzz.dds")
         _borderImage:SetAnchor(TOPRIGHT)
         _borderImage:SetDimensions(screenWidth, 3) -- TODO: on window resize, update
-        --borderImage:SetDrawLayer(DL_BACKGROUND)
         _borderImage:SetDrawTier(DT_LOW)
         --_statusBarWindow:SetEdgeTexture("EsoUI/Art/Tooltips/UI-Border.dds", screenWidth, 16)
 
