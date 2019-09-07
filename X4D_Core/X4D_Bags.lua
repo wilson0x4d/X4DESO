@@ -120,23 +120,31 @@ function X4D_Bags:GetBag(bagId, refresh)
         bag = _bags:Find(bagId)
     end
     if (bag == nil) then
-        bag = X4D_Bag(bagId)
+        bag = X4D_Bag(bagId)        
         _bags:Add(bag)
         ZO_ScrollList_RefreshVisible(ZO_PlayerInventoryBackpack, nil, OnRefreshVisible)
     end
     return bag
 end
 
-function X4D_Bags:GetBackpackBag(refresh)
+function X4D_Bags:GetBackpack(refresh)
     return self:GetBag(BAG_BACKPACK, refresh)
 end
 
-function X4D_Bags:GetBankBag(refresh)
-    return self:GetBag(BAG_BANK, refresh)
+function X4D_Bags:GetBank(refresh)
+    if (IsESOPlusSubscriber()) then
+        return self:GetBag(BAG_BANK, refresh), self:GetBag(BAG_SUBSCRIBER_BANK, refresh)
+    else
+        return self:GetBag(BAG_BANK, refresh), nil
+    end
 end
 
-function X4D_Bags:GetGuildBankBag(refresh)
+function X4D_Bags:GetGuildBank(refresh)
     return self:GetBag(BAG_GUILDBANK, refresh)
+end
+
+function X4D_Bags:GetVirtual(refresh)
+    return self:GetBag(BAG_VIRTUAL, refresh)
 end
 
 function X4D_Bags:GetNormalizedString(slot)
@@ -175,6 +183,8 @@ TODO:
 * EVENT_INVENTORY_SLOT_UNLOCKED (*[Bag|#Bag]* _bagId_, *integer* _slotId_)
 
 
+-- TODO: when stacks are split, nothing is logged to chat until some other interaction coerces a refresh; prob missing an event handler
+-- TODO: when items are destroyed, nothing is logged to chat, even after other interaction nothing appears in chat; hm..
 
 
 ]]
