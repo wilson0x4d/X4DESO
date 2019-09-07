@@ -78,10 +78,12 @@ local _snapshots
 local function InitializeSnapshots()
     if (_snapshots == nil) then
         local snapshots = {}
-        for bagId = 0, 3 do -- (GetMaxBags() - 1) do
-	        snapshots[bagId] = X4D.Bags:GetBag(bagId, true)
-        end
-        _snapshots = snapshots
+		snapshots[BAG_BACKPACK] = X4D.Bags:GetBag(BAG_BACKPACK, true)
+		snapshots[BAG_BANK] = X4D.Bags:GetBag(BAG_BANK, true)
+		snapshots[BAG_SUBSCRIBER_BANK] = X4D.Bags:GetBag(BAG_SUBSCRIBER_BANK, true)
+		snapshots[BAG_GUILDBANK] = X4D.Bags:GetBag(BAG_GUILDBANK, true)
+		snapshots[BAG_VIRTUAL] = X4D.Bags:GetBag(BAG_VIRTUAL, true)
+		_snapshots = snapshots
     end
 end
 
@@ -93,7 +95,7 @@ local function CheckBagForChange(bagId, reportChanges)
 		snapshot = X4D.Bags:GetBag(bagId, true)
         _snapshots[bagId] = snapshot
     else
-        snapshot.SlotCount = GetBagSize(bagId)
+		snapshot.SlotCount = GetBagSize(bagId)		
 		for slotIndex = 0, (snapshot.SlotCount - 1) do
 	        local current, previous = snapshot:PopulateSlot(slotIndex)
             if (current ~= nil and not current.IsEmpty and current.Item ~= nil) then
@@ -510,6 +512,7 @@ end
 function X4D_Loot:Refresh(displayChanges)
 --	X4D.Log:Verbose{"X4D_Loot:Refresh", displayChanges}
     CheckBagForChange(BAG_BACKPACK, displayChanges)
+    CheckBagForChange(BAG_VIRTUAL, displayChanges)
     if (displayChanges) then
         CheckInventorySpaceInternal()
     end
@@ -527,6 +530,7 @@ function X4D_Loot.OnLootReceived(eventCode, receivedBy, objectName, stackCount, 
     else
 	    if (lootType == LOOT_TYPE_ITEM) then
             CheckBagForChange(BAG_BACKPACK, true)
+            CheckBagForChange(BAG_VIRTUAL, true)
 			CheckInventorySpaceInternal()
 	    elseif (lootType == LOOT_TYPE_QUEST_ITEM) then
 		    if (UpdateQuestsInternal()) then
