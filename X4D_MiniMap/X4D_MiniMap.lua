@@ -267,7 +267,7 @@ end
 local function OnLocationNameChanged(locationName)
 	if (_locationNameLabel ~= nil) then
 		_locationNameLabel:SetText(locationName)
-		_locationNameLabel:SetHidden(X4D.Cartography.MapName() ~= X4D.Cartography.MapName())
+		_locationNameLabel:SetHidden(X4D.Cartography.LocationName() == X4D.Cartography.MapName())
 	else
 		X4D.Log:Warning("OnLocationNameChanged - Label Not Ready", "MiniMap")
 	end
@@ -276,7 +276,7 @@ end
 local function OnMapNameChanged(mapName)
 	if (_mapNameLabel ~= nil) then
 		_mapNameLabel:SetText(mapName)
-		_locationNameLabel:SetHidden(X4D.Cartography.MapName() ~= X4D.Cartography.MapName())
+		_locationNameLabel:SetHidden(X4D.Cartography.LocationName() == X4D.Cartography.MapName())
 	else
 		X4D.Log:Warning("OnMapNameChanged - Label Not Ready", "MiniMap")
 	end
