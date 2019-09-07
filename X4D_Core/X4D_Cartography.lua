@@ -82,6 +82,7 @@ function X4D_Cartography:GetTileDimensions(filename)
 end
 
 local function RefreshCurrentMapAndZoneAndLocation()
+    local ts = GetGameTimeMilliseconds()
     --[[
         TODO: "zone fencing" to auto-detect the need for a map transition, each can have zero or more fences, each fence being a collection of coordinates in clockwise order which form a closed loop
     ]]
@@ -95,9 +96,10 @@ local function RefreshCurrentMapAndZoneAndLocation()
 
     local dirty = false
     local map = X4D.Cartography.DB:Find(mapIndex)
-    if (map == nil) then
+    if (map == nil or map.CreatedAt == nil or (ts - map.CreatedAt) > 900000) then
         dirty = true
         map = {
+            CreatedAt = ts,
             MapIndex = mapIndex,
             MapName = zo_strformat("<<1>>", mapName),
             HorizontalTileCount = nil,
