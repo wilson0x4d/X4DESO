@@ -394,41 +394,49 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
 end
 
 local function ConductTransactions(transactionState)
+    local isESOPlusSubscriber = IsESOPlusSubscriber()
 	local itemTypeActions = GetItemTypeActions()
-	if (transactionState.BACKPACK == nil) then
-		transactionState.BACKPACK = TryGetBag(BAG_BACKPACK)
---		return false
+	if (transactionState[BAG_BACKPACK] == nil) then
+		transactionState[BAG_BACKPACK] = TryGetBag(BAG_BACKPACK)
 	end
-	if (transactionState.BANK == nil) then
-		transactionState.BANK = TryGetBag(BAG_BANK)
---		return false
+	if (transactionState[BAG_BANK] == nil) then
+		transactionState[BAG_BANK] = TryGetBag(BAG_BANK)
+	end
+	if (isESOPlusSubscriber and transactionState[BAG_SUBSCRIBER_BANK] == nil) then
+		transactionState[BAG_SUBSCRIBER_BANK] = TryGetBag(BAG_SUBSCRIBER_BANK)
 	end
 
-    if (not TryCombinePartialStacks(transactionState.BACKPACK)) then
+    if (not TryCombinePartialStacks(transactionState[BAG_BACKPACK])) then
 		return false
 	end
-	if (not TryCombinePartialStacks(transactionState.BANK)) then
+	if (not TryCombinePartialStacks(transactionState[BAG_BANK])) then
 		return false
+	end
+    if (isESOPlusSubscriber) then
+        if (not TryCombinePartialStacks(transactionState[BAG_SUBSCRIBER_BANK])) then
+            return false
+        end
 	end
 
     ClearCursor()
 
 	if (transactionState.pendingDeposits == nil) then
-		for _, slot in pairs(transactionState.BACKPACK.Slots) do
+		for _, slot in pairs(transactionState[BAG_BACKPACK].Slots) do
 			if (slot ~= nil and not slot.IsEmpty and slot.Item ~= nil) then
 				local slotAction = GetPatternAction(slot)
 				if (slotAction == X4D_BANKACTION_NONE) then
 					slotAction = itemTypeActions[slot.Item.ItemType]
-				end
-				if (slotAction == X4D_BANKACTION_DEPOSIT) then
+                end
+                if (slotAction == X4D_BANKACTION_DEPOSIT) then
 					transactionState.pendingDepositCount = transactionState.pendingDepositCount + 1
 					transactionState.pendingDeposits = {
 						n = transactionState.pendingDeposits,
-						v = slot,
+                        v = slot,
+                        b = BAG_BACKPACK
 					}
 				end
 			else
-				transactionState.BACKPACK.FreeCount = transactionState.BACKPACK.FreeCount + 1
+				transactionState[BAG_BACKPACK].FreeCount = transactionState[BAG_BACKPACK].FreeCount + 1
 			end
 		end
 		if (transactionState.pendingDeposits == nil) then
@@ -437,7 +445,7 @@ local function ConductTransactions(transactionState)
 	end
 
 	if (transactionState.pendingWithdrawals == nil) then
-		for _, slot in pairs(transactionState.BANK.Slots) do
+		for _, slot in pairs(transactionState[BAG_BANK].Slots) do
 			if (slot ~= nil and not slot.IsEmpty) then
 				local slotAction = GetPatternAction(slot)
 				if (slotAction == X4D_BANKACTION_NONE and slot.Item ~= nil) then
@@ -447,13 +455,36 @@ local function ConductTransactions(transactionState)
 					transactionState.pendingWithdrawalCount = transactionState.pendingWithdrawalCount + 1
 					transactionState.pendingWithdrawals = {
 						n = transactionState.pendingWithdrawals,
-						v = slot,
+                        v = slot,
+                        b = BAG_BANK
 					}
 				end
 			else
-				transactionState.BANK.FreeCount = transactionState.BANK.FreeCount + 1
+				transactionState[BAG_BANK].FreeCount = transactionState[BAG_BANK].FreeCount + 1
 			end
 		end
+
+        if (isESOPlusSubscriber) then
+            for _, slot in pairs(transactionState[BAG_SUBSCRIBER_BANK].Slots) do
+                if (slot ~= nil and not slot.IsEmpty) then
+                    local slotAction = GetPatternAction(slot)
+                    if (slotAction == X4D_BANKACTION_NONE and slot.Item ~= nil) then
+                        slotAction = itemTypeActions[slot.Item.ItemType]
+                    end
+                    if (slotAction == X4D_BANKACTION_WITHDRAW) then
+                        transactionState.pendingWithdrawalCount = transactionState.pendingWithdrawalCount + 1
+                        transactionState.pendingWithdrawals = {
+                            n = transactionState.pendingWithdrawals,
+                            v = slot,
+                            b = BAG_SUBSCRIBER_BANK
+                        }
+                    end
+                else
+                    transactionState[BAG_SUBSCRIBER_BANK].FreeCount = transactionState[BAG_SUBSCRIBER_BANK].FreeCount + 1
+                end
+            end
+        end
+
 		if (transactionState.pendingWithdrawals == nil) then
 			transactionState.pendingWithdrawals = false
 		end
@@ -464,46 +495,54 @@ local function ConductTransactions(transactionState)
 	local sourceBag
 	local targetBag
 	while (shouldProcessBags) do
-		shouldProcessBags = false
-		sourceBag = transactionState.BACKPACK
-		targetBag = transactionState.BANK
-		while (transactionState.pendingDeposits) do
-			local sourceSlot = transactionState.pendingDeposits.v
-			transactionState.pendingDeposits = transactionState.pendingDeposits.n
-			if (not sourceSlot.IsEmpty) then
-				local usedEmptySlots = 0
-				local countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
-				wasAnyChangeMade = wasAnyChangeMade or countMoved > 0
-				if (L_usedEmptySlot) then
-					usedEmptySlots = usedEmptySlots + 1
-				end
-				while (countMoved > 0 and not sourceSlot.IsEmpty) do
-					transactionState.totalDeposits = transactionState.totalDeposits + countMoved
-					countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
-					if (L_usedEmptySlot) then
-						usedEmptySlots = usedEmptySlots + 1
-					end
-				end
-				transactionState.totalDeposits = transactionState.totalDeposits + countMoved
-				if (usedEmptySlots > 0) then
-					transactionState.BANK.FreeCount = transactionState.BANK.FreeCount - usedEmptySlots
-					if (transactionState.pendingWithdrawalCount > 0) then
-						shouldProcessBags = true
-					end
-				end
-				if (sourceSlot.IsEmpty) then
-					transactionState.BACKPACK.FreeCount = transactionState.BACKPACK.FreeCount + 1
-					transactionState.pendingDepositCount = transactionState.pendingDepositCount - 1
-				end
-				if (MRL_WouldExceedLimit()) then
-					return false
-				end
-			end
-		end
-		sourceBag = transactionState.BANK
-		targetBag = transactionState.BACKPACK
+        shouldProcessBags = false
+        -- deposits
+        while (transactionState.pendingDeposits) do
+            local sourceSlot = transactionState.pendingDeposits.v
+            sourceBag = transactionState[transactionState.pendingDeposits.b]
+            transactionState.pendingDeposits = transactionState.pendingDeposits.n
+            if (not sourceSlot.IsEmpty) then
+                local usedEmptySlots = 0
+
+                if (transactionState[BAG_BANK].FreeCount > 0 or not isESOPlusSubscriber) then
+                    targetBag = transactionState[BAG_BANK]
+                elseif (isESOPlusSubscriber) then
+                    targetBag = transactionState[BAG_SUBSCRIBER_BANK]
+                end
+
+                local countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
+                wasAnyChangeMade = wasAnyChangeMade or countMoved > 0
+                if (L_usedEmptySlot) then
+                    usedEmptySlots = usedEmptySlots + 1
+                end
+                while (countMoved > 0 and not sourceSlot.IsEmpty) do
+                    transactionState.totalDeposits = transactionState.totalDeposits + countMoved
+                    countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
+                    if (L_usedEmptySlot) then
+                        usedEmptySlots = usedEmptySlots + 1
+                    end
+                end
+                transactionState.totalDeposits = transactionState.totalDeposits + countMoved
+                if (usedEmptySlots > 0) then
+                    targetBag.FreeCount = targetBag.FreeCount - usedEmptySlots
+                    if (transactionState.pendingWithdrawalCount > 0) then
+                        shouldProcessBags = true
+                    end
+                end
+                if (sourceSlot.IsEmpty) then
+                    sourceBag.FreeCount = sourceBag.FreeCount + 1
+                    transactionState.pendingDepositCount = transactionState.pendingDepositCount - 1
+                end
+                if (MRL_WouldExceedLimit()) then
+                    return false
+                end
+            end
+        end
+        -- withdrawals
+		targetBag = transactionState[BAG_BACKPACK]
 		while (transactionState.pendingWithdrawals) do
-			local sourceSlot = transactionState.pendingWithdrawals.v
+            local sourceSlot = transactionState.pendingWithdrawals.v
+            sourceBag = transactionState[transactionState.pendingWithdrawals.b]
 			transactionState.pendingWithdrawals = transactionState.pendingWithdrawals.n
 			if (not sourceSlot.IsEmpty) then
 				local usedEmptySlots = 0
@@ -521,20 +560,20 @@ local function ConductTransactions(transactionState)
 				end
 				transactionState.totalWithdrawals = transactionState.totalWithdrawals + countMoved
 				if (usedEmptySlot) then
-					transactionState.BACKPACK.FreeCount = transactionState.BACKPACK.FreeCount - usedEmptySlots
+					targetBag.FreeCount = targetBag.FreeCount - usedEmptySlots
 					if (transactionState.pendingDepositCount > 0) then
 						shouldProcessBags = true
 					end
 				end
 				if (sourceSlot.IsEmpty) then
-					transactionState.BANK.FreeCount = transactionState.BANK.FreeCount + 1
+					sourceBag.FreeCount = sourceBag.FreeCount + 1
 					transactionState.pendingWithdrawalCount = transactionState.pendingWithdrawalCount - 1
 				end
 				if (MRL_WouldExceedLimit()) then
 					return false
 				end
 			end
-		end
+        end
 	end
 
 	-- HACK: we require at least one "re-entry" in order to continue deposits and withdrawals in the case where we've hit a cap, before v1.27 we would simply loop one addiitonal iteration
@@ -545,27 +584,37 @@ local function ConductTransactions(transactionState)
 	end
 
 	-- HACK: ideally we should not need to refresh state like this to know proper "FreeCount" -- however, FreeCount is not being maintained correctly, today, and without this we get incorrect counts on the summary message printed further below
-	transactionState.BACKPACK = TryGetBag(BAG_BACKPACK)
-	transactionState.BANK = TryGetBag(BAG_BANK)
+    transactionState[BAG_BACKPACK] = TryGetBag(BAG_BACKPACK)
+    transactionState[BAG_BANK] = TryGetBag(BAG_BANK)
+    if (isESOPlusSubscriber) then
+        transactionState[BAG_SUBSCRIBER_BANK] = TryGetBag(BAG_SUBSCRIBER_BANK)
+    end
 
     local message
     local inventoryFreeColor = X4D.Colors.Gold
-    if (transactionState.BACKPACK.FreeCount < (transactionState.BACKPACK.SlotCount * 0.2)) then
+    if (transactionState[BAG_BACKPACK].FreeCount < (transactionState[BAG_BACKPACK].SlotCount * 0.2)) then
         inventoryFreeColor = X4D.Colors.Red
     end
     local bankFreeColor = X4D.Colors.Gold
-    if (transactionState.BANK.FreeCount < (transactionState.BANK.SlotCount * 0.2)) then
+    local bankFreeCount = transactionState[BAG_BANK].FreeCount
+    local bankSlotCount = transactionState[BAG_BANK].SlotCount
+    if (isESOPlusSubscriber) then
+        bankFreeCount = bankFreeCount + transactionState[BAG_SUBSCRIBER_BANK].FreeCount
+        bankSlotCount = bankSlotCount + transactionState[BAG_SUBSCRIBER_BANK].SlotCount
+    end
+    X4D.Log:Warning(isESOPlusSubscriber, "isESOPlusSubscriber")
+    if (bankFreeCount < (bankSlotCount * 0.2)) then
         bankFreeColor = X4D.Colors.Red
     end
     if (transactionState.totalDeposits > 0 or transactionState.totalWithdrawals > 0) then
         message = string.format("Bank Deposits: %s, Withdrawals: %s, Bank: %s/%s free, Backpack: %s/%s free",
             X4D.Colors.Gold .. transactionState.totalDeposits .. X4D.Colors.X4D, X4D.Colors.Gold .. transactionState.totalWithdrawals .. X4D.Colors.X4D, 
-            bankFreeColor ..  transactionState.BANK.FreeCount .. X4D.Colors.X4D, transactionState.BANK.SlotCount,
-            inventoryFreeColor .. transactionState.BACKPACK.FreeCount .. X4D.Colors.X4D, transactionState.BACKPACK.SlotCount)
+            bankFreeColor .. bankFreeCount .. X4D.Colors.X4D, bankSlotCount,
+            inventoryFreeColor .. transactionState[BAG_BACKPACK].FreeCount .. X4D.Colors.X4D, transactionState[BAG_BACKPACK].SlotCount)
     else
         message = string.format("Bank: %s/%s free, Backpack: %s/%s free",
-            bankFreeColor ..  transactionState.BANK.FreeCount .. X4D.Colors.X4D, transactionState.BANK.SlotCount,
-            inventoryFreeColor .. transactionState.BACKPACK.FreeCount .. X4D.Colors.X4D, transactionState.BACKPACK.SlotCount)
+            bankFreeColor .. bankFreeCount .. X4D.Colors.X4D, bankSlotCount,
+            inventoryFreeColor .. transactionState[BAG_BACKPACK].FreeCount .. X4D.Colors.X4D, transactionState[BAG_BACKPACK].SlotCount)
     end
     InvokeChatCallback(X4D.Colors.X4D, message)
 
@@ -623,6 +672,9 @@ local function OnCloseBank()
     -- coerce update of bag snapshots on close
     local inventoryState = TryGetBag(BAG_BACKPACK)
     local bankState = TryGetBag(BAG_BANK)
+    if (IsESOPlusSubscriber()) then
+        local subscriberBankState = TryGetBag(BAG_SUBSCRIBER_BANK)
+    end
 	X4D.NPCs.CurrentNPC(nil)
 end
 
@@ -945,15 +997,21 @@ end
 local _statusBarPanel
 
 local function UpdateStatusBarText()
-    local backpack = X4D.Bags:GetBackpackBag()
+    local backpack = X4D.Bags:GetBackpack()
     local backpackColor = "|cFFFFFF"
     if (backpack.FreeCount < (backpack.SlotCount * 0.2)) then
         backpackColor = X4D.Colors.Red
     end
 
-    local bank = X4D.Bags:GetBankBag()
+    local bank, subscriberBank = X4D.Bags:GetBank()
     local bankColor = "|cFFFFFF"
-    if (bank.FreeCount < (bank.SlotCount * 0.2)) then
+    local bankFreeCount = bank.FreeCount
+    local bankSlotCount = bank.SlotCount
+    if (subscriberBank ~= nil) then
+        bankFreeCount = bankFreeCount + subscriberBank.FreeCount
+        bankSlotCount = bankSlotCount + subscriberBank.SlotCount
+    end
+    if (bankFreeCount < (bankSlotCount * 0.2)) then
         bankColor = X4D.Colors.Red
     end
 
@@ -969,8 +1027,8 @@ local function UpdateStatusBarText()
         backpack.SlotCount,
         X4D.Icons:CreateString("/esoui/art/tooltips/icon_bag.dds"),
         bankColor,
-        bank.SlotCount - bank.FreeCount,
-        bank.SlotCount,
+        bankSlotCount - bankFreeCount,
+        bankSlotCount,
         X4D.Icons:CreateString("/esoui/art/icons/guildranks/guild_rankicon_misc09_large.dds", 26,26))
     if (text == nil) then text = "" end
     _statusBarPanel:SetText(text)
