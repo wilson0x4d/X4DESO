@@ -7,7 +7,7 @@ X4D Bank is LibStub-compatible Add-On that performs regular Bank deposits.
 
 * Auto-Deposit Gold, either fixed amount or percentage of carried.
 * Specify a Gold Reserve Amount to ensure a minimum amount is kept on-hand.
-* Specify Deposit Down-Time, such as depositing only once an hour.
+* Specify Deposit Debounce Time, such as depositing only once an hour.
 * Auto-Deposit Items (fill incomplete stacks, start new stacks)
 * Deposit and Withdraw Items based on Item Type
 * Pattern-based Item Ignore List - by default, ignore STOLEN items.

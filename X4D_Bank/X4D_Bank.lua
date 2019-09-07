@@ -187,7 +187,7 @@ local function TryGetBag(bagId)
 end
 
 local function TryDepositFixedAmount()
-    local availableAmount = GetCurrentMoney() - X4D_Bank.Settings:Get("AutoDepositReserve")
+    local availableAmount = GetCurrentMoney() - X4D_Bank.Settings:Get("ReserveCashOnHand")
     local depositAmount = X4D_Bank.Settings:Get("AutoDepositFixedAmount")
     if (depositAmount > 0) then
         if (availableAmount < depositAmount) then
@@ -209,11 +209,8 @@ local function TryDepositPercentage(availableAmount)
 end
 
 local function TryWithdrawReserveAmount()
-    if (not X4D_Bank.Settings:Get("AutoWithdrawReserve")) then
-        return
-    end
     local carriedAmount = GetCurrentMoney()
-    local deficit = X4D_Bank.Settings:Get("AutoDepositReserve") - carriedAmount
+    local deficit = X4D_Bank.Settings:Get("ReserveCashOnHand") - carriedAmount
     if (deficit > 0) then
         if (GetBankedMoney() > deficit) then
             WithdrawMoneyFromBank(deficit)
@@ -588,7 +585,7 @@ local function OnOpenBankAsync(timer, transactionState)
 		else
 			-- monetary transactions
 			if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
-				_nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDowntime") * 1000) + 2000
+				_nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDebounceSeconds") * 1000) + 2000
 				local availableAmount = TryDepositFixedAmount()
 				TryDepositPercentage(availableAmount)
 			end
@@ -693,34 +690,26 @@ local function InitializeSettingsUI()
         [3] =
         {
             type = "slider",
-            name = "Reserve Amount",
-            tooltip = "If non-zero, the specified amount of carried gold will never be auto-deposited.",
+            name = "Cash On Hand",
+            tooltip = "If non-zero, the specified amount of carried gold will never be auto-deposited. If you are carrying less than this amount and the remainder is available in the bank the difference will be auto-withdrawn.",
             min = 0,
-            max = 10000,
-            step = 100,
-            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositReserve") end,
-            setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositReserve", tonumber(tostring(v))) end,
+            max = 100000,
+            step = 1000,
+            getFunc = function() return X4D_Bank.Settings:Get("ReserveCashOnHand") end,
+            setFunc = function(v) X4D_Bank.Settings:Set("ReserveCashOnHand", tonumber(tostring(v))) end,
         },
         [4] =
-        {
-            type = "checkbox",
-            name = "Auto-Withdraw Reserve",
-            tooltip = "When enabled, if you are carrying less than the specified reserve amount the difference will be withdrawn from the bank.",
-            getFunc = function() return X4D_Bank.Settings:Get("AutoWithdrawReserve") end,
-            setFunc = function() X4D_Bank.Settings:Set("AutoWithdrawReserve", not X4D_Bank.Settings:Get("AutoWithdrawReserve")) end,
-        },
-        [5] =
         {
             type = "slider",
             name = "Auto-Deposit Fixed Amount",
             tooltip = "If non-zero, will auto-deposit up to the configured amount when accessing the bank.",
             min = 0,
-            max = 1000,
+            max = 10000,
             step = 100,
             getFunc = function() return X4D_Bank.Settings:Get("AutoDepositFixedAmount") end,
             setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositFixedAmount", tonumber(tostring(v))) end,
         },
-        [6] =
+        [5] =
         {
             type = "slider",
             name = "Auto-Deposit Percentage",
@@ -731,18 +720,18 @@ local function InitializeSettingsUI()
             getFunc = function() return X4D_Bank.Settings:Get("AutoDepositPercentage") end,
             setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositPercentage", tonumber(tostring(v))) end,
         },
-        [7] =
+        [6] =
         {
             type = "slider",
-            name = "Auto-Deposit Down-Time", -- TODO: there is a bug where when this setting is changed, the bank deposit expiry times are not recalculated (UX is broken) -- a /reloadui works around this
+            name = "Auto-Deposit Down-Time (DEBOUNCE)", -- TODO: there is a bug where when this setting is changed, the bank deposit expiry times are not recalculated (UX is broken) -- a /reloadui works around this
             tooltip = "If non-zero, will wait specified time (in seconds) between bank interactions before auto-depositing again.",
             min = 0,
             max = 3600,
-            step = 30,
-            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositDowntime") end,
-            setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositDowntime", tonumber(tostring(v))) end,
+            step = 36,
+            getFunc = function() return X4D_Bank.Settings:Get("AutoDepositDebounceSeconds") end,
+            setFunc = function(v) X4D_Bank.Settings:Set("AutoDepositDebounceSeconds", tonumber(tostring(v))) end,
         },
-        [8] =
+        [7] =
         {
             type = "checkbox",
             name = "Display Money Updates",
@@ -757,11 +746,6 @@ local function InitializeSettingsUI()
                 end
             end,
         },
-        -- [9] =
-        -- {
-        --     type = "header",
-        --     name = "Item Deposits and Withdrawals",
-        -- },
     }
 
     -- LAM:AddCheckbox(cplId,
@@ -1008,12 +992,11 @@ local function OnAddOnLoaded(eventCode, addonName)
         X4D_Bank.NAME .. "_SV",
         {
             SettingsAre = "Per-Character",
-            AutoDepositDowntime = 300,
-            AutoDepositReserve = 500,
+            AutoDepositDebounceSeconds = 300,
+            ReserveCashOnHand = 500,
             AutoDepositFixedAmount = 100,
             AutoDepositPercentage = 1,
             StartNewStacks = true,
-            AutoWithdrawReserve = true,
             DisplayMoneyUpdates = true,
             WithdrawItemPatterns =
             {
