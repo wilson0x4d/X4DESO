@@ -64,6 +64,8 @@ There are slash commands you will find useful when debugging AddOns or Testing c
 |-|-|
 | `/x4d -test` | Sets the log level to VERBOSE (shows 'useful' logging/activity, but not 'all'), and then performs a broad test of X4D_Core module. If you're doing any development that uses X4D_Core you will usually use this command after performing a `/reloadui`. |
 | `/x4d -debug` | Sets the log level to DEBUG (shows all logging/activity), and adds a performance summary in the Chat window. You will not use this command often/ever. |
+| `/x4d pos` | Print player location including both map coordinates and normalized coordinations. |
+| `/x4d` | Without arguments this slash-command will print Version Info. |
 
 Additionally, the `X4D_DB` module exposes its own commands:
 
