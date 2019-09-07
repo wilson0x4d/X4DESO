@@ -318,8 +318,8 @@ local function OnInteractWithMiniMap(timer, state)
 	_tileContainer:SetAnchor(TOPLEFT, _tileScroll, TOPLEFT, -1 * offsetX, -1 * offsetY) -- TODO: need to interpolate
 
 	-- X4D.Log:Debug("LayoutPlayerPip", "MiniMap")
-	local playerPipX = (offsetX + _centerX - (PLAYER_PIP_WIDTH / 2))
-	local playerPipY = (offsetY + _centerY - (PLAYER_PIP_WIDTH / 2))
+	local playerPipX = (_playerX * _currentMap.MapWidth) - (PLAYER_PIP_WIDTH / 2)
+	local playerPipY = (_playerY * _currentMap.MapHeight) - (PLAYER_PIP_WIDTH / 2)
 	_playerPip:ClearAnchors()
 	_playerPip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, playerPipX, playerPipY) -- TODO: need to interpolate
 end
