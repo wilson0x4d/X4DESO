@@ -174,7 +174,7 @@ local function ConductTransactions(vendor)
 	local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
 	local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
 	local itemTypeActions = GetItemTypeActions()
-	local bag = X4D.Bags:GetBackpackBag(true)
+	local bag = X4D.Bags:GetBackpack(true)
 	if (bag ~= nil) then
 		for slotIndex = 0, bag.SlotCount do
 			local slot = bag.Slots[slotIndex]
@@ -261,8 +261,8 @@ local function OnOpenFence()
 end
 local function OnCloseFence() 
 	-- force update of bag snapshots on close
-	local inventoryState = X4D.Bags:GetBackpackBag(true)
-	local bankState = X4D.Bags:GetBankBag(true)
+	local inventoryState = X4D.Bags:GetBackpack(true)
+	local bankState, subscriberBankState = X4D.Bags:GetBank(true)
 	X4D.NPCs.CurrentNPC(nil)
 end
 
@@ -284,8 +284,8 @@ local function OnOpenStore()
 end
 local function OnCloseStore() 
 	-- force update of bag snapshots on close
-	local inventoryState = X4D.Bags:GetBackpackBag(true)
-	local bankState = X4D.Bags:GetBankBag(true)
+	local inventoryState = X4D.Bags:GetBackpack(true)
+	local bankState, subscriberBankState = X4D.Bags:GetBank(true)
 	X4D.NPCs.CurrentNPC(nil)
 end
 
