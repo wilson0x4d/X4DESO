@@ -31,4 +31,5 @@ Get-ChildItem "X4D_*" | ForEach-Object { createModuleArchive $_.Name }
 
 # remove temp (post-clean)
 if ([System.IO.Directory]::Exists($tempPath)) {
+    Remove-Item -Recurse -Force -Path $tempPath
 }
