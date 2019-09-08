@@ -222,7 +222,7 @@ local function InitializeSettingsUI()
     table.insert(panelControls, {
             type = "checkbox",
             name = "Auto-Delete System Messages", 
-            tooltip = "When enabled, System Messages are automatically deleted after all attachments are received, this includes messages from Crown Store, Guild Store and Hirelings. |cFFFFFFThis option does NOT apply to mail from Customer Support, nor mail from other users.", 
+            tooltip = "When enabled, System Messages are automatically deleted after all attachments are received, this includes messages from Crown Store, Guild Store and Hirelings. |cFFFFFFThis option does NOT apply to messages from Customer Support, nor messages from other users.", 
             getFunc = function() 
                 return X4D.Mail.Settings:Get("AutoDeleteMail")
             end,

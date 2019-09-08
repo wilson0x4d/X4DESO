@@ -573,7 +573,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 	X4D_MiniMap.NAME .. "_SV",
 	{
 		SettingsAre = "Per-Character",
-		EnableMiniMap = false,
+		EnableMiniMap = true,
 		UsePlayerHeading = false,
 		ShowMapName = true,
 		ShowLocationName = true,

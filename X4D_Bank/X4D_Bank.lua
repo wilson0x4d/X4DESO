@@ -1050,9 +1050,9 @@ local function OnAddOnLoaded(eventCode, addonName)
         X4D_Bank.NAME .. "_SV",
         {
             SettingsAre = "Per-Character",
-            AutoDepositDebounceSeconds = 300,
-            ReserveCashOnHand = 500,
-            AutoDepositFixedAmount = 100,
+            AutoDepositDebounceSeconds = 900,
+            ReserveCashOnHand = 0,
+            AutoDepositFixedAmount = 0,
             AutoDepositPercentage = 1,
             StartNewStacks = true,
             DisplayMoneyUpdates = true,

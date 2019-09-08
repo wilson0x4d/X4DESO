@@ -521,7 +521,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
 		LaunderItemsWorth0Gold = false, -- this no longer defaults to true, this results in less confusion for users
 		ForKeepsItemPatterns =
 		{
-			-- items matching a "Launder" pattern will not be sold, and if they are stolen and you have visited a fence these items will be automatically laundered
+			-- items matching a "Launder" pattern will not be sold to a fence, and if they are stolen and you have visited a fence these items will be automatically laundered
 			"lockpick",
 			"MOTIF",
 			"LEGENDARY",

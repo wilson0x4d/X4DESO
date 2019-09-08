@@ -35,7 +35,7 @@ EVENT_MANAGER:RegisterForEvent(X4D_UI.NAME, EVENT_ADD_ON_LOADED, function(eventC
 	X4D_UI.Settings = X4D.Settings:Open(
 		X4D_UI.NAME .. "_SV",
 		{
-            SettingsAre = "Per-Character",
+            SettingsAre = "Account-Wide",
             ShowFPS = true,
             ShowPing = true,
             ShowMemory = true,
