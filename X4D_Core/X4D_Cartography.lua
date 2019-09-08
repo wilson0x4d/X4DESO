@@ -244,9 +244,14 @@ end
 local function TryUpdatePlayerPosition(timer, state)
     local playerX, playerY, playerHeading = GetMapPlayerPosition("player")
     local cameraHeading = GetPlayerCameraHeading()
+    -- NOTE: this checksum only exists to rate-limit the observable, normally the
+    --       observable would not fire a change event in the case of no change, but,
+    --       in this case the object reference would have change and the current
+    --       observable implementation does not have a mechanism for deep compares.
+    --
+    --       since much code is driven from position changes, this is justified.
     local playerStateChecksum = playerX + playerY + playerHeading + cameraHeading
     if (state.Checksum ~= playerStateChecksum) then
-        -- X4D.Log:Debug("TryUpdatePlayerPosition", "MiniMap")
         state.Checksum = playerStateChecksum
         X4D_Cartography.PlayerPosition({
             X = playerX,
@@ -258,9 +263,6 @@ local function TryUpdatePlayerPosition(timer, state)
 end
 
 local _timer
-
---EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
---end)
 
 EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_ADD_ON_LOADED, function(event, name)
     if (name ~= "X4D_Core") then
@@ -278,6 +280,8 @@ function X4D_Cartography:Initialize()
     end
 end
 
+--EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
+--end)
 --EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_QUEST_POSITION_REQUEST_COMPLETE, function()
 --	X4D.Log:Warning{"X4D_Cartography::EVENT_QUEST_POSITION_REQUEST_COMPLETE"}
 --end)

@@ -4,7 +4,7 @@
 ## Description: 
 ## Version: 1.7
 ## SavedVariables: X4D_MiniMap_SV
-## DependsOn: X4D_Core X4D_UI
+## DependsOn: X4D_Core X4D_UI X4D_Quest
 
 lib/LibStub/LibStub.lua
 

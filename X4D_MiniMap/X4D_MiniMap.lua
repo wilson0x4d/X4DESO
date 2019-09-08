@@ -167,6 +167,17 @@ local function LayoutMapPins()
 				X4D.Log:Error("LayoutMapPins cannot access `POI::normalizedX`", "MiniMap")
 				pin.PIP:SetHidden(true)
 			end
+		elseif (pin.Quest ~= nil) then
+			if (pin.Quest.X ~= nil and pin.Quest.Y ~= nil) then
+				-- X4D.Log:Information({pin.Quest.X, pin.Quest.Y, X4D.Cartography.PlayerPosition()})
+				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.Quest.X * _currentMap.MapWidth) - (pin.Size/2), (pin.Quest.Y * _currentMap.MapHeight) - (pin.Size/2))
+				pin.PIP:SetHidden(false)
+			else
+				X4D.Log:Error("LayoutMapPins cannot access `Quest::X`", "MiniMap")
+				pin.PIP:SetHidden(true)
+			end
+		else 
+			X4D.Log:Warning({"Unsupported pin during `LayoutMapPins`", pin}, "MiniMap")
 		end
 	end
 end
@@ -184,19 +195,15 @@ local X4D_MiniMap_BuildNPCPins = function(pins, map)
 	end
 end
 
-local function ConvertPOIMapInfoToPin(poi, map)	
+local function ConvertPOIMapInfoToPin(poi, currentMap)	
 	local pin = CreateMiniMapPin(poi.texture, 1)
 	if (pin ~= nil) then
 		pin.POI = poi
-		-- local pip = pin.PIP
-		-- pip:ClearAnchors()
-		-- pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (poi.normalizedX * currentMap.MapWidth) - (DEFAULT_PIP_WIDTH/2), (poi.normalizedY * currentMap.MapHeight) - (DEFAULT_PIP_WIDTH/2))
-		-- pip:SetHidden(false)
 	end
 	return pin
 end
 
-local X4D_MiniMap_BuildPOIPins = function(pins, map)
+local X4D_MiniMap_BuildPOIPins = function(pins, currentMap)
 	-- X4D.Log:Verbose("X4D_MiniMap_BuildPOIPins", "MiniMap")
 	local zoneIndex = GetCurrentMapZoneIndex()
 	local poiCount = GetNumPOIs(zoneIndex)
@@ -206,13 +213,40 @@ local X4D_MiniMap_BuildPOIPins = function(pins, map)
 			normalizedX = normalizedX,
 			normalizedY = normalizedY,
 			texture = texture
-		}, map)		
+		}, currentMap)		
 		pins["poi:"..poiIndex] = pin
 	end
 end
 
+local function ConvertQuestToPin(questInfo, currentMap)
+	-- TODO: how to draw "area radius" circles?
+	local texture = questInfo.Icon
+	-- X4D.Log:Verbose({"QuestPinPosition", questInfo.X, questInfo.Y, X4D.Cartography.PlayerPosition()}, "MiniMap")
+
+	local pin = CreateMiniMapPin(texture, DEFAULT_PIP_WIDTH)
+	if (pin ~= nil) then
+		pin.Quest = questInfo
+	end
+	return pin
+end
+
+local function X4D_MiniMap_BuildJournalQuestPins(pins, currentMap)
+	-- X4D.Log:Verbose("X4D_MiniMap_BuildJournalQuestPins", "MiniMap")
+	local trackedQuest = X4D.Quest.TrackedQuest()
+	if (trackedQuest ~= nil) then
+		if (trackedQuest.X ~= nil and trackedQuest.Y ~= nil) then
+			local pin = ConvertQuestToPin(trackedQuest, currentMap)
+			pins["quest:"..trackedQuest.Index] = pin
+		-- else
+		-- 	X4D.Log:Warning("Tracked quest missing X/Z", X4D_MiniMap.NAME)
+		end
+	-- else
+	-- 	X4D.Log:Warning("No tracked quest", X4D_MiniMap.NAME)
+	end
+end
+
 function X4D_MiniMap_RebuildAllPins()
-	-- X4D.Log:Debug("X4D_MiniMap_RebuildAllPins")
+	-- X4D.Log:Warning("X4D_MiniMap_RebuildAllPins")
 
 	if (_currentMap == nil) then
 		X4D.Log:Verbose("X4D_MiniMap_RebuildAllPins - `_currentMap` was not set yet", "MiniMap")
@@ -236,6 +270,9 @@ function X4D_MiniMap_RebuildAllPins()
 
 	-- X4D.Log:Verbose("Rebuilding MiniMap POI Pins", "MiniMap")
 	X4D_MiniMap_BuildPOIPins(pins, _currentMap)
+
+	-- X4D.Log:Verbose("Rebuilding MiniMap Quest Pins", "MiniMap")
+	X4D_MiniMap_BuildJournalQuestPins(pins, _currentMap)
 
 	_pins = pins
 	LayoutMapPins()
@@ -452,7 +489,7 @@ end
 
 local function InitializeMiniMapWindow()
 	_minimapWindow = WINDOW_MANAGER:CreateTopLevelWindow("X4D_MiniMap")
-	X4D_MiniMap.Window = _minimapWindow -- NOTE: so that it can be accessed by X4D_MiniMapPOI
+	X4D_MiniMap.Window = _minimapWindow -- NOTE: so that it can be accessed by X4D_MiniMap
 	_minimapWindow:SetDimensions(300, 240)
 	_minimapWindow:SetAnchor(BOTTOMRIGHT, GuiRoot, BOTTOMRIGHT, -4, -3)
 	X4D.UI.StatusBar.PaddingRight(298)
@@ -522,6 +559,11 @@ local function OnCurrentSceneChanged(scene)
 	end
 end	
 
+local function OnTrackedQuestChanged(quest)
+	X4D.Log:Debug({"OnTrackedQuestChanged", quest}, "MiniMap")
+	X4D_MiniMap_RebuildAllPins()
+end
+
 local function InitializeSettingsUI()
 	local LAM = LibStub("LibAddonMenu-2.0")
 	local cplId = LAM:RegisterAddonPanel("X4D_MINIMAP_CPL", {
@@ -589,7 +631,8 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 	X4D.Cartography.MapName:Observe(OnMapNameChanged)
 	X4D.Cartography.PlayerPosition:Observe(OnPlayerPositionChanged)	
 	X4D.NPCs.NearbyNPCs:Observe(OnNearbyNPCsChanged)
-	X4D.UI.CurrentScene:Observe(OnCurrentSceneChanged)	
+	X4D.UI.CurrentScene:Observe(OnCurrentSceneChanged)
+	X4D.Quest.TrackedQuest:Observe(OnTrackedQuestChanged)
 
 	-- explicit carto initialization by consumer(s)
 	X4D.Cartography:Initialize()
