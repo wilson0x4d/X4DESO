@@ -41,12 +41,17 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+### 1.7
+
+- API Version 100028
+- Minor integration change for MiniMap, allowing MiniMap to offset position of Status Bar panels when MiniMap occludes Status Bar.
+
 ### 1.6
-### ESO 2.6
+
 - API Version 100017
 
 ### 1.5
-### ESO 2.1
+
 - API Version 100012
 
 ### 1.4

@@ -1,4 +1,4 @@
-local X4D_NPCs = LibStub:NewLibrary("X4D_NPCs", 1000)
+local X4D_NPCs = LibStub:NewLibrary("X4D_NPCs", 1020)
 if (not X4D_NPCs) then
 	return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.NPCs = X4D_NPCs
 
 X4D_NPCs.NAME = "X4D_NPCs"
-X4D_NPCs.VERSION = "1.0"
+X4D_NPCs.VERSION = "1.20"
 
 local _currentMapId = nil
 local _currentZoneIndex = nil

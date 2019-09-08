@@ -45,13 +45,18 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+### 1.12
+
+- API Version 100028
+- Changed default settings so Fence interactions are disabled by default, this was done based on user feedback.
+
 ### 1.11
-#### ESO 2.6
+
 - API Version 100017
 - Updated functionality where "item names" were used for filtering, since item names are no longer reliably provided by the game engine, X4D_Vendor no longer reliably supports them.
 
 ### 1.10
-#### ESO 2.1
+
 - API Version 100012
 
 ### 1.9

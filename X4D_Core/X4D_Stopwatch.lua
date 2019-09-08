@@ -1,4 +1,4 @@
-local X4D_Stopwatches = LibStub:NewLibrary("X4D_Stopwatches", 1015)
+local X4D_Stopwatches = LibStub:NewLibrary("X4D_Stopwatches", 1020)
 if (not X4D_Stopwatches) then
 	return
 end

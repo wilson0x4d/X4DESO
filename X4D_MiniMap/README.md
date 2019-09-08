@@ -10,18 +10,18 @@ X4D MiniMap is a UI Mod which adds a simple MiniMap to the game.
 
 ## Known Issues
 
-- When using the world map, sometimes exiting the world map causes the minimap to desync. Closing and re-opening the world map will fix the issue.
+-- Occasionally a map will appear with incorrect scaling/size, while POIs/etc appear with their correct scaling/size and location. You may be able to work around this issue by performing a `/reloadui`, if that fails then a hard reset of the maps DB can be performed followed by `/reloadui` but this is extreme. In most cases waiting 5 minutes for a map refresh is sufficient/preferred.
 
 ## Planned
 
-- Locations
-- POIs
+- Additional POIs
 - Zoom In/Out
 - Moving
 - Resizing
 - MiniCompass (Outer Border with Pips)
 - Other (Nodes, Mob Levels, etc)
 - Rotation
+- Fencing / Boundaries
 
 ## Installation
 
@@ -53,12 +53,20 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+### 1.7
+
+- API Version 100028
+- Major refactor to not be dependent on ZO World Map, removing much of the scatter/gather/guard logic seen in previous versions.
+- Reizing and Relocation of MiniMap window to Play Nice(tm) with ZO's Bounty widget.
+- Minor re-integration with Status Bar to allow MiniMap to overlay Status Bar without occluding Status Bar Panels.
+- This module is transitioning from "alpha" to "beta" as new POI types are evaluated/integrated. Current implementation provides consistent experience.
+
 ### 1.6
-### ESO 2.6
+
 - API Version 100017
 
 ### 1.5
-#### ESO 2.1
+
 - API Version 100012
 
 ### 1.4

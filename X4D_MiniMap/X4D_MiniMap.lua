@@ -15,7 +15,7 @@
 --		  map contents (clearly showing POI/exit PIP is accurate even
 --		  when Player PIP is not.)
 
-local X4D_MiniMap = LibStub:NewLibrary("X4D_MiniMap", 1006)
+local X4D_MiniMap = LibStub:NewLibrary("X4D_MiniMap", 1007)
 if (not X4D_MiniMap) then
 	return
 end
@@ -23,7 +23,7 @@ local X4D = LibStub("X4D")
 X4D.MiniMap = X4D_MiniMap
 
 X4D_MiniMap.NAME = "X4D_MiniMap"
-X4D_MiniMap.VERSION = "1.6"
+X4D_MiniMap.VERSION = "1.7"
 
 local X4D_MINIMAP_SMALLFONT = "ZoFontGameSmall"
 local X4D_MINIMAP_LARGEFONT = "ZoFontGamepad22"

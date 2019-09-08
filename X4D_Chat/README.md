@@ -48,11 +48,15 @@ and send bitcoin if you don't already have a bitcoin wallet.
 ## Versions
 
 ### 1.35
-#### ESU 2.6
+
+- API Version 100028
+
+### 1.35
+
 - API Version 100017
 
 ### 1.33
-#### ESU 2.1
+
 - API Version 100012
 
 ### 1.32

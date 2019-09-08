@@ -66,6 +66,10 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+v1.66
+
+- API Version 100028
+
 v1.65
 
 - API Version 100012

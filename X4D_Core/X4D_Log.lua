@@ -1,4 +1,4 @@
-local X4D_Log = LibStub:NewLibrary("X4D_Log", 1015)
+local X4D_Log = LibStub:NewLibrary("X4D_Log", 1020)
 if (not X4D_Log) then
 	return
 end
@@ -17,6 +17,7 @@ X4D_Log.TRACE_LEVELS = {
 }
 local _minTraceLevel = 
     X4D_Log.TRACE_LEVELS.INFORMATION
+    --X4D_Log.TRACE_LEVELS.VERBOSE
     --X4D_Log.TRACE_LEVELS.DEBUG
 
 local TRACE_COLORS = {

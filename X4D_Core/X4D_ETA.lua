@@ -3,7 +3,7 @@
 ---
 -- Helper code for tracking and calculating gain rates and ETAs
 --
-local X4D_ETA = LibStub:NewLibrary("X4D_ETA", 1015)
+local X4D_ETA = LibStub:NewLibrary("X4D_ETA", 1020)
 if (not X4D_ETA) then
 	return
 end

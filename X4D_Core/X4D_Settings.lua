@@ -1,4 +1,4 @@
-local X4D_Settings = LibStub:NewLibrary("X4D_Settings", 1015)
+local X4D_Settings = LibStub:NewLibrary("X4D_Settings", 1020)
 if (not X4D_Settings) then
 	return
 end

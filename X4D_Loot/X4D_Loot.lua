@@ -1,7 +1,7 @@
 -- TODO:
 -- EVENT_LOCKPICK_BROKE (integer eventCode, number inactivityLengthMs)
 
-local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1019)
+local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1020)
 if (not X4D_Loot) then
 	return
 end
@@ -9,7 +9,7 @@ local X4D = LibStub("X4D")
 X4D.Loot = X4D_Loot
 
 X4D_Loot.NAME = "X4D_Loot"
-X4D_Loot.VERSION = "1.19"
+X4D_Loot.VERSION = "1.20"
 
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 

@@ -1,4 +1,4 @@
-local X4D_Players = LibStub:NewLibrary("X4D_Players", 1015)
+local X4D_Players = LibStub:NewLibrary("X4D_Players", 1020)
 if (not X4D_Players) then
     return
 end
@@ -117,10 +117,10 @@ function X4D_Players:GetPlayer(tag)
     -- attempt to lookup by key
     local key = "$" .. base58(sha1(unitName):FromHex())
     local player = self.DB:Find(key)
-    if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 900000) then
+    if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 300000) then
         -- lookup by key failed, perhaps this user is known by name (e.g. cross-channel chat where player-names are not discoverable, but we know this player through some other means such as friends list or guild where their account name is in the clear.)
         player = self.DB:FirstOrDefault(function(player) return player.Name == unitName end)
-        if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 900000) then
+        if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 300000) then
             player = X4D_Player(tag)
             player.CreatedAt = ts
             self.DB:Add(key, player)

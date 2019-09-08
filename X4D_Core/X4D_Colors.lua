@@ -1,4 +1,4 @@
-local X4D_Colors = LibStub:NewLibrary("X4D_Colors", 1015)
+local X4D_Colors = LibStub:NewLibrary("X4D_Colors", 1020)
 if (not X4D_Colors) then
 	return
 end

@@ -1,4 +1,4 @@
-local X4D_DB_VERSION = 1015
+local X4D_DB_VERSION = 1020
 local X4D_DB = LibStub:NewLibrary("X4D_DB", X4D_DB_VERSION)
 if (not X4D_DB) then
 	return

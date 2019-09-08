@@ -1,6 +1,6 @@
 -- TODO: there may be a "Quest XP" bug (at least for "Destroying the Dark Witnesses") where the XP payout appears in the chat window twice
 
-local X4D_XP = LibStub:NewLibrary("X4D_XP", 1013)
+local X4D_XP = LibStub:NewLibrary("X4D_XP", 1014)
 if (not X4D_XP) then
 	return
 end
@@ -8,7 +8,7 @@ local X4D = LibStub("X4D")
 X4D.XP = X4D_XP
 
 X4D_XP.NAME = "X4D_XP"
-X4D_XP.VERSION = "1.13"
+X4D_XP.VERSION = "1.14"
 
 local _pointType = "XP"
 local _currentXP = 0

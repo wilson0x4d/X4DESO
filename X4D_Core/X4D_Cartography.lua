@@ -1,4 +1,4 @@
-local X4D_Cartography = LibStub:NewLibrary("X4D_Cartography", 1015)
+local X4D_Cartography = LibStub:NewLibrary("X4D_Cartography", 1020)
 if (not X4D_Cartography) then
     return
 end
@@ -96,7 +96,7 @@ local function RefreshCurrentMapAndZoneAndLocation()
 
     local dirty = false
     local map = X4D.Cartography.DB:Find(mapIndex)
-    if (map == nil or map.CreatedAt == nil or (ts - map.CreatedAt) > 900000) then
+    if (map == nil or map.CreatedAt == nil or (ts - map.CreatedAt) > 300000) then
         dirty = true
         map = {
             CreatedAt = ts,

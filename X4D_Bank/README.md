@@ -48,9 +48,14 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+### 1.28
+
+- API Version 100028
+- Rework of Settings Panel based on user feedback.
+- Added support for ESP Plus 'Subscriber Bank' slots.
+- Changed default Gold Deposit/Withdraw settings to be less agg.
 
 ### 1.27
-#### ESO 2.6
 
 - API Version 100017
 - Refactored primary banking logic to operate asynchronously.

@@ -123,6 +123,15 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ## Versions
 
+### 1.20
+
+- API Version 100028
+- Async module exposes new `Defer` and `Debounce` functions.
+- Bags module supports `BAG_BANK`, `BAG_SUBSCRIBER_BANK`, `BAG_VIRTUAL`
+- Cartography module major refactor for performance.
+- Misc fixes to logging, settings, etc.
+- No significant change resulting from drift in API Versions.
+
 ### 1.19
 #### ESO 2.6 (API Version 100017)
 
