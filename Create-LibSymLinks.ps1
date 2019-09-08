@@ -52,3 +52,5 @@ createLibrarySymLink "X4D_UI" "LibStub"
 createLibrarySymLink "X4D_Vendors" "LibStub"
 
 createLibrarySymLink "X4D_XP" "LibStub"
+
+createLibrarySymLink "X4D_Quest" "LibStub"
