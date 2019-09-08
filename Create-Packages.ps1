@@ -1,8 +1,8 @@
 $cwd = (Get-Location).Path
-$commitHash = (git rev-parse HEAD).SubString(34)
+$commitHash = (git rev-parse HEAD).SubString(0, 7)
 $dateStamp = (Get-Date).ToString("yyyMMdd")
-$distPath = [System.IO.Path]::Combine($cwd, "dist");
-$tempPath = [System.IO.Path]::Combine($distPath, "tmp");
+$distPath = [System.IO.Path]::Combine($cwd, "dist")
+$tempPath = [System.IO.Path]::Combine($distPath, "tmp")
 
 # remove dist (pre-clean)
 if ([System.IO.Directory]::Exists($distPath)) {
