@@ -60,7 +60,16 @@ function X4D_Timer:Elapsed(expectedId)
 		X4D.Log:Error(err, self.Name)
 		return
 	end
-	if (self._enabled) then		
+	if (self._enabled) then
+		if (self._id == nil) then
+			-- NOTE: in this case a timer callback has set the timer BACK into an enabled
+			--		 state AFTER calling :Stop() -- this is the ONLY scenario where we
+			--		 restore the timer id on behalf of the caller. the only scenario where
+			--		 _id is nil SHOULD be after a call to :Stop() thus we check for it here
+			--		 before performing state reversals
+			self._id = expectedId
+			X4D_Async.ActiveTimers:Add(self._id, self)
+		end
 		zo_callLater(function()
 			self:Elapsed(expectedId)
 		end, self._interval)
