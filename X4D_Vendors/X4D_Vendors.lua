@@ -173,7 +173,6 @@ local function ConductTransactions(vendor)
 		return
 	end
 	local launderItemsWorthZeroGold = X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold")
-	local isFencingEnabled = X4D_Vendors.Settings:Get("EnableFenceInteraction")
 	-- TODO: add an option where once all fence laundering is exhausted, begin 
 	--		 performing fence sales (or the other way around, based on user
 	--		 selection) with this, also: re-order transactions based on user
@@ -187,29 +186,29 @@ local function ConductTransactions(vendor)
 			local slot = bag.Slots[slotIndex]
 			if (slot ~= nil and not slot.IsEmpty) then
 				if (not IsSlotIgnoredItem(slot)) then
-					local vendorAction = GetPatternAction(slot)
-					local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-					if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or (launderItemsWorthZeroGold and slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0))) then
-						if (isFencingEnabled and vendor.IsFence and slot.IsStolen) then
-							if (laundersUsed < laundersMax) then
-								if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
-									local totalPrice = (slot.LaunderPrice * slot.StackCount)
-									if (totalPrice < GetCurrentMoney()) then
-										laundersUsed = laundersUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
-										LaunderItem(bag.Id, slot.Id, slot.StackCount)
-										slot.IsEmpty = false
-										slot.IsStolen = false
-										local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
-										_debits = _debits + totalPrice
-										local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-										"Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
-										InvokeChatCallback(slot.ItemColor, message)
-									end
+					local vendorAction = GetPatternAction(slot) or X4D_VENDORACTION_NONE
+					local itemTypeAction = itemTypeActions[slot.Item.ItemType] or X4D_VENDORACTION_NONE
+					if ((vendor.IsFence and slot.IsStolen) 
+						and ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) 
+							or (vendorAction == X4D_VENDORACTION_SELL and slot.LaunderPrice == 0 and launderItemsWorthZeroGold))) then
+						if (laundersUsed < laundersMax) then
+							if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
+								local totalPrice = (slot.LaunderPrice * slot.StackCount)
+								if (totalPrice < GetCurrentMoney()) then
+									laundersUsed = laundersUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
+									LaunderItem(bag.Id, slot.Id, slot.StackCount)
+									slot.IsEmpty = false
+									slot.IsStolen = false
+									local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
+									_debits = _debits + totalPrice
+									local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+									"Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
+									InvokeChatCallback(slot.ItemColor, message)
 								end
 							end
 						end
 					elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
-						if (vendor.IsFence == slot.IsStolen and (vendor.IsFence == false or isFencingEnabled)) then
+						if (vendor.IsFence == slot.IsStolen) then
 							if ((not vendor.IsFence) or (sellsUsed <= sellsMax)) then
 								sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
 								CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
@@ -254,8 +253,7 @@ local function OnOpenFence()
 	fence.IsFence = true
 	X4D.NPCs:UpdatePosition(fence)
 	X4D.NPCs.CurrentNPC(fence)
-	local isFencingEnabled = X4D_Vendors.Settings:Get("EnableFenceInteraction")
-	if (isFencingEnabled) then
+	if (X4D_Vendors.Settings:Get("EnableFenceInteraction")) then
 		ConductTransactions(fence)
 		ReportEarnings()
 	end
