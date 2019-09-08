@@ -164,13 +164,20 @@ local function GetItemTypeActions()
 	return itemTypeActions
 end
 
--- TODO: refactor to leverage "transactionState" in the same way that X4D_Bank does -- but don't share MRL state (duplicate code, or wrap into instanced class, since Vendor MRL and Bank MRL may not be the same
+-- TODO: refactor to leverage "transactionState" in the same way that X4D_Bank does -- but
+--		 don't share MRL state (duplicate code, or wrap into instanced class, since Vendor
+--		 MRL and Bank MRL may not be the same
 local function ConductTransactions(vendor)
 	if (vendor == nil) then
 		X4D.Log:Error( { "Vendor reference is nil or invalid.", vendor }, "X4D_Vendors")
 		return
 	end
-	-- TODO: add an option where once all fence laundering is exhausted, begin performing fence sales (or the other way around, based on user selection) with this, also: re-order transactions based on user setting ascending or descending.
+	local launderItemsWorthZeroGold = X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold")
+	local isFencingEnabled = X4D_Vendors.Settings:Get("EnableFenceInteraction")
+	-- TODO: add an option where once all fence laundering is exhausted, begin 
+	--		 performing fence sales (or the other way around, based on user
+	--		 selection) with this, also: re-order transactions based on user
+	--		 setting ascending or descending.
 	local laundersMax, laundersUsed = GetFenceLaunderTransactionInfo()
 	local sellsMax, sellsUsed = GetFenceSellTransactionInfo()
 	local itemTypeActions = GetItemTypeActions()
@@ -178,22 +185,17 @@ local function ConductTransactions(vendor)
 	if (bag ~= nil) then
 		for slotIndex = 0, bag.SlotCount do
 			local slot = bag.Slots[slotIndex]
-			-- if (slot ~= nil and slot.Item ~= nil) then
-			--    X4D.Log:Verbose{"ConductTransactions", slot.Id, X4D.Bags:GetNormalizedString(slot)}
-			-- end
 			if (slot ~= nil and not slot.IsEmpty) then
 				if (not IsSlotIgnoredItem(slot)) then
 					local vendorAction = GetPatternAction(slot)
 					local itemTypeAction = itemTypeActions[slot.Item.ItemType]
-					if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))) then
---						 X4D.Log:Verbose({"Launder Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, (slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
-						if (vendor.IsFence and slot.IsStolen) then
+					if ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) or (launderItemsWorthZeroGold and slot.IsStolen and (vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0))) then
+						if (isFencingEnabled and vendor.IsFence and slot.IsStolen) then
 							if (laundersUsed < laundersMax) then
 								if (slot.LaunderPrice ~= nil or slot.LaunderPrice == 0) then
 									local totalPrice = (slot.LaunderPrice * slot.StackCount)
 									if (totalPrice < GetCurrentMoney()) then
-										laundersUsed = laundersUsed + 1
-										-- TODO: if transaction fails, we want to decrement this number, obviously
+										laundersUsed = laundersUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
 										LaunderItem(bag.Id, slot.Id, slot.StackCount)
 										slot.IsEmpty = false
 										slot.IsStolen = false
@@ -207,11 +209,9 @@ local function ConductTransactions(vendor)
 							end
 						end
 					elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
-						if (vendor.IsFence == slot.IsStolen) then
+						if (vendor.IsFence == slot.IsStolen and (vendor.IsFence == false or isFencingEnabled)) then
 							if ((not vendor.IsFence) or (sellsUsed <= sellsMax)) then
---								 X4D.Log:Verbose({"Sales Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
-								sellsUsed = sellsUsed + 1
-								-- TODO: if transaction fails, we want to decrement this number, obviously
+								sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
 								CallSecureProtected("PickupInventoryItem", bag.Id, slot.Id, slot.StackCount)
 								CallSecureProtected("PlaceInStoreWindow")
 								slot.IsEmpty = true
@@ -226,8 +226,6 @@ local function ConductTransactions(vendor)
 								InvokeChatCallback(slot.ItemColor, message)
 							end
 						end
-						-- else
---						 X4D.Log:Verbose({"NonAction Codes for "..slot.Item:GetItemLink(), vendorAction, itemTypeAction, ((vendorAction == X4D_VENDORACTION_SELL) and (slot.LaunderPrice == 0) and X4D_Vendors.Settings:Get("LaunderItemsWorth0Gold"))}, "X4D_Vendors")
 					end
 				end
 			end
@@ -256,8 +254,11 @@ local function OnOpenFence()
 	fence.IsFence = true
 	X4D.NPCs:UpdatePosition(fence)
 	X4D.NPCs.CurrentNPC(fence)
-	ConductTransactions(fence)
-	ReportEarnings()
+	local isFencingEnabled = X4D_Vendors.Settings:Get("EnableFenceInteraction")
+	if (isFencingEnabled) then
+		ConductTransactions(fence)
+		ReportEarnings()
+	end
 end
 local function OnCloseFence() 
 	-- force update of bag snapshots on close
@@ -492,6 +493,19 @@ local function InitializeSettingsUI()
 		end,
 	})
 
+	table.insert(panelControls, {
+		type = "checkbox",
+		name = "Disable Fencing/Laundering?",
+		tooltip = "You can disable Fencing/Laundering and still use with regular Vendors. Enabled by default since all Fence sales are final.",
+		width = "full",
+		getFunc = function()
+			return not X4D.Vendors.Settings:Get("EnableFenceInteraction")
+		end,
+		setFunc = function()
+			X4D.Vendors.Settings:Set("EnableFenceInteraction", not X4D.Vendors.Settings:Get("EnableFenceInteraction"))
+		end,
+	})
+
 
 	LAM:RegisterOptionControls(
 		"X4D_VENDORS_CPL",
@@ -518,6 +532,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
 	X4D_Vendors.Settings = X4D.Settings:Open(
 	X4D_Vendors.NAME .. "_SV", {
 		SettingsAre = "Per-Character",
+		EnableFenceInteraction = true,
 		LaunderItemsWorth0Gold = false, -- this no longer defaults to true, this results in less confusion for users
 		ForKeepsItemPatterns =
 		{
