@@ -46,8 +46,9 @@ function X4D_Bag:PopulateSlot(slotIndex)
     local itemLink, itemColor, itemQuality, item, slotStackCount, slotLocked, slotEquipType = X4D.Items:FromBagSlot(self.Id, slotIndex)
     if (itemLink ~= nil and itemLink:len() > 0 and itemQuality ~= nil) then
         local _1, _2, itemLevel, enchantment1, enchantment2, enchantment3, _7, _8, _9, _10, _11, _12, _13, _14, _15, itemStyle, isCrafted, isBound, isStolen, condition, instanceData =
-            X4D.Items:ParseLink(itemLink)  
+            X4D.Items:ParseLink(itemLink)
         local instanceId = GetItemInstanceId(self.Id, slotIndex) or 0
+        isBound = (isBound == "1") or IsItemBound(self.Id, slotIndex)
         slot = {
             Id = slotIndex,
             IsEmpty = item == nil,
@@ -60,7 +61,7 @@ function X4D_Bag:PopulateSlot(slotIndex)
             StackCount = tonumber(slotStackCount or "1") or 0,
             IsStolen = isStolen == "1",
             IsCrafted = isCrafted == "1",
-            IsBound = isBound == "1",
+            IsBound = isBound,
             Condition = tonumber(condition or "0"),
             InstanceId = instanceId,
             ItemOptions = itemOptions,

@@ -341,6 +341,12 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
     local totalMoved = 0
     local usedEmptySlot = false
     local partialSlots, emptySlots = FindTargetSlots(sourceSlot, targetBag)
+    local dbg = ""
+    if (X4D.Log:IsVerboseEnabled()) then
+        local options, name = sourceSlot.Item.Id:match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
+        local normalized = X4D.Bags:GetNormalizedString(sourceSlot) or "nil"
+        dbg = " ("..options.."//"..normalized.."//bound="..tostring(sourceSlot.IsBound)..")"
+    end
 --    X4D.Log:Verbose{partialSlots, emptySlots}
     for _, targetSlot in pairs(partialSlots) do
         local countToMove = targetSlot.Item.StackMax - targetSlot.StackCount
@@ -386,7 +392,7 @@ local function TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, di
         end
     end
     if (totalMoved > 0) then
-        local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>",
+        local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>>"..dbg,
             directionText, itemIcon, itemLink, X4D.Colors.StackCount, totalMoved)
 		InvokeChatCallback(sourceSlot.ItemColor, message)
     end
@@ -427,7 +433,7 @@ local function ConductTransactions(transactionState)
 				if (slotAction == X4D_BANKACTION_NONE) then
 					slotAction = itemTypeActions[slot.Item.ItemType]
                 end
-                if (slotAction == X4D_BANKACTION_DEPOSIT) then
+                if (slotAction == X4D_BANKACTION_DEPOSIT and not slot.IsBound) then
 					transactionState.pendingDepositCount = transactionState.pendingDepositCount + 1
 					transactionState.pendingDeposits = {
 						n = transactionState.pendingDeposits,

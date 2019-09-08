@@ -192,7 +192,7 @@ local function ConductTransactions(vendor)
 					if (X4D.Log:IsVerboseEnabled()) then
 						local options, name = slot.Item.Id:match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
 						local normalized = X4D.Bags:GetNormalizedString(slot) or "nil"
-						dbg = " ("..options.."//"..normalized.."//va="..vendorAction.."//ita="..itemTypeAction..")"
+						dbg = " ("..options.."//"..normalized.."//bound="..tostring(slot.IsBound).."//va="..vendorAction.."//ita="..itemTypeAction..")"
 					end
 					if ((vendor.IsFence and slot.IsStolen) 
 						and ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) 

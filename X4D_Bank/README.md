@@ -18,6 +18,10 @@ X4D Bank is LibStub-compatible Add-On that performs regular Bank deposits.
 * Display own output, currently relies on X4D Loot for displaying Balance Changes.
 
 
+## Known Issues
+
+* If an item is "Character Bound" and your configuration settings would normally deposit it to the bank, instead an error occurs. As a temporary workaround `IsBound==true` items will NOT be auto-deposited regardless of what user settings are.
+
 ## Installation
 
 Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.
