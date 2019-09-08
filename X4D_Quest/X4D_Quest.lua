@@ -130,8 +130,8 @@ local function X4D_Quest_RefreshInternal()
                                         StepIndex = stepIndex,
                                         ConditionIndex = conditionIndex
                                     }
-                                else
-                                    X4D.Log:Warning("RequestJournalQuestConditionAssistance returns nil", "Quest")
+                                -- else
+                                --     X4D.Log:Warning("RequestJournalQuestConditionAssistance returns nil", "Quest")
                                 end
                             end
                         end

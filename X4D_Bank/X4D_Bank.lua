@@ -272,8 +272,8 @@ local function TryCombinePartialStacks(bag, depth)
                 if (rval ~= nil) then
                     local lslot = bag.Slots[lval.Id]
                     local rslot = bag.Slots[rval.Id]
-					if lslot ~= nil and rslot ~= nil and(not lslot.IsEmpty) and(not rslot.IsEmpty) and (lval.Item ~= nil and rval.Item ~= nil) then
-						if ((lval.Id ~= rval.Id) and(lval.ItemLevel == rval.ItemLevel) and(lval.ItemQuality == rval.ItemQuality) and (lval.Item.Id == rval.Item.Id) and(rval.StackCount ~= 0) and(lval.StackCount ~= 0) and(lslot.IsStolen == rslot.IsStolen)) then
+					if lslot ~= nil and rslot ~= nil and (not lslot.IsEmpty) and (not rslot.IsEmpty) and (lval.Item ~= nil and rval.Item ~= nil) then
+						if ((lval.Id ~= rval.Id) and (lval.ItemLevel == rval.ItemLevel) and (lval.ItemQuality == rval.ItemQuality) and (lval.Item.Id == rval.Item.Id) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and (lslot.IsStolen == rslot.IsStolen)) then
 							table.insert(combines, { [1] = lval, [2] = rval })
 							break
 						end
@@ -322,7 +322,7 @@ local function FindTargetSlots(sourceSlot, targetBag)
         elseif (slot.IsEmpty) then
             table.insert(empties, slot)
         elseif (sourceSlot.Item ~= nil and slot.Item ~= nil) then
-			if ((sourceSlot.ItemLevel == slot.ItemLevel) and(sourceSlot.ItemQuality == slot.ItemQuality) and(sourceSlot.Item.Id == slot.Item.Id) and(slot.StackCount < slot.Item.StackMax) and(sourceSlot.IsStolen == slot.IsStolen)) then
+			if ((sourceSlot.ItemLevel == slot.ItemLevel) and (sourceSlot.ItemQuality == slot.ItemQuality) and (sourceSlot.Item.Id == slot.Item.Id) and (slot.StackCount < slot.Item.StackMax) and (sourceSlot.IsStolen == slot.IsStolen)) then
 				table.insert(partials, slot)
 				remaining = slot.Item.StackMax - slot.StackCount
 				if (remaining <= 0) then
@@ -602,7 +602,6 @@ local function ConductTransactions(transactionState)
         bankFreeCount = bankFreeCount + transactionState[BAG_SUBSCRIBER_BANK].FreeCount
         bankSlotCount = bankSlotCount + transactionState[BAG_SUBSCRIBER_BANK].SlotCount
     end
-    X4D.Log:Warning(isESOPlusSubscriber, "isESOPlusSubscriber")
     if (bankFreeCount < (bankSlotCount * 0.2)) then
         bankFreeColor = X4D.Colors.Red
     end

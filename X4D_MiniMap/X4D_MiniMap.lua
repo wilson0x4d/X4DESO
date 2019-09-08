@@ -543,7 +543,7 @@ local function InitializeMiniMapWindow()
 	_playerPositionLabel:SetText("|")
 
 	local scene = X4D.UI.CurrentScene()
-	local isHudScene = scene ~= nil and(scene:GetName() == "hud" or scene:GetName() == "hudui")
+	local isHudScene = scene ~= nil and (scene:GetName() == "hud" or scene:GetName() == "hudui")
 	_minimapWindow:SetHidden(not isHudScene)
 end
 
