@@ -38,6 +38,8 @@ All of them are optional, except for X4D_Core, which all other X4D Add-ons depen
 
 ## Development
 
+So you want to work on these AddOns, or, you want to run these AddOns directly from the github repository? This section is for you.
+
 ### `Create-AddOnSymLinks.ps1`
 
 Creates symlinks for all X4D AddOns from the current repository to the default %USERPROFILE% location.
