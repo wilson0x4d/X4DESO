@@ -207,7 +207,8 @@ end
 X4D_Items.ItemGroups = {
     "Equipment",
     "Consumables",
-    "Crafting", -- new category for crafting items that aren't exactly profession-specific
+    "Crown",
+    "Crafting",
     "Alchemy",
     "Blacksmithing",
     "Clothing",
@@ -324,12 +325,33 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = nil -- will not appear in "Bank" list (as it results in errors)
     },
+    [ITEMTYPE_CONTAINER_CURRENCY] = {
+        Id = ITEMTYPE_CONTAINER_CURRENCY,
+        Canonical = "ITEMTYPE_CONTAINER_CURRENCY",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_CONTAINER_CURRENCY),
+        Tooltip = nil,
+        Group = nil
+    },
     [ITEMTYPE_COSTUME] = {
         Id = ITEMTYPE_COSTUME,
         Canonical = "ITEMTYPE_COSTUME",
         Name = GetString("SI_ITEMTYPE", ITEMTYPE_COSTUME), --"Costumes",
         Tooltip = nil,
         Group = "Misc"
+    },
+    [ITEMTYPE_CROWN_ITEM] = {
+        Id = ITEMTYPE_CROWN_ITEM,
+        Canonical = "ITEMTYPE_CROWN_ITEM",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_CROWN_ITEM),
+        Tooltip = nil,
+        Group = "Crown"
+    },
+    [ITEMTYPE_CROWN_REPAIR] = {
+        Id = ITEMTYPE_CROWN_REPAIR,
+        Canonical = "ITEMTYPE_CROWN_REPAIR",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_CROWN_REPAIR),
+        Tooltip = nil,
+        Group = "Crown"
     },
     [ITEMTYPE_DEPRECATED] = {
         Id = ITEMTYPE_DEPRECATED,
@@ -352,6 +374,13 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = "Consumables"
     },
+    [ITEMTYPE_DYE_STAMP] = {
+        Id = ITEMTYPE_DYE_STAMP,
+        Canonical = "ITEMTYPE_DYE_STAMP",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_DYE_STAMP),
+        Tooltip = nil,
+        Group = "Consumables"
+    },    
     [ITEMTYPE_ENCHANTING_RUNE_ASPECT] = {
         Id = ITEMTYPE_ENCHANTING_RUNE_ASPECT,
         Canonical = "ITEMTYPE_ENCHANTING_RUNE_ASPECT",
@@ -401,6 +430,20 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = "Consumables"
     },
+    [ITEMTYPE_FURNISHING] = {
+        Id = ITEMTYPE_FURNISHING,
+        Canonical = "ITEMTYPE_FURNISHING",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_FURNISHING),
+        Tooltip = nil,
+        Group = "Furnishings"
+    },
+    [ITEMTYPE_FURNISHING_MATERIAL] = {
+        Id = ITEMTYPE_FURNISHING_MATERIAL,
+        Canonical = "ITEMTYPE_FURNISHING_MATERIAL",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_FURNISHING_MATERIAL),
+        Tooltip = nil,
+        Group = "Furnishings"
+    },
     [ITEMTYPE_GLYPH_ARMOR] = {
         Id = ITEMTYPE_GLYPH_ARMOR,
         Canonical = "ITEMTYPE_GLYPH_ARMOR",
@@ -429,6 +472,48 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = "Provisioning"
     },
+    [ITEMTYPE_JEWELRYCRAFTING_BOOSTER] = {
+        Id = ITEMTYPE_JEWELRYCRAFTING_BOOSTER,
+        Canonical = "ITEMTYPE_JEWELRYCRAFTING_BOOSTER",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_JEWELRYCRAFTING_BOOSTER),
+        Tooltip = nil,
+        Group = "Jewelcrafting"
+    },
+    [ITEMTYPE_JEWELRYCRAFTING_RAW_BOOSTER] = {
+        Id = ITEMTYPE_JEWELRYCRAFTING_BOOSTER,
+        Canonical = "ITEMTYPE_JEWELRYCRAFTING_RAW_BOOSTER",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_JEWELRYCRAFTING_RAW_BOOSTER),
+        Tooltip = nil,
+        Group = "Jewelcrafting"
+    },
+    [ITEMTYPE_JEWELRYCRAFTING_MATERIAL] = {
+        Id = ITEMTYPE_JEWELRYCRAFTING_MATERIAL,
+        Canonical = "ITEMTYPE_JEWELRYCRAFTING_MATERIAL",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_JEWELRYCRAFTING_MATERIAL),
+        Tooltip = nil,
+        Group = "Jewelcrafting"
+    },
+    [ITEMTYPE_JEWELRYCRAFTING_RAW_MATERIAL] = {
+        Id = ITEMTYPE_JEWELRYCRAFTING_RAW_MATERIAL,
+        Canonical = "ITEMTYPE_JEWELRYCRAFTING_RAW_MATERIAL",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_JEWELRYCRAFTING_RAW_MATERIAL),
+        Tooltip = nil,
+        Group = "Jewelcrafting"
+    },
+    [ITEMTYPE_JEWELRY_TRAIT] = {
+        Id = ITEMTYPE_JEWELRY_TRAIT,
+        Canonical = "ITEMTYPE_JEWELRY_TRAIT",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_JEWELRY_TRAIT),
+        Tooltip = nil,
+        Group = "Jewelcrafting"
+    },
+    [ITEMTYPE_JEWELRY_RAW_TRAIT] = {
+        Id = ITEMTYPE_JEWELRY_RAW_TRAIT,
+        Canonical = "ITEMTYPE_JEWELRY_RAW_TRAIT",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_JEWELRY_RAW_TRAIT),
+        Tooltip = nil,
+        Group = "Jewelcrafting"
+    },
     [ITEMTYPE_LOCKPICK] = {
         Id = ITEMTYPE_LOCKPICK,
         Canonical = "ITEMTYPE_LOCKPICK",
@@ -440,6 +525,13 @@ X4D_Items.ItemTypes = {
         Id = ITEMTYPE_LURE,
         Canonical = "ITEMTYPE_LURE",
         Name = GetString("SI_ITEMTYPE", ITEMTYPE_LURE), --"Lures",
+        Tooltip = nil,
+        Group = "Misc"
+    },
+    [ITEMTYPE_MASTER_WRIT] = {
+        Id = ITEMTYPE_MASTER_WRIT,
+        Canonical = "ITEMTYPE_MASTER_WRIT",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_MASTER_WRIT),
         Tooltip = nil,
         Group = "Misc"
     },
@@ -498,6 +590,13 @@ X4D_Items.ItemTypes = {
         Name = GetString("SI_ITEMTYPE", ITEMTYPE_REAGENT), --"Reagents",
         Tooltip = nil,
         Group = "Alchemy"
+    },
+    [ITEMTYPE_RECALL_STONE] = {
+        Id = ITEMTYPE_RECALL_STONE,
+        Canonical = "ITEMTYPE_RECALL_STONE",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_RECALL_STONE),
+        Tooltip = nil,
+        Group = "Misc"
     },
     [ITEMTYPE_RECIPE] = {
         Id = ITEMTYPE_RECIPE,
@@ -562,6 +661,13 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = "Misc"
     },
+    [ITEMTYPE_TREASURE] = {
+        Id = ITEMTYPE_TREASURE,
+        Canonical = "ITEMTYPE_TREASURE",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_TREASURE),
+        Tooltip = nil,
+        Group = "Misc"
+    },
     [ITEMTYPE_TROPHY] = {
         Id = ITEMTYPE_TROPHY,
         Canonical = "ITEMTYPE_TROPHY",
@@ -590,6 +696,13 @@ X4D_Items.ItemTypes = {
         Tooltip = nil,
         Group = "Blacksmithing"
     },
+    [ITEMTYPE_WOODWORKING_BOOSTER] = {
+        Id = ITEMTYPE_WOODWORKING_BOOSTER,
+        Canonical = "ITEMTYPE_WOODWORKING_BOOSTER",
+        Name = GetString("SI_ITEMTYPE", ITEMTYPE_WOODWORKING_BOOSTER), --"Boosters",
+        Tooltip = nil,
+        Group = "Woodworking"
+    },
     [ITEMTYPE_WOODWORKING_MATERIAL] = {
         Id = ITEMTYPE_WOODWORKING_MATERIAL,
         Canonical = "ITEMTYPE_WOODWORKING_MATERIAL",
@@ -601,13 +714,6 @@ X4D_Items.ItemTypes = {
         Id = ITEMTYPE_WOODWORKING_RAW_MATERIAL,
         Canonical = "ITEMTYPE_WOODWORKING_RAW_MATERIAL",
         Name = GetString("SI_ITEMTYPE", ITEMTYPE_WOODWORKING_RAW_MATERIAL), --"Raw Materials",
-        Tooltip = nil,
-        Group = "Woodworking"
-    },
-    [ITEMTYPE_WOODWORKING_BOOSTER] = {
-        Id = ITEMTYPE_WOODWORKING_BOOSTER,
-        Canonical = "ITEMTYPE_WOODWORKING_BOOSTER",
-        Name = GetString("SI_ITEMTYPE", ITEMTYPE_WOODWORKING_BOOSTER), --"Boosters",
         Tooltip = nil,
         Group = "Woodworking"
     },
