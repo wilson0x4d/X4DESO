@@ -20,14 +20,14 @@ function createModuleArchive($moduleName) {
     # create archive (final)
     Compress-Archive -Path "$tempPath/$moduleName/*" -DestinationPath "$distPath/$packageName" -CompressionLevel Optimal
 
-    Remove-Item -Force -Recurse $tempPath | Out-Null
-
     if ([System.IO.File]::Exists("$distPath/$packageName")) {
         Write-Output $packageName
     }
 }
 
 Get-ChildItem "X4D_*" | ForEach-Object { createModuleArchive $_.Name }
+
+Compress-Archive -Path "$tempPath/X4D_*" -DestinationPath "$distPath/X4D_AllInOne-$dateStamp-$commitHash.zip" -CompressionLevel Optimal
 
 # remove temp (post-clean)
 if ([System.IO.Directory]::Exists($tempPath)) {
