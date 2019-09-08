@@ -188,6 +188,12 @@ local function ConductTransactions(vendor)
 				if (not IsSlotIgnoredItem(slot)) then
 					local vendorAction = GetPatternAction(slot) or X4D_VENDORACTION_NONE
 					local itemTypeAction = itemTypeActions[slot.Item.ItemType] or X4D_VENDORACTION_NONE
+					local dbg = ""
+					if (X4D.Log:IsVerboseEnabled()) then
+						local options, name = slot.Item.Id:match("|H1:item:(.-)|h[%[]*(.-)[%]]*|h")
+						local normalized = X4D.Bags:GetNormalizedString(slot) or "nil"
+						dbg = " ("..options.."//"..normalized.."//va="..vendorAction.."//ita="..itemTypeAction..")"
+					end
 					if ((vendor.IsFence and slot.IsStolen) 
 						and ((vendorAction == X4D_VENDORACTION_KEEP or itemTypeAction == X4D_VENDORACTION_KEEP) 
 							or (vendorAction == X4D_VENDORACTION_SELL and slot.LaunderPrice == 0 and launderItemsWorthZeroGold))) then
@@ -201,13 +207,13 @@ local function ConductTransactions(vendor)
 									slot.IsStolen = false
 									local statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Red .. "(-" .. totalPrice .. _goldIcon .. ")"
 									_debits = _debits + totalPrice
-									local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
+									local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>"..dbg,
 									"Laundered", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
 									InvokeChatCallback(slot.ItemColor, message)
 								end
 							end
 						end
-					elseif (vendorAction == X4D_VENDORACTION_SELL or itemTypeAction == X4D_VENDORACTION_SELL) then
+					elseif (vendorAction == X4D_VENDORACTION_SELL or (itemTypeAction == X4D_VENDORACTION_SELL and vendorAction ~= X4D_VENDORACTION_KEEP)) then
 						if (vendor.IsFence == slot.IsStolen) then
 							if ((not vendor.IsFence) or (sellsUsed <= sellsMax)) then
 								sellsUsed = sellsUsed + 1 -- TODO: if transaction fails, we want to decrement this number, obviously
@@ -220,8 +226,8 @@ local function ConductTransactions(vendor)
 									statement = X4D.Colors.Subtext .. " for " .. X4D.Colors.Gold .. totalPrice .. _goldIcon
 									_credits = _credits + totalPrice
 								end
-								local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>",
-								"Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
+								local message = zo_strformat("<<1>> <<2>><<t:3>> <<4>>x<<5>><<6>>"..dbg,
+									"Sold", slot.Item:GetItemIcon(), slot.Item:GetItemLink(), X4D.Colors.StackCount, slot.StackCount, statement)
 								InvokeChatCallback(slot.ItemColor, message)
 							end
 						end
@@ -546,7 +552,6 @@ EVENT_MANAGER:RegisterForEvent("X4D_Vendors_OnLoaded", EVENT_ADD_ON_LOADED, func
 			-- items matching a "for sale" pattern WILL BE SOLD without confirmation, this includes STOLEN items while at a vendor
 			-- laundering (or "Launder") takes precedence over "for sale"
 			"TRASH",
-			"ITEMTYPE_NONE",
 		},
 		IgnoredItemPatterns =
 		{

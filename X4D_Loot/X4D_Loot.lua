@@ -77,7 +77,8 @@ local _snapshots
 
 local function InitializeSnapshots()
     if (_snapshots == nil) then
-        local snapshots = {}
+		local snapshots = {}
+		snapshots[BAG_WORN] = X4D.Bags:GetBag(BAG_WORN, true)
 		snapshots[BAG_BACKPACK] = X4D.Bags:GetBag(BAG_BACKPACK, true)
 		snapshots[BAG_BANK] = X4D.Bags:GetBag(BAG_BANK, true)
 		snapshots[BAG_SUBSCRIBER_BANK] = X4D.Bags:GetBag(BAG_SUBSCRIBER_BANK, true)
