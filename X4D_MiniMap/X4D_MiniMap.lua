@@ -575,8 +575,8 @@ local function InitializeSettingsUI()
 
 	table.insert(panelControls, {
 		type = "checkbox",
-		name = "(ALPHA) Enable MiniMap",
-		tooltip = "When enabled, a minimap is displayed in the bottom-right of the screen (except when interacting with a HUD/Menu/etc.) |cFF0000This is an alpha-grade feature, currently in development. Feel free to use, test, and provide feedback for it. It is disabled by default since I cannot guarantee it will work correctly in all zones in its current state.",
+		name = "Enable MiniMap",
+		tooltip = "When enabled, a minimap is displayed in the bottom-right of the screen (except when interacting with a HUD/Menu/etc.) |cFF0000This is a beta-grade feature, currently in development. Feel free to use, test, and provide feedback for it.",
 		getFunc = function()
 			return X4D_MiniMap.Settings:Get("EnableMiniMap")
 		end,

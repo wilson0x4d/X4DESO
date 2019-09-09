@@ -22,6 +22,8 @@ X4D Bank is LibStub-compatible Add-On that performs regular Bank deposits.
 
 * If an item is "Character Bound" and your configuration settings would normally deposit it to the bank, instead an error occurs. As a temporary workaround `IsBound==true` items will NOT be auto-deposited regardless of what user settings are.
 
+* Restacking issue between BAG_BANK and BAG_SUBSCRIBER_BANK, not implemented. As a workaround users can leverage the in-game restack hotkey.
+
 ## Installation
 
 Open the Archive and copy the **X4D_Bank** folder into **%USERPROFILE%\Documents\Elder Scrolls Online\live\Addons\** folder.

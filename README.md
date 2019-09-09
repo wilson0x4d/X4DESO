@@ -32,7 +32,8 @@ To that end, the following independent modules exist. When it makes sense they w
 - **X4D_Vendors** - Launder and Sell items at Merchants and Fences.
 - **X4D_XP** - Shows XP Gains in the Chat Window.
 - **X4D_UI** - Provides additional UI elements to the game, such as a Status Bar Window
-- **X4D_MiniMap** - (ALPHA PREVIEW) Adds a 'minimap' to the game (disabled by default until 'stable' quality.)
+- **X4D_MiniMap** - (BETA) Adds a 'minimap' to the game (disabled by default until 'stable' quality.)
+- **X4D_Quest** - Integrates with in-game quest tracker to provide static state to other AddOns.
 
 All of them are optional, except for X4D_Core, which all other X4D Add-ons depend on and it is thus required.
 
