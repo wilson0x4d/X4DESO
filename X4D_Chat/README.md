@@ -26,10 +26,10 @@ If ESO is already running, execute **/reloadui** command.
 
 ## Support, Assistance, and Bug Reports
 
-You can file a bug by commenting on the add-ons at <a href="http://www.esoui.com/downloads/author-4678.html">ESOUI.COM</a>.
+You can file a bug at <a href="https://github.com/wilson0x4d/X4DESO/issues">GITHUB.COM</a>.
 
 You can send me **in-game mail** (not a /tell) if you prefer. I can be found on NA 
-servers as Maekir@wilson0x4d, and feel free to say hello if you see me wandering 
+servers as `@wilson0x4d`. Feel free to say hello if you see me wandering 
 about. :)
 
 
@@ -120,7 +120,7 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ### 1.19
 
-- Add Support for [URL="http://www.esoui.com/downloads/info347-X4DBank.html"][B]X4D [COLOR="DarkOrange"]Bank[/COLOR][/B][/URL]
+- Add Support for X4D Bank
 
 ### 1.18
 
@@ -143,7 +143,7 @@ and send bitcoin if you don't already have a bitcoin wallet.
 
 ### 1.14
 
-- Add support for [URL="http://www.esoui.com/downloads/info324-X4DXP.html"][B]X4D [COLOR="DarkOrange"]XP[/COLOR][/B][/URL]
+- Add support for `X4D_XP`.
 
 ### 1.13
 
@@ -186,7 +186,7 @@ and send bitcoin if you don't already have a bitcoin wallet.
 ### 1.5
 
 - Fixed bug with SavedVars not saving (oops!)
-- Added support for [URL="http://www.esoui.com/downloads/info211-X4DLibAntiSpam.html"][B]X4D [COLOR="DarkOrange"]LibAntiSpam[/COLOR][/B][/URL]
+- Added support for `X4D_LibAntiSpam`.
 
 ### 1.4
 
