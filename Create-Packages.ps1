@@ -27,7 +27,11 @@ function createModuleArchive($moduleName) {
 
 Get-ChildItem "X4D_*" | ForEach-Object { createModuleArchive $_.Name }
 
-Compress-Archive -Path "$tempPath/X4D_*" -DestinationPath "$distPath/X4D_AllInOne-$dateStamp-$commitHash.zip" -CompressionLevel Optimal
+Copy-Item -Force "$cwd/LICENSE.md" "$tempPath/LICENSE.md" | Out-Null
+Copy-Item -Force "$cwd/README.md" "$tempPath/README.md" | Out-Null
+Compress-Archive "$tempPath/X4D_*" -DestinationPath "$distPath/X4D_AllInOne-$dateStamp-$commitHash.zip" -CompressionLevel Optimal
+Compress-Archive "$temppath/*.md" -Update -DestinationPath "$distPath/X4D_AllInOne-$dateStamp-$commitHash.zip" -CompressionLevel Optimal
+Write-Output "X4D_AllInOne-$dateStamp-$commitHash.zip"
 
 # remove temp (post-clean)
 if ([System.IO.Directory]::Exists($tempPath)) {
