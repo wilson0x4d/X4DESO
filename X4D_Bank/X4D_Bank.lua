@@ -106,13 +106,10 @@ end
 
 local function InvokeChatCallback(color, text)
     local callback = X4D_Bank.ChatCallback
-    if (color == nil) then
-        color = "|cFF0000"
-    end
-    if (color:len() < 8) then
-        color = "|cFF0000"
-    end
     if (callback ~= nil) then
+        if (color == nil or color:len() < 8) then
+            color = "|cFF0000"
+        end
         callback(color, text)
     end
 end
@@ -273,7 +270,7 @@ local function TryCombinePartialStacks(bag, depth)
                     local lslot = bag.Slots[lval.Id]
                     local rslot = bag.Slots[rval.Id]
 					if lslot ~= nil and rslot ~= nil and (not lslot.IsEmpty) and (not rslot.IsEmpty) and (lval.Item ~= nil and rval.Item ~= nil) then
-						if ((lval.Id ~= rval.Id) and (lval.ItemLevel == rval.ItemLevel) and (lval.ItemQuality == rval.ItemQuality) and (lval.Item.Id == rval.Item.Id) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and (lslot.IsStolen == rslot.IsStolen)) then
+						if ((lval.Id ~= rval.Id) and (lval.ItemLevel == rval.ItemLevel) and (lval.ItemQuality == rval.ItemQuality) and (lval.Item.Id == rval.Item.Id) and (rval.StackCount ~= 0) and (lval.StackCount ~= 0) and (lslot.IsStolen == rslot.IsStolen) and (lslot.InstanceId == rslot.InstanceId)) then
 							table.insert(combines, { [1] = lval, [2] = rval })
 							break
 						end
@@ -410,8 +407,8 @@ local function ConductTransactions(transactionState)
 	end
 	if (isESOPlusSubscriber and transactionState[BAG_SUBSCRIBER_BANK] == nil) then
 		transactionState[BAG_SUBSCRIBER_BANK] = TryGetBag(BAG_SUBSCRIBER_BANK)
-	end
-
+    end
+    
     if (not TryCombinePartialStacks(transactionState[BAG_BACKPACK])) then
 		return false
 	end
@@ -428,19 +425,19 @@ local function ConductTransactions(transactionState)
 
 	if (transactionState.pendingDeposits == nil) then
 		for _, slot in pairs(transactionState[BAG_BACKPACK].Slots) do
-			if (slot ~= nil and not slot.IsEmpty and slot.Item ~= nil) then
-				local slotAction = GetPatternAction(slot)
-				if (slotAction == X4D_BANKACTION_NONE) then
-					slotAction = itemTypeActions[slot.Item.ItemType]
+            if (slot ~= nil and not slot.IsEmpty and slot.Item ~= nil) then
+                local slotAction = GetPatternAction(slot)
+                if (slotAction == X4D_BANKACTION_NONE) then
+                    slotAction = itemTypeActions[slot.Item.ItemType]
                 end
                 if (slotAction == X4D_BANKACTION_DEPOSIT and not slot.IsBound) then
-					transactionState.pendingDepositCount = transactionState.pendingDepositCount + 1
-					transactionState.pendingDeposits = {
-						n = transactionState.pendingDeposits,
+                    transactionState.pendingDepositCount = transactionState.pendingDepositCount + 1
+                    transactionState.pendingDeposits = {
+                        n = transactionState.pendingDeposits,
                         v = slot,
                         b = BAG_BACKPACK
-					}
-				end
+                    }
+                end
 			else
 				transactionState[BAG_BACKPACK].FreeCount = transactionState[BAG_BACKPACK].FreeCount + 1
 			end
@@ -510,10 +507,10 @@ local function ConductTransactions(transactionState)
             if (not sourceSlot.IsEmpty) then
                 local usedEmptySlots = 0
 
-                if (transactionState[BAG_BANK].FreeCount > 0 or not isESOPlusSubscriber) then
-                    targetBag = transactionState[BAG_BANK]
-                elseif (isESOPlusSubscriber) then
+                if (transactionState[BAG_BANK].FreeCount == 0 and isESOPlusSubscriber) then
                     targetBag = transactionState[BAG_SUBSCRIBER_BANK]
+                else
+                    targetBag = transactionState[BAG_BANK]
                 end
 
                 local countMoved, L_usedEmptySlot = TryMoveSourceSlotToTargetBag(sourceBag, sourceSlot, targetBag, "Deposited")
@@ -575,7 +572,7 @@ local function ConductTransactions(transactionState)
 					sourceBag.FreeCount = sourceBag.FreeCount + 1
 					transactionState.pendingWithdrawalCount = transactionState.pendingWithdrawalCount - 1
 				end
-				if (MRL_WouldExceedLimit()) then
+                if (MRL_WouldExceedLimit()) then
 					return false
 				end
 			end
@@ -633,11 +630,11 @@ local function OnOpenBankAsync(timer, transactionState)
 		_isBankBusy = false
 	else
 		-- item transactions
-		if (not ConductTransactions(transactionState)) then
+        if (not ConductTransactions(transactionState)) then
 			timer._interval = MRL_GetMessageRateLimit()
-			timer._enabled = true -- we do not call start because zo_calllater is called on our behalf if _enabled == true
+            timer._enabled = true -- we do not call start because zo_calllater is called on our behalf if _enabled == true
 		else
-			-- monetary transactions
+            -- monetary transactions
 			if (_nextAutoDepositTime <= GetGameTimeMilliseconds()) then
 				_nextAutoDepositTime = GetGameTimeMilliseconds() + (X4D_Bank.Settings:Get("AutoDepositDebounceSeconds") * 1000) + 2000
 				local availableAmount = TryDepositFixedAmount()
