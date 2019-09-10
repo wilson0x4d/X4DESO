@@ -267,13 +267,19 @@ local function UpdateSpamState(playerState, normalized)
 end
 
 function X4D_LibAntiSpam.OnChatMessageReceived(messageType, fromName, text)
-    local ChannelInfo = ZO_ChatSystem_GetChannelInfo()	
+	local ChannelInfo = ZO_ChatSystem_GetChannelInfo()	
     local channelInfo = ChannelInfo[messageType]
 	local isSpam, isFlood, pattern, floodCount = X4D_LibAntiSpam:Check(text, fromName)
 	if (isSpam or isFlood) then
 		return
 	end
-    if (channelInfo and channelInfo.format) then
+	if (channelInfo and channelInfo.format) then
+		if (not channelInfo.__x4d_format) then
+			channelInfo.__x4d_format = string.format(zo_strformat(channelInfo.format), "<<1>>", "<<2>>", "<<3>>", "<<4>>", "<<5>>", "<<6>>", "<<7>>", "<<8>>", "<<9>>")
+			if (not string.match(channelInfo.__x4d_format, "<<3>>")) then
+				channelInfo.__x4d_format = channelInfo.__x4d_format.. " <<3>>"
+			end
+		end
 		local channelLink = nil
 		if (channelInfo.channelLinkable) then
 			local channelName = GetChannelName(channelInfo.id)
@@ -284,10 +290,9 @@ function X4D_LibAntiSpam.OnChatMessageReceived(messageType, fromName, text)
 			fromLink = ZO_LinkHandler_CreatePlayerLink(fromName)
 		end
         if (channelLink) then
-			local channelName = nil
-            result = zo_strformat(channelInfo.format, channelLink, fromLink, text)
+            result = zo_strformat(channelInfo.__x4d_format, channelLink, fromLink, text, "X4D")
         else
-			result = zo_strformat(channelInfo.format, fromLink, text)
+			result = zo_strformat(channelInfo.__x4d_format, "", fromLink, text)
 		end
 		return result, channelInfo.saveTarget
     end	

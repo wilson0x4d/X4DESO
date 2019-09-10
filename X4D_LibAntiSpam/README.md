@@ -69,6 +69,7 @@ and send bitcoin if you don't already have a bitcoin wallet.
 v1.66
 
 - API Version 100028
+- Workarounds for `zo_format(%s)` and `channelInfo.format` changes in game client.
 
 v1.65
 

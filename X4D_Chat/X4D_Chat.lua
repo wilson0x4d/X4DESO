@@ -111,10 +111,16 @@ function X4D_Chat.OnChatMessageReceived(messageType, fromName, text)
 	end
 
     local ChannelInfo = ZO_ChatSystem_GetChannelInfo()
-    local channelInfo = ChannelInfo[messageType]
+	local channelInfo = ChannelInfo[messageType]
 	local result = nil
 	text = X4D_Chat.StripColors(text)
     if (channelInfo and channelInfo.format) then
+		if (not channelInfo.__x4d_format) then
+			channelInfo.__x4d_format = string.format(zo_strformat(channelInfo.format), "<<1>>", "<<2>>", "<<3>>", "<<4>>", "<<5>>", "<<6>>", "<<7>>", "<<8>>", "<<9>>")
+			if (not string.match(channelInfo.__x4d_format, "<<3>>")) then
+				channelInfo.__x4d_format = channelInfo.__x4d_format.. " <<3>>"
+			end
+		end
 		local category = X4D_Chat.GetChatCategory(channelInfo)
 		local r, g, b = GetChatCategoryColor(category)
 		local categoryColor = X4D_Chat.CreateColorCode(r, g, b)
@@ -125,9 +131,9 @@ function X4D_Chat.OnChatMessageReceived(messageType, fromName, text)
             textColor = X4D.Colors:Lerp(textColor, "|cFFFFFF", 33)
         end
         if (channelLink) then
-            result = zo_strformat(channelInfo.format, channelLink, fromLink, textColor .. text)
-        else
-			result = zo_strformat(channelInfo.format, fromLink, textColor .. text)
+            result = zo_strformat(channelInfo.__x4d_format, channelLink, fromLink, textColor .. text, "X4D")
+		else
+			result = zo_strformat(channelInfo.__x4d_format, "", fromLink, textColor .. text)
 			if (X4D_Chat.Settings:Get('UseEfficientFormat')) then
 				result = result:gsub("%]%|h%s?.-%:", "]|h:", 1)
 			end
