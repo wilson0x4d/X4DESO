@@ -281,12 +281,13 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
     if (parameters ~= nil and parameters:len() > 0) then
         X4D.Log:Information("Parameters: " .. parameters, "X4D")
     end
-    if (parameters == "-debug") then
+    if (parameters == "debug") then
         X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.DEBUG)
         if (Zgoo ~= nil) then
             Zgoo:Main(nil,1,X4D)
         end
-    elseif (parameters == "-test") then
+    elseif (parameters == "dev") then
+        X4D.Log:SetTraceLevel(X4D.Log.TRACE_LEVELS.VERBOSE)
         X4D.Test()
         return
     elseif (parameters:StartsWith("backpack ")) then
