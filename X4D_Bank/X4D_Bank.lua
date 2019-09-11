@@ -1,4 +1,4 @@
-local X4D_Bank = LibStub:NewLibrary("X4D_Bank", 1028)
+local X4D_Bank = LibStub:NewLibrary("X4D_Bank", "0#VERSION#")
 if (not X4D_Bank) then
     return
 end
@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Bank = X4D_Bank
 
 X4D_Bank.NAME = "X4D_Bank"
-X4D_Bank.VERSION = "1.28"
+X4D_Bank.VERSION = "#VERSION#"
 
 X4D_BANKACTION_NONE = 0
 X4D_BANKACTION_DEPOSIT = 1

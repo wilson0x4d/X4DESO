@@ -1,4 +1,4 @@
-local X4D_Chat = LibStub:NewLibrary("X4D_Chat", 1036)
+local X4D_Chat = LibStub:NewLibrary("X4D_Chat", "0#VERSION#")
 if (not X4D_Chat) then
 	return
 end

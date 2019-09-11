@@ -1,6 +1,6 @@
 -- TODO: when player is a Fugitive (and fugitive status would be visible) adjust the position so it no longer occludes the statusbar -- it is okay to occlude the minimap (almost convenient) -- consider providing an option to scale the control ODWN (so it fits on the bottom-right of the minimap nicely, this option should really be a minimap option and not a statusbar option)
 
-local X4D_StatusBar = LibStub:NewLibrary("X4D_StatusBar", 1001)
+local X4D_StatusBar = LibStub:NewLibrary("X4D_StatusBar", "0#VERSION#")
 if (not X4D_StatusBar) then
     return
 end

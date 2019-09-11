@@ -1,4 +1,4 @@
-local X4D_Icons = LibStub:NewLibrary("X4D_Icons", 1020)
+local X4D_Icons = LibStub:NewLibrary("X4D_Icons", "0#VERSION#")
 if (not X4D_Icons) then
 	return
 end

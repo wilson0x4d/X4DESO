@@ -1,5 +1,5 @@
-local X4D_DB_VERSION = 1020
-local X4D_DB = LibStub:NewLibrary("X4D_DB", X4D_DB_VERSION)
+local X4D_DB_VERSION = 1020 -- increment ONLY when compatibility breaks
+local X4D_DB = LibStub:NewLibrary("X4D_DB", "0#VERSION#")
 if (not X4D_DB) then
 	return
 end

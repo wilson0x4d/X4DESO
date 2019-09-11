@@ -1,4 +1,4 @@
-local X4D_Async = LibStub:NewLibrary("X4D_Async", 1020)
+local X4D_Async = LibStub:NewLibrary("X4D_Async", "0#VERSION#")
 if (not X4D_Async) then
 	return
 end

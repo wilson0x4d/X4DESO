@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/lron8ntepgememdi?svg=true)](https://ci.appveyor.com/project/wilson0x4d/x4deso)
+
 # X4D ESO Add-Ons
 
 A collection of LibStub-compatible Add-Ons that provide minor enhancements to the game "Elder Scrolls Online".
@@ -97,6 +99,3 @@ I am also a firm believer in Bitcoin, so if you really want to put a smile on my
 send a Bitcoin donation (of ANY amount!) to <b><a href="bitcoin:1PeRYfrygTEo3VuJCQaZL5A43hrssRTNVH">1PeRYfrygTEo3VuJCQaZL5A43hrssRTNVH</a></b>,
 you can use a service like <a href="https://www.coinbase.com">Coinbase</a> to purchase 
 and send bitcoin if you don't already have a bitcoin wallet.
-
-
-

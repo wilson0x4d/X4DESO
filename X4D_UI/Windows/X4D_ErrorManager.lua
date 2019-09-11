@@ -1,4 +1,4 @@
-local X4D_ErrorManager = LibStub:NewLibrary("X4D_ErrorManager", 1000)
+local X4D_ErrorManager = LibStub:NewLibrary("X4D_ErrorManager", "0#VERSION#")
 if (not X4D_ErrorManager) then
     return
 end

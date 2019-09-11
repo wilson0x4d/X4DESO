@@ -1,7 +1,7 @@
 -- TODO:
 -- EVENT_LOCKPICK_BROKE (integer eventCode, number inactivityLengthMs)
 
-local X4D_Loot = LibStub:NewLibrary("X4D_Loot", 1020)
+local X4D_Loot = LibStub:NewLibrary("X4D_Loot", "0#VERSION#")
 if (not X4D_Loot) then
 	return
 end

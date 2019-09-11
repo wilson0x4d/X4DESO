@@ -1,4 +1,4 @@
-local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", 1011)
+local X4D_Vendors = LibStub:NewLibrary("X4D_Vendors", "0#VERSION#")
 if (not X4D_Vendors) then
 	return
 end

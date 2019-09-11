@@ -1,4 +1,4 @@
-local X4D_Mail = LibStub:NewLibrary("X4D_Mail", 1011)
+local X4D_Mail = LibStub:NewLibrary("X4D_Mail", "0#VERSION#")
 if (not X4D_Mail) then
 	return
 end

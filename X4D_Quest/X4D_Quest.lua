@@ -1,4 +1,4 @@
-local X4D_Quest = LibStub:NewLibrary("X4D_Quest", 1000)
+local X4D_Quest = LibStub:NewLibrary("X4D_Quest", "0#VERSION#")
 if (not X4D_Quest) then
 	return
 end
