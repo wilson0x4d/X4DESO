@@ -15,18 +15,23 @@ function textReplaceAllFiles([string] $path, [string] $expando, [string] $replac
     foreach ($file in $files) {        
         (Get-Content -Path $file -ReadCount 0) -join "`n" -replace $expando, $replacement | Set-Content -Path "$file"
     }
+    $directories = [System.IO.Directory]::GetDirectories($path)
+    foreach ($directory in $directories) {
+        textReplaceAllFiles "$directory" $expando $replacement
+    }
 }
 
 function injectLibraries([string] $addOnName, [string] $libraryName) {
     $libraryPath = [System.IO.Path]::GetFullPath("$cwd/lib/$libraryName")
-    $addOnPath = [System.IO.Path]::GetFullPath("$cwd/dist/$addOnName")
-    $addOnLibraryPath = "$addOnPath/lib/$libraryName"
     if (![System.IO.Directory]::Exists("$libraryPath")) {
-        Write-Warning "Cannot find '$libraryName', skipping."
+        Write-Warning "Cannot find '$libraryName', skipping!"
+        return
     } 
+    $addOnPath = [System.IO.Path]::GetFullPath("$cwd/dist/tmp/$addOnName")
     if (![System.IO.Directory]::Exists("$addOnPath/lib")) {
         mkdir "$addOnPath/lib" 1>> $null
     }
+    $addOnLibraryPath = "$addOnPath/lib/$libraryName"
     if ([System.IO.Directory]::Exists($addOnLibraryPath)) {
         Remove-Item -Recurse -Force -Path $addOnLibraryPath
     }
