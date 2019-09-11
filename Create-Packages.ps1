@@ -13,7 +13,7 @@ New-Item -ItemType Directory $distPath | Out-Null
 function textReplaceAllFiles([string] $path, [string] $expando, [string] $replacement) {
     $files = [System.IO.Directory]::GetFiles($path, "*.*")
     foreach ($file in $files) {        
-        (Get-Content -Path $file -ReadCount 0) -join "`n" -replace $expando, $replacement | Set-Content -Path "$file.test"
+        (Get-Content -Path $file -ReadCount 0) -join "`n" -replace $expando, $replacement | Set-Content -Path "$file"
     }
 }
 
