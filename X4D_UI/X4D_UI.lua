@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.UI = X4D_UI
 
 X4D_UI.NAME = "X4D_UI"
-X4D_UI.VERSION = "1.7"
+X4D_UI.VERSION = "#VERSION#"
 
 X4D.UI.SceneManager = SCENE_MANAGER
 X4D.UI.CurrentScene = X4D.Observable(nil)

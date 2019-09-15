@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Quest = X4D_Quest
 
 X4D_Quest.NAME = "X4D_Quest"
-X4D_Quest.VERSION = "1.00"
+X4D_Quest.VERSION = "#VERSION#"
 
 -- NOTE: we track both module-local as well as expose an observable, the
 --        module-local reference is for build-up purposes (we do not tamper

@@ -9,7 +9,7 @@ local X4D = LibStub("X4D")
 X4D.Loot = X4D_Loot
 
 X4D_Loot.NAME = "X4D_Loot"
-X4D_Loot.VERSION = "1.20"
+X4D_Loot.VERSION = "#VERSION#"
 
 local _goldIcon = " " .. X4D.Icons:CreateString("EsoUI/Art/currency/currency_gold.dds")
 

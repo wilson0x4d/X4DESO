@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Vendors = X4D_Vendors
 
 X4D_Vendors.NAME = "X4D_Vendors"
-X4D_Vendors.VERSION = "1.11"
+X4D_Vendors.VERSION = "#VERSION#"
 
 X4D_VENDORACTION_NONE = 0
 X4D_VENDORACTION_KEEP = 1

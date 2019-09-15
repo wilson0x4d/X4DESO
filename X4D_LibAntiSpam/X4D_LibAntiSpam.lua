@@ -11,7 +11,7 @@ local X4D = LibStub("X4D")
 X4D.AntiSpam = X4D_LibAntiSpam
 
 X4D_LibAntiSpam.NAME = "X4D_LibAntiSpam"
-X4D_LibAntiSpam.VERSION = "1.66"
+X4D_LibAntiSpam.VERSION = "#VERSION#"
 
 X4D_LibAntiSpam.Colors = {
 	X4D = "|cFFAE19",

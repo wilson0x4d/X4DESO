@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Chat = X4D_Chat
 
 X4D_Chat.NAME = "X4D_Chat"
-X4D_Chat.VERSION = "1.36"
+X4D_Chat.VERSION = "#VERSION#"
 
 X4D_Chat.ChannelCategory = {
 	[CHAT_CHANNEL_EMOTE] = CHAT_CATEGORY_EMOTE,

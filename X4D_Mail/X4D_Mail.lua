@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Mail = X4D_Mail
 
 X4D_Mail.NAME = "X4D_Mail"
-X4D_Mail.VERSION = "1.11"
+X4D_Mail.VERSION = "#VERSION#"
 
 -- 1.0
 -- X4D_Mail:IsMailReadable(mailId)

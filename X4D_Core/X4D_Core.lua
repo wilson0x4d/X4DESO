@@ -4,7 +4,7 @@ if (not X4D) then
 end
 
 X4D.NAME = "X4D"
-X4D.VERSION = "1.18"
+X4D.VERSION = "#VERSION#"
 
 local _mm
 EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)

@@ -6,7 +6,7 @@ local X4D = LibStub("X4D")
 X4D.Bags = X4D_Bags
 
 X4D_Bags.NAME = "X4D_Bags"
-X4D_Bags.VERSION = "1.9"
+X4D_Bags.VERSION = "#VERSION#"
 
 local _bags = X4D.DB:Open()
 local function InvalidateBags(...)

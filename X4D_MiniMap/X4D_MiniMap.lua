@@ -23,7 +23,7 @@ local X4D = LibStub("X4D")
 X4D.MiniMap = X4D_MiniMap
 
 X4D_MiniMap.NAME = "X4D_MiniMap"
-X4D_MiniMap.VERSION = "1.7"
+X4D_MiniMap.VERSION = "#VERSION#"
 
 local X4D_MINIMAP_SMALLFONT = "ZoFontGameSmall"
 local X4D_MINIMAP_LARGEFONT = "ZoFontGamepad22"
