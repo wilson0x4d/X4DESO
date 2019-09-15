@@ -151,7 +151,10 @@ local function LayoutMapPins()
 	for _,pin in pairs(pins) do
 		pin.PIP:SetDimensions(pin.Size, pin.Size)
 		pin.PIP:ClearAnchors()
-		if (pin.NPC ~= nil) then
+		if (pin.Location ~= nil) then
+			pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.Location.X * _currentMap.MapWidth) - (pin.Size/2), (pin.Location.Y * _currentMap.MapHeight) - (pin.Size/2))
+			pin.PIP:SetHidden(false)
+		elseif (pin.NPC ~= nil) then
 			if (pin.NPC.Position ~= nil) then
 				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.NPC.Position.X * _currentMap.MapWidth) - (pin.Size/2), (pin.NPC.Position.Y * _currentMap.MapHeight) - (pin.Size/2))
 				pin.PIP:SetHidden(false)
@@ -165,15 +168,6 @@ local function LayoutMapPins()
 				pin.PIP:SetHidden(false)
 			else
 				X4D.Log:Error("LayoutMapPins cannot access `POI::normalizedX`", "MiniMap")
-				pin.PIP:SetHidden(true)
-			end
-		elseif (pin.Quest ~= nil) then
-			if (pin.Quest.X ~= nil and pin.Quest.Y ~= nil) then
-				-- X4D.Log:Information({pin.Quest.X, pin.Quest.Y, X4D.Cartography.PlayerPosition()})
-				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.Quest.X * _currentMap.MapWidth) - (pin.Size/2), (pin.Quest.Y * _currentMap.MapHeight) - (pin.Size/2))
-				pin.PIP:SetHidden(false)
-			else
-				X4D.Log:Error("LayoutMapPins cannot access `Quest::X`", "MiniMap")
 				pin.PIP:SetHidden(true)
 			end
 		else 
@@ -218,30 +212,41 @@ local X4D_MiniMap_BuildPOIPins = function(pins, currentMap)
 	end
 end
 
-local function ConvertQuestToPin(questInfo, currentMap)
-	-- TODO: how to draw "area radius" circles?
-	local texture = questInfo.Icon
-	-- X4D.Log:Verbose({"QuestPinPosition", questInfo.X, questInfo.Y, X4D.Cartography.PlayerPosition()}, "MiniMap")
-
-	local pin = CreateMiniMapPin(texture, DEFAULT_PIP_WIDTH)
-	if (pin ~= nil) then
-		pin.Quest = questInfo
+local function AllocateQuestPins(questInfo, currentMap)	
+	local allocatedPins = {}
+	if (questInfo.Locations ~= nil) then
+		for k,v in pairs(questInfo.Locations) do
+			if (v.Pin == nil and v.Icon ~= nil) then
+				-- TODO: how to draw "area radius" circles?
+				local pin = CreateMiniMapPin(v.Icon, DEFAULT_PIP_WIDTH)
+				if (pin ~= nil) then
+					pin.Quest = questInfo
+					pin.Location = v
+					v.Pin = pin
+					table.insert(allocatedPins, pin)
+				end
+			end
+		end
 	end
-	return pin
+	return allocatedPins
 end
 
 local function X4D_MiniMap_BuildJournalQuestPins(pins, currentMap)
 	-- X4D.Log:Verbose("X4D_MiniMap_BuildJournalQuestPins", "MiniMap")
-	local trackedQuest = X4D.Quest.TrackedQuest()
-	if (trackedQuest ~= nil) then
-		if (trackedQuest.X ~= nil and trackedQuest.Y ~= nil) then
-			local pin = ConvertQuestToPin(trackedQuest, currentMap)
-			pins["quest:"..trackedQuest.Index] = pin
-		-- else
-		-- 	X4D.Log:Warning("Tracked quest missing X/Z", X4D_MiniMap.NAME)
+	local questInfo = X4D.Quest.TrackedQuest()
+	if (questInfo ~= nil) then
+		local allocatedPins = AllocateQuestPins(questInfo, currentMap)
+		for k,v in pairs(questInfo.Locations) do
+			if (v.Pin ~= nil) then
+				local exists = pins["quest:"..questInfo.Index..":"..k]
+				if (exists ~= nil) then
+					exists:SetHidden(true)
+					exists:ClearAnchors()
+					exists:SetTexture(nil)
+				end
+				pins["quest:"..questInfo.Index..":"..k] = v.Pin
+			end
 		end
-	-- else
-	-- 	X4D.Log:Warning("No tracked quest", X4D_MiniMap.NAME)
 	end
 end
 

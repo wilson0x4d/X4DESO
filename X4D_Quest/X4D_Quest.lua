@@ -35,7 +35,7 @@ local function DoesQuestHaveLocation(questInfo)
     -- NOTE: we do not rely on condition location details because
     --       they are unreliable/incomplete for location purposes,
     --       instead we look for values populateed by the AddOn:
-    if (questInfo.X == nil or questInfo.Y == nil or questInfo.Icon == nil) then
+    if (questInfo.Locations == nil) then
         -- X4D.Log:Warning("DoesQuestHaveLocation(X=nil||Y=nil)", "Quest")
         return false
     end
@@ -158,7 +158,7 @@ local function X4D_Quest_RefreshInternal()
                 --       for quests.
 
                 -- TODO: quest pip does not update when changing from interior to exterior
-                --       on sam emap, for example, when transitioning from Daggerfall
+                --       on same map, for example, when transitioning from Daggerfall
                 --       Courtyard to the Inn and back. because there is no map, location,
                 --       zone change event the POIs do not update. it is not ideal to do a
                 --        periodic scrape but it may be necessary.
@@ -170,10 +170,18 @@ local function X4D_Quest_RefreshInternal()
                     if (zoMapPin ~= nil and zoMapPin.m_PinType ~= nil) then
                         local zoQuestIndex, zoStepIndex, zoConditionIndex = zoMapPin:GetQuestData()
                         if (zoQuestIndex == _trackedQuest.Index) then
-                            X4D.Log:Debug("Updating Quest'"..zoQuestIndex.."' with Pin'"..zoPinIndex.."'", "Quest")
-                            _trackedQuest.Icon = zoMapPin:GetQuestIcon()
-                            _trackedQuest.X = zoMapPin.normalizedX or questInfo.X
-                            _trackedQuest.Y = zoMapPin.normalizedY or questInfo.Y
+                            -- X4D.Log:Warning("Updating Quest'"..zoQuestIndex.."' with Pin'"..zoPinIndex.."'", "Quest")
+                            -- NOTE: some quests have multiple objectives, and this code does not
+                            --       discriminate which pin belongs to which objective. as such we
+                            --       record a series of locations instead of a single location.
+                            if (_trackedQuest.Locations == nil) then
+                                _trackedQuest.Locations = {}
+                            end
+                            table.insert(_trackedQuest.Locations, {
+                                Icon = zoMapPin:GetQuestIcon(),
+                                X = zoMapPin.normalizedX or questInfo.X,
+                                Y = zoMapPin.normalizedY or questInfo.Y
+                            })
                         else
                             X4D.Log:Debug("Not Tracked for #"..zoPinIndex, "Quest")
                         end
