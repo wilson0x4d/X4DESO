@@ -67,6 +67,13 @@ X4D_Cartography.IsWorldMapVisible:Observe(OnIsWorldMapVisibleChanged)
 local _currentMapTile
 local _currentLocationName
 
+local _mapScaleOverrides = {
+    ["map:anvilcity_base"] = 0.7,
+    ["map:dbsanctuary_base"] = 0.5,
+    ["map:kvatchcity_base"] = 0.4,
+    ["map:2"] = 1.35,
+    ["map:the_daggerfall_harborage"] = 0.35,
+}
 
 local function RefreshCurrentMapAndZoneAndLocation()
     local ts = GetGameTimeMilliseconds()
@@ -151,6 +158,10 @@ local function RefreshCurrentMapAndZoneAndLocation()
                 if (map.TileWidth == nil or map.TileHeight == nil) then
                     local mapAspectRatio = numHorizontalTiles / numVerticalTiles
                     map.TileWidth = 1280 / numHorizontalTiles
+                    local mapScaleOverride = _mapScaleOverrides["map:"..mapIndex]
+                    if (mapScaleOverride ~= nil and mapScaleOverride > 0) then
+                        map.TileWidth = map.TileWidth * mapScaleOverride
+                    end
                     map.TileHeight = map.TileWidth * mapAspectRatio
                     if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
                         map.MapWidth = map.TileWidth * numHorizontalTiles
