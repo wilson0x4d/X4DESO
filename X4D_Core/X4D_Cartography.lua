@@ -67,19 +67,6 @@ X4D_Cartography.IsWorldMapVisible:Observe(OnIsWorldMapVisibleChanged)
 local _currentMapTile
 local _currentLocationName
 
-function X4D_Cartography:GetTileDimensions(filename)
-    local tex = WINDOW_MANAGER:GetControlByName("X4D_PVT_TEX")
-    if (tex == nil) then
-        tex = WINDOW_MANAGER:CreateControl("X4D_PVT_TEX", GuiRoot, CT_TEXTURE)
-    end
-    tex:SetTextureReleaseOption(RELEASE_TEXTURE_AT_ZERO_REFERENCES)
-    tex:SetTexture(filename)
-    local tx, ty = tex:GetTextureFileDimensions();
-    tex:SetTexture(nil)
-    tex:SetHidden(true)
-    X4D.Log:Debug("GetTileDimensions("..filename..") x="..tx.." y="..ty, "Cartography")
-    return tx, ty
-end
 
 local function RefreshCurrentMapAndZoneAndLocation()
     local ts = GetGameTimeMilliseconds()
@@ -157,16 +144,22 @@ local function RefreshCurrentMapAndZoneAndLocation()
                         local tileTexture = GetMapTileTexture(i)
                         if (tileTexture ~= nil) then
                             mapTiles:Add(i, tileTexture)
-                            if (map.TileWidth == nil or map.TileHeight == nil) then
-                                map.TileWidth, map.TileHeight = X4D_Cartography:GetTileDimensions(tileTexture)
-                                if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
-                                    map.MapWidth = map.TileWidth * numHorizontalTiles
-                                    map.MapHeight = map.TileHeight * numVerticalTiles
-                                end
-                            end
                         end
                     end
                 end
+
+                if (map.TileWidth == nil or map.TileHeight == nil) then
+                    local mapAspectRatio = numHorizontalTiles / numVerticalTiles
+                    map.TileWidth = 1280 / numHorizontalTiles
+                    map.TileHeight = map.TileWidth * mapAspectRatio
+                    if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
+                        map.MapWidth = map.TileWidth * numHorizontalTiles
+                        map.MapHeight = map.TileHeight * numVerticalTiles
+                        -- X4D.Log:Warning({"GetMapNumTiles", numHorizontalTiles, numVerticalTiles, map.MapWidth, map.MapHeight }, "")
+                    end
+                end
+
+
                 -- NOTE: this is done last so consumers can know that the above tile allocation is complete
                 map.VerticalTileCount = numVerticalTiles
                 map.HorizontalTileCount = numHorizontalTiles
