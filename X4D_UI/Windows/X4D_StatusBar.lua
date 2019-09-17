@@ -163,12 +163,14 @@ local function UpdatePerformancePanel()
     if (X4D.UI.Settings:Get("ShowFPS")) then
         local framerate = GetFramerate()
         local framerateColor = X4D.Colors.DarkGray
-        if (framerate <= 14) then
+        if (framerate <= 15) then
             framerateColor = X4D.Colors.Red
         elseif (framerate < 20) then
             framerateColor = X4D.Colors.Orange
-        elseif (framerate < 26) then
+        elseif (framerate < 30) then
             framerateColor = X4D.Colors.Yellow
+        elseif (framerate < 40) then
+            framerateColor = X4D.Colors.White
         end
         local framerateString = framerateColor .. zo_strformat(SI_FRAMERATE_METER_FORMAT, framerateColor .. math.floor(framerate))
         text = text .. "   " .. framerateString
@@ -176,12 +178,14 @@ local function UpdatePerformancePanel()
     if (X4D.UI.Settings:Get("ShowPing")) then
         local latency = GetLatency()
         local latencyColor = X4D.Colors.DarkGray
-        if (latency > 500) then
+        if (latency > 450) then
             latencyColor = X4D.Colors.Red
         elseif (latency > 350) then
             latencyColor = X4D.Colors.Orange
-        elseif (latency > 175) then
+        elseif (latency > 250) then
             latencyColor = X4D.Colors.Yellow
+        elseif (latency > 150) then
+            latencyColor = X4D.Colors.White
         end
         local latencyString = latencyColor .. "PING: " .. latency --.. _latencyMeterIcons[latencyLevel]
         text = text .. "   " .. latencyString
@@ -191,9 +195,9 @@ local function UpdatePerformancePanel()
         local memoryColor = X4D.Colors.DarkGray
         if (memory >= (X4D.OOM)) then
             memoryColor = X4D.Colors.Red
-        elseif (memory >= (X4D.OOM/100)*85) then
+        elseif (memory >= (X4D.OOM * 0.90)) then
             memoryColor = X4D.Colors.Orange
-        elseif (memory >= (X4D.OOM/100)*70) then
+        elseif (memory >= (X4D.OOM * 0.80)) then
             memoryColor = X4D.Colors.Yellow
         end
         local memoryString = memoryColor .. "ADDONS: " .. memory .. "MB"
