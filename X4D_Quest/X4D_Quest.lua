@@ -53,6 +53,58 @@ local function CheckTrackedQuestFullyPopulatedThenEvent()
     return false
 end
 
+local function X4D_Quest_ProcessMapLocations()
+    -- scrape WorldMap
+    -- NOTE: scraping the world map is NOT ideal, we perform this only to 
+    --       capture location information for quests, all other quest 
+    --       information is available via API. this was previously factored
+    --       out (world map scraping was the old mechanism for ALL minimap
+    --       POIs) because it performs very poorly and is not necessary for
+    --       all pin types. unfortunately the game is able to introduce map
+    --       pins for quest states and then not provide client/ui code with 
+    --       access to the position info for those states (for example, the
+    --       "ENDING" state of various quests where there are no more quest
+    --       conditions with which to fetch location info.)  This scraping
+    --       mechanism also provides for interstitial map icons, such as 
+    --       doors/rides which lead to the destination. to simulate these 
+    --       ourselves we would require a proper connection graph. there is
+    --       no API to provide such a connection graph.
+    --
+    -- TL;DR? world map scraping remains the only reliable means to pull
+    --        location info for all quests. it is also sometimes
+    --        inaccurate (Fx.: wandering quest objectives.)
+
+    -- TODO: quest pip does not update when changing from interior to exterior
+    --       on same map, for example, when transitioning from Daggerfall
+    --       Courtyard to the Inn and back. because there is no map, location,
+    --       zone change event the POIs do not update. it is not ideal to do a
+    --       periodic scrape but it may be necessary.
+    X4D.Log:Debug("Inspecting ZO Map Pins", "Quest")
+    local zoPinCount = ZO_WorldMapContainer:GetNumChildren()
+    for zoPinIndex=1,zoPinCount do
+        local zoWorldMapChild = ZO_WorldMapContainer:GetChild(zoPinIndex)
+        local zoMapPin = zoWorldMapChild.m_Pin
+        if (zoMapPin ~= nil and zoMapPin.m_PinType ~= nil) then
+            local zoQuestIndex, zoStepIndex, zoConditionIndex = zoMapPin:GetQuestData()
+            if (zoQuestIndex == _trackedQuest.Index) then
+                -- X4D.Log:Warning("Updating Quest'"..zoQuestIndex.."' with Pin'"..zoPinIndex.."'", "Quest")
+                -- NOTE: some quests have multiple objectives, and this code does not
+                --       discriminate which pin belongs to which objective. as such we
+                --       record a series of locations instead of a single location.
+                if (_trackedQuest.Locations == nil) then
+                    _trackedQuest.Locations = {}
+                end
+                local zoQuestIcon = zoMapPin:GetQuestIcon()-- TODO: i've observed this returning the wrong texture for a POI, presumably due to being called before a re-used control has had time to load a new texture -- this is one more case for us to perform a defer and/or 'Periodic Refresh' of map pin data
+                table.insert(_trackedQuest.Locations, {
+                    Icon = zoQuestIcon,
+                    X = zoMapPin.normalizedX or questInfo.X,
+                    Y = zoMapPin.normalizedY or questInfo.Y
+                })
+            end
+        end
+    end
+end
+
 local function X4D_Quest_RefreshInternal()
     -- X4D.Log:Debug("X4D_Quest_RefreshInternal", X4D_Quest.NAME)
     local ts = GetGameTimeMilliseconds()
@@ -67,31 +119,9 @@ local function X4D_Quest_RefreshInternal()
                     -- NOTE: without these calls we don't see the pins when we scrape world map later
                     RemoveMapQuestPins(journalQuestIndex)
                     AddMapQuestPins(journalQuestIndex, trackingLevel)
-                    -- quest
-                    _trackedQuest = {
-                        Index = journalQuestIndex,
-                        IsComplete = completed,
-                        Level = questLevel,
-                        Type = questType,
-                        TrackingLevel = trackingLevel,
-                        InstanceDisplayType = instanceDisplayType,
-                        Name = questName,
-                        Steps = {}
-                    }
-                    -- quest ending details
-                    local goalText, dialogText, confirmCompleteText, declineCompleteText, backgroundText, journalStepText = GetJournalQuestEnding(journalQuestIndex)
-                    _trackedQuest.Ending = {
-                        GoalText = goalText,
-                        DialogText = dialogText,
-                        ConfirmCompleteText = confirmCompleteText,
-                        DeclineCompleteText = declineCompleteText,
-                        BackgroundText = backgroundText,
-                        JournalStepText = journalStepText
-                    }
-
-                    -- TODO: any other data we'd like to use?
 
                     -- quest steps
+                    local questSteps = {}
                     local numSteps = GetJournalQuestNumSteps(journalQuestIndex)
                     for stepIndex = QUEST_MAIN_STEP_INDEX, numSteps do
                         local stepText, visibility, stepType, stepOverrideText, numConditions = GetJournalQuestStepInfo(journalQuestIndex, stepIndex)
@@ -104,7 +134,7 @@ local function X4D_Quest_RefreshInternal()
                             OverrideText = overrideText,                        
                             Conditions = {}
                         }
-                        _trackedQuest.Steps[stepIndex] = stepInfo
+                        questSteps[stepIndex] = stepInfo
                         for conditionIndex = 1, numConditions do
                             -- quest conditions
                             local conditionValuesCurrent, conditionValuesMax, isConditionFailed, isConditionComplete, isConditionCreditShared, isConditionVisible = GetJournalQuestConditionValues(journalQuestIndex, stepIndex, conditionIndex)
@@ -136,59 +166,30 @@ local function X4D_Quest_RefreshInternal()
                             end
                         end
                     end
+
+                    -- quest
+                    local goalText, dialogText, confirmCompleteText, declineCompleteText, backgroundText, journalStepText = GetJournalQuestEnding(journalQuestIndex)
+                    _trackedQuest = {
+                        Ending = {
+                            GoalText = goalText,
+                            DialogText = dialogText,
+                            ConfirmCompleteText = confirmCompleteText,
+                            DeclineCompleteText = declineCompleteText,
+                            BackgroundText = backgroundText,
+                            JournalStepText = journalStepText
+                        },
+                        Index = journalQuestIndex,
+                        IsComplete = completed,
+                        Level = questLevel,
+                        Type = questType,
+                        TrackingLevel = trackingLevel,
+                        InstanceDisplayType = instanceDisplayType,
+                        Name = questName,
+                        Steps = questSteps
+                    }                    
                 end
 
-                -- scrape WorldMap
-                -- NOTE: scraping the world map is NOT ideal, we perform this only to 
-                --       capture location information for quests, all other quest 
-                --       information is available via API. this was previously factored
-                --       out (world map scraping was the old mechanism for ALL minimap
-                --       POIs) because it performs very poorly and is not necessary for
-                --       all pin types. unfortunately the game is able to introduce map
-                --       pins for quest states and then not provide client/ui code with 
-                --       access to the position info for those states (for example, the
-                --       "ENDING" state of various quests where there are no more quest
-                --       conditions with which to fetch location info.)  This scraping
-                --       mechanism also provides for interstitial map icons, such as 
-                --       doors/rides which lead to the destination. to simulate these 
-                --       ourselves we would require a proper connection graph. there is
-                --       no API to provide such a connection graph.
-                --
-                -- TL;DR? world map scraping remains the only means to pull location info
-                --       for quests.
-
-                -- TODO: quest pip does not update when changing from interior to exterior
-                --       on same map, for example, when transitioning from Daggerfall
-                --       Courtyard to the Inn and back. because there is no map, location,
-                --       zone change event the POIs do not update. it is not ideal to do a
-                --        periodic scrape but it may be necessary.
-                X4D.Log:Debug("Inspecting ZO Map Pins", "Quest")
-                local zoPinCount = ZO_WorldMapContainer:GetNumChildren()
-                for zoPinIndex=1,zoPinCount do
-                    local zoWorldMapChild = ZO_WorldMapContainer:GetChild(zoPinIndex)
-                    local zoMapPin = zoWorldMapChild.m_Pin
-                    if (zoMapPin ~= nil and zoMapPin.m_PinType ~= nil) then
-                        local zoQuestIndex, zoStepIndex, zoConditionIndex = zoMapPin:GetQuestData()
-                        if (zoQuestIndex == _trackedQuest.Index) then
-                            -- X4D.Log:Warning("Updating Quest'"..zoQuestIndex.."' with Pin'"..zoPinIndex.."'", "Quest")
-                            -- NOTE: some quests have multiple objectives, and this code does not
-                            --       discriminate which pin belongs to which objective. as such we
-                            --       record a series of locations instead of a single location.
-                            if (_trackedQuest.Locations == nil) then
-                                _trackedQuest.Locations = {}
-                            end
-                            table.insert(_trackedQuest.Locations, {
-                                Icon = zoMapPin:GetQuestIcon(),
-                                X = zoMapPin.normalizedX or questInfo.X,
-                                Y = zoMapPin.normalizedY or questInfo.Y
-                            })
-                        else
-                            X4D.Log:Debug("Not Tracked for #"..zoPinIndex, "Quest")
-                        end
-                    else
-                        X4D.Log:Debug("No Pin for #"..zoPinIndex, "Quest")
-                    end
-                end
+                X4D_Quest_ProcessMapLocations()
 
             end
         end
