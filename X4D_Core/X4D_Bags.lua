@@ -133,23 +133,15 @@ function X4D_Bags:GetBag(bagId, refresh)
 end
 
 function X4D_Bags:GetBackpack(refresh)
-    return self:GetBag(BAG_BACKPACK, refresh)
+    return self:GetBag(BAG_BACKPACK, refresh), self:GetBag(BAG_VIRTUAL, refresh)
 end
 
 function X4D_Bags:GetBank(refresh)
-    if (IsESOPlusSubscriber()) then
-        return self:GetBag(BAG_BANK, refresh), self:GetBag(BAG_SUBSCRIBER_BANK, refresh)
-    else
-        return self:GetBag(BAG_BANK, refresh), nil
-    end
+    return self:GetBag(BAG_BANK, refresh), self:GetBag(BAG_SUBSCRIBER_BANK, refresh)
 end
 
 function X4D_Bags:GetGuildBank(refresh)
     return self:GetBag(BAG_GUILDBANK, refresh)
-end
-
-function X4D_Bags:GetVirtual(refresh)
-    return self:GetBag(BAG_VIRTUAL, refresh)
 end
 
 function X4D_Bags:GetNormalizedString(slot)
