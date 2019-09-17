@@ -91,14 +91,9 @@ end
 
 setmetatable(X4D_Bag, { __call = X4D_Bag.New })
 
-local _requiresRefresh = true
 local function OnRefreshVisible(control, data, scrollList)
-    if (not _requiresRefresh) then
-        return
-    end
-    _requiresRefresh = true
     for _,item in pairs(scrollList.data) do
-        local bag = X4D.Bags:GetBag(item.data.bagId)
+        local bag = X4D_Bags:GetBag(item.data.bagId, false)
         local slot = bag.Slots[item.data.slotIndex]
         if (slot ~= nil) then
             if (slot.Item ~= nil) then
@@ -108,7 +103,6 @@ local function OnRefreshVisible(control, data, scrollList)
             slot.SellPrice = item.data.sellPrice or slot.SellPrice
             slot.LaunderPrice = item.data.launderPrice or slot.LaunderPrice
         end
---        X4D.Log:Verbose(slot)
     end
 end
 
@@ -121,9 +115,19 @@ function X4D_Bags:GetBag(bagId, refresh)
         bag = _bags:Find(bagId)
     end
     if (bag == nil) then
-        bag = X4D_Bag(bagId)        
+        bag = X4D_Bag(bagId)
         _bags:Add(bag)
-        ZO_ScrollList_RefreshVisible(ZO_PlayerInventoryBackpack, nil, OnRefreshVisible)
+        if (bagId == BAG_BACKPACK) then
+            ZO_ScrollList_RefreshVisible(ZO_PlayerInventoryList, REFRESH_ALL_DATA, OnRefreshVisible)
+        elseif (bagId == BAG_VIRTUAL) then
+            ZO_ScrollList_RefreshVisible(ZO_CraftBagList, REFRESH_ALL_DATA, OnRefreshVisible)
+        elseif (bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK) then
+            ZO_ScrollList_RefreshVisible(ZO_PlayerBankBackpack, REFRESH_ALL_DATA, OnRefreshVisible)
+        elseif (bagId == BAG_GUILDBANK) then
+            ZO_ScrollList_RefreshVisible(ZO_GuildBankBackpack, REFRESH_ALL_DATA, OnRefreshVisible)
+        else
+            X4D.Log:Warning("Unexpected BagId'"..bagId.."' in GetBag call, not populated.", X4D_Bags.NAME)
+        end
     end
     return bag
 end
