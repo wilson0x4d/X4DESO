@@ -6,13 +6,11 @@ A collection of LibStub-compatible Add-Ons that provide minor enhancements to th
 
 ## Compatibility with Others, and Infrequent Updates
 
-I started development of these AddOns years ago when the game first released. I still enjoy using these AddOns when I play and don't really "shop" much for other AddOns, so, I've no idea if they are at all compatible with other AddOns.
+Development of these AddOns began years ago when the game first released. I still enjoy using them when I play and don't really "shop" much for others, so, I've no idea if they are at all compatible with other AddOns.
 
 I only update these AddOns when I am actively playing the game, which has been infrequent over the years. Bills need paying, life remains busy. I'd be happy to work with other developers to maintain these AddOns (will grant rights as necessary to commit and release new builds.) Would be nice to see enough contributors to keep these alive and listed on ESOUI, Curse, etc.
 
-As it is I no longer publish to these sites because I'm not publishing regularly enough for it to matter. The overhead for these sites is too high.
-
-I am working on a set of scripts to assist others with getting setup locally for development/debugging, and also for package & deployment of these AddOns.
+As it is I no longer publish to these sites because I'm not publishing regularly enough for it to matter. Instead, i've added a set of scripts to assist others with getting setup directly from github for development and/or play-testing. I've also added a script to assist with the package & deployment of these AddOns.
  
 ## Dependencies
 
@@ -35,22 +33,23 @@ To that end, the following independent modules exist. When it makes sense they w
 - **X4D_XP** - Shows XP Gains in the Chat Window.
 - **X4D_UI** - Provides additional UI elements to the game, such as a Status Bar Window
 - **X4D_MiniMap** - (BETA) Adds a 'minimap' to the game with Tracked Quest, POI and NPC pins.
-- **X4D_Quest** - Integrates with in-game Quest Tracker and Quest APIs.
+- **X4D_Quest** - Integrates with in-game Quest Tracker and Quest APIs, used by MiniMap.
 
 All of them are optional, except for X4D_Core, which all other X4D Add-ons depend on and it is thus required.
 
-## Development
+## Development and/or Play-Testing
 
-So you want to work on these AddOns, or, you want to run these AddOns directly from the github repository? This section is for you.
+So you want to develop these AddOns, or, you want to play with these AddOns directly from the github repository? This section is for you.
 
 ### `Create-AddOnSymLinks.ps1`
 
 Creates symlinks for all X4D AddOns from the current repository to the default %USERPROFILE% location.
 
-This is useful for developers that like to keep their projects in a standard location (most of us?)
+This is useful for developers that like to keep their development projects in a standard location (most of us?)
 
-Q: Pulled from github but not loading when restart ESO?
-A: Run `Create-AddOnSymLinks.ps1` as Administrator.
+**Q**: I pulled from github but AddOn does not appear in AddOn Manager after restart of ESO?
+
+**A**: Run `Create-AddOnSymLinks.ps1` with **Administrator** privileges.
 
 ### `Create-LibrarySymLinks.ps1`
 
@@ -58,8 +57,13 @@ Creates symlinks for all libraries used by AddOns.
 
 Rather than have libraries/dependencies copied multiple times throughout the repository, a single copy of each dependency is maintained in /lib/ and this script is used to create symlinks from /lib/ into each AddOn folder.
 
-Q: I ran `Create-AddOnSumLinks.ps1` but still no workie.
-A: Also run `Create-LibrarySumLinks.ps1` as Administrator.
+**Q**: I ran `Create-AddOnSumLinks.ps1` but still no workie.
+
+**A**: Also run `Create-LibrarySumLinks.ps1` with **Administrator** privileges.
+
+### `Create-Packages.ps1`
+
+This script is used on the build server to create ZIP files with properly deployed libraries, README and LICENSE files ready for upload to ESOUI, Curse, or other ui mod aggregator.
 
 ### Slash Commands
 
