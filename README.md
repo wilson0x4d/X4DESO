@@ -57,9 +57,9 @@ Creates symlinks for all libraries used by AddOns.
 
 Rather than have libraries/dependencies copied multiple times throughout the repository, a single copy of each dependency is maintained in /lib/ and this script is used to create symlinks from /lib/ into each AddOn folder.
 
-**Q**: I ran `Create-AddOnSumLinks.ps1` but still no workie.
+**Q**: I ran `Create-AddOnSymLinks.ps1` but still no workie.
 
-**A**: Also run `Create-LibrarySumLinks.ps1` with **Administrator** privileges.
+**A**: Also run `Create-LibrarySymLinks.ps1` with **Administrator** privileges.
 
 ### `Create-Packages.ps1`
 
@@ -72,7 +72,7 @@ There are slash commands you will find useful when debugging AddOns or Testing c
 | Command | |
 |-|-|
 | `/x4d` | Without arguments this slash-command will print a 'Version' and 'Load Time' summary for all X4D AddOns. |
-| `/x4d dev` | Puts the AddOns into 'Developer Mode'; Sets the log level to VERBOSE (shows 'useful' logging/activity, but not 'all'), and then performs a broad test of X4D_Core module. If you're doing any development that uses X4D_Core you will usually use this command after performing a `/reloadui`. |
+| `/x4d dev` | Puts the AddOns into 'Development Mode'; Sets the log level to VERBOSE (shows 'useful' logging/activity, but not 'all'), and then performs a broad test of X4D_Core module. If you're doing any development that uses X4D_Core you will usually use this command after performing a `/reloadui`. |
 | `/x4d debug` | Puts the AddOns into 'Debugger Mode'; Sets the log level to DEBUG (shows all logging/activity), and adds a performance summary in the Chat window. You will not use this command often/ever. |
 | `/x4d pos`,`/x4d loc` | Print player location including 'normalized/virtual' and 'minimap/actual' coordinates. |
 
