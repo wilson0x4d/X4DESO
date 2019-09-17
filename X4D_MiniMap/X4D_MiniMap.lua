@@ -45,8 +45,8 @@ local _cameraH
 
 local _miniMapInteractor
 
-local DEFAULT_PIP_WIDTH = 30
-local PLAYER_PIP_WIDTH = 15
+local DEFAULT_PIP_WIDTH = 24
+local PLAYER_PIP_WIDTH = 14
 
 local _pipcache = { } -- 'pips' are the controls used in-game, they are recycled
 local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than the number of pips in the cache
@@ -224,6 +224,7 @@ local function AllocateQuestPins(questInfo, currentMap)
 					pin.Location = v
 					v.Pin = pin
 					table.insert(allocatedPins, pin)
+					-- X4D.Log:Warning("Allocated Quest Pin", "Quest")
 				end
 			end
 		end
