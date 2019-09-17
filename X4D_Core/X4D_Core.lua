@@ -297,10 +297,11 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
     elseif (parameters == "pos" or parameters == "position" or parameters == "loc" or parameters == "location") then
         local currentMap = X4D.Cartography.CurrentMap()
         local playerPosition = X4D.Cartography.PlayerPosition()
+        local numHorizontalTiles, numVerticalTiles = GetMapNumTiles()
         if (currentMap == nil or playerPosition == nil) then
             X4D.Log:Warning("(.. location information not available, please retry ..)", "X4D")
         else
-            X4D.Log:Information(""..X4D.Cartography.MapIndex().." // "..X4D.Cartography.MapName().." // "..X4D.Cartography.LocationName(), "X4D")
+            X4D.Log:Information(""..X4D.Cartography.MapIndex().." // "..X4D.Cartography.MapName().." // "..numHorizontalTiles.."x"..numVerticalTiles, "X4D")
             X4D.Log:Information(""..playerPosition.X..","..playerPosition.Y, "X4D")
         end
 	else

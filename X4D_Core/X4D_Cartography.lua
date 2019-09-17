@@ -68,12 +68,29 @@ local _currentMapTile
 local _currentLocationName
 
 local _mapScaleOverrides = {
-    ["map:anvilcity_base"] = 0.7,
-    ["map:dbsanctuary_base"] = 0.5,
-    ["map:kvatchcity_base"] = 0.4,
-    ["map:2"] = 1.35,
-    ["map:the_daggerfall_harborage"] = 0.35,
+    ["map:RivenspireOutlaw_Base"] = 0.25,
+    ["map:eldenrootservices_base"] = 0.25,
 }
+local DEFAULT_MINIMAP_SCALE = 0.3
+local function X4D_Cartography_GetMapScale(mapIndex)
+    if (mapIndex == nil) then
+        return nil
+    end
+    local mapKey = "map:"..mapIndex
+    local mapScaleOverride = _mapScaleOverrides[mapKey]
+    if (mapScaleOverride ~= nil) then
+        -- NOTE: prefer override in selection, but, should use only when required
+        return mapScaleOverride
+    elseif (tonumber(mapIndex) ~= nil) then
+        -- TODO: there is probably an API call we could make to identify these maps
+        return 1
+    elseif (X4D_Cartography.IsSubZone()) then
+        return 0.5
+    else
+        return  DEFAULT_MINIMAP_SCALE
+    end
+end
+
 
 local function RefreshCurrentMapAndZoneAndLocation()
     local ts = GetGameTimeMilliseconds()
@@ -158,9 +175,10 @@ local function RefreshCurrentMapAndZoneAndLocation()
                 if (map.TileWidth == nil or map.TileHeight == nil) then
                     local mapAspectRatio = numHorizontalTiles / numVerticalTiles
                     map.TileWidth = 1280 / numHorizontalTiles
-                    local mapScaleOverride = _mapScaleOverrides["map:"..mapIndex]
-                    if (mapScaleOverride ~= nil and mapScaleOverride > 0) then
-                        map.TileWidth = map.TileWidth * mapScaleOverride
+                    local mapScale = X4D_Cartography_GetMapScale(mapIndex)
+                    if (mapScale ~= nil and mapScale > 0) then
+                        map.TileWidth = map.TileWidth * mapScale
+                        --X4D.Log:Warning("Applying map scale: "..mapScale.." for an effective map size of "..(1280 * mapScale), "Quest")
                     end
                     map.TileHeight = map.TileWidth * mapAspectRatio
                     if (map.TileWidth ~= nil and map.TileHeight ~= nil) then
