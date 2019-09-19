@@ -344,7 +344,7 @@ local function X4D_MiniMap_RefreshLowRatePins(timer, state)
 					else
 						local isUnitGroupLeader = IsUnitGroupLeader(unitTag)
 						local unitIcon = nil
-						local unitIconSize = 16
+						local unitIconSize = 20
 						if (IsUnitDead(unitTag)) then
 							unitIcon = "esoui/art/treeicons/tutorial_idexicon_death_down.dds"
 						elseif (IsUnitReincarnating(unitTag) or IsUnitBeingResurrected(unitTag) or IsResurrectPending(unitTag)) then
@@ -373,7 +373,7 @@ local function X4D_MiniMap_RefreshLowRatePins(timer, state)
 						end
 						if (pin == nil) then
 							-- TODO: use correct icon (see `GetGroupIcon`)
-							pin = CreateMiniMapPin(unitIcon, iconSize)
+							pin = CreateMiniMapPin(unitIcon, unitIconSize)
 							pin.UnitTag = unitTag
 							pin.IsGroupMember = true
 							pin.IsGroupLeader = isUnitGroupLeader 
