@@ -244,7 +244,8 @@ local function TryUpdateMapState(timer, state)
         X4D_Cartography.ZoneIndex(zoneIndex)
         X4D_Cartography.MapName(GetMapName())
         -- NOTE: this MUST ALWAYS be done last
-        RefreshCurrentMapAndZoneAndLocation()
+        -- NOTE: a deferral was introduced to deal with a small load delay that may have been resposible for incorrect tile sizing
+        X4D.Async:Defer("X4D_Cartography//RefreshCurrentMapAndZoneAndLocation", 250, RefreshCurrentMapAndZoneAndLocation)
     end
 
     --X4D.Log:Debug("TryUpdateMapState -> ZO_WorldMap_UpdateMap")
