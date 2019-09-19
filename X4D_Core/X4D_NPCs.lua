@@ -32,7 +32,7 @@ function X4D_NPCs:GetOrCreate(tag)
 	if (npcName == nil or npcName:len() == 0) then
 		npcName = tag
 	end
-	local npcType = GetUnitCaption(tag)
+	local npcType = GetUnitCaption(tag) or ""
 	if (npcType:StartsWith("Guild Trader")) then -- TODO: localization? better way to detect?
 		npcType = "Guild Trader"
 		-- NOTE: not perfect, since the goal is to track a POI (and not the specific NPC) this should be sufficient even though there is risk of overlap/collision.
