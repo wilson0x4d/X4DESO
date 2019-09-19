@@ -68,10 +68,9 @@ local _currentMapTile
 local _currentLocationName
 
 local _mapScaleOverrides = {
-    ["map:RivenspireOutlaw_Base"] = 0.25,
-    ["map:eldenrootservices_base"] = 0.25,
+    ["map:stonefallsoutlawrefuge_base"] = 0.35,
 }
-local DEFAULT_MINIMAP_SCALE = 0.3
+local DEFAULT_MINIMAP_SCALE = 0.25
 local function X4D_Cartography_GetMapScale(mapIndex)
     if (mapIndex == nil) then
         return nil
@@ -83,20 +82,16 @@ local function X4D_Cartography_GetMapScale(mapIndex)
         return mapScaleOverride
     elseif (tonumber(mapIndex) ~= nil) then
         -- TODO: there is probably an API call we could make to identify these maps
-        return 1
+        return (DEFAULT_MINIMAP_SCALE * 5)
     elseif (X4D_Cartography.IsSubZone()) then
-        return 0.5
+        return (DEFAULT_MINIMAP_SCALE * 2)
     else
         return  DEFAULT_MINIMAP_SCALE
     end
 end
 
-
 local function RefreshCurrentMapAndZoneAndLocation()
     local ts = GetGameTimeMilliseconds()
-    --[[
-        TODO: "zone fencing" to auto-detect the need for a map transition, each can have zero or more fences, each fence being a collection of coordinates in clockwise order which form a closed loop
-    ]]
     local mapIndex = X4D.Cartography.MapIndex()
     if (mapIndex == nil) then
         -- when mapIndex is null, there is no current map
@@ -105,10 +100,8 @@ local function RefreshCurrentMapAndZoneAndLocation()
     local mapName = X4D.Cartography.MapName()
     local isSubZone = X4D.Cartography.IsSubZone()
 
-    local dirty = false
     local map = X4D.Cartography.DB:Find(mapIndex)
     if (map == nil or map.CreatedAt == nil or (ts - map.CreatedAt) > 300000) then
-        dirty = true
         map = {
             CreatedAt = ts,
             MapIndex = mapIndex,
@@ -187,17 +180,14 @@ local function RefreshCurrentMapAndZoneAndLocation()
                         -- X4D.Log:Warning({"GetMapNumTiles", numHorizontalTiles, numVerticalTiles, map.MapWidth, map.MapHeight }, "")
                     end
                 end
-
-
                 -- NOTE: this is done last so consumers can know that the above tile allocation is complete
                 map.VerticalTileCount = numVerticalTiles
                 map.HorizontalTileCount = numHorizontalTiles
             end
         end
     end
-    if (dirty) then
-        X4D.Cartography.DB:Add(mapIndex, map)
-    end
+
+    X4D_Cartography.DB:Add(mapIndex, map)
     X4D_Cartography.CurrentMap(map)
 end
 
