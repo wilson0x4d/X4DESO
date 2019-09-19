@@ -292,14 +292,18 @@ function X4D_Cartography:Initialize()
     end
 end
 
-local function OnTradingHouseOpened()
-    X4D.Log:Debug("OnTradingHouseOpened", "Cartography")
-    -- capture trading house NPCs (for locations, not for the NPC details since NPC is non-static)
-    local npc = X4D.NPCs:GetOrCreate("interact")
-	X4D.NPCs.CurrentNPC(npc)
-end
+local function OnInteraction(id, result, unitName)
+    -- NOTE: this is a bit brittle, but, this event fires "too soon" for us to rely on 
+    --       "interact" target for reliable information, so we perform a deferral here
+    --       take note that the deferral key is the TAG and not the UNIT NAME, this is 
+    --       important if you wish to share this deferral in any other module.
+    X4D.Log:Debug({"EVENT_CLIENT_INTERACT_RESULT", id, result, unitName}, "Cartography")
+    X4D.Async:Defer("X4D_Cartography/OnInteraction", 850, function()
+        X4D.NPCs:GetOrCreate("interact")
+    end)
+end 
 
-EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_OPEN_TRADING_HOUSE, OnTradingHouseOpened)
+EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_CLIENT_INTERACT_RESULT, OnInteraction)
 
 --EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
 --end)

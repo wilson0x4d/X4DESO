@@ -55,7 +55,7 @@ local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than t
 local _npcTypeToTextureLookup = {
 	["UNKNOWN"] = { 
 		Icon = "esoui/art/progression/progression_tabicon_backup_active.dds",
-		ScalingFactor = 1
+		ScalingFactor = 0.25
 	},
 
 	-- NPCs 
@@ -70,6 +70,7 @@ local _npcTypeToTextureLookup = {
 	["Enchanter"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_enchanter.dds", ScalingFactor = 1 },
 	["Fence"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_fence.dds", ScalingFactor = 0.75 },
 	["Grocer"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_generalgoods.dds", ScalingFactor = 1 },
+	["Guild Trader"] = { Icon = "EsoUI/Art/Guild/ownership_icon_guildtrader.dds", ScalingFactor = 1 },
 	["Hall Steward"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_hallsteward.dds", ScalingFactor = 1 },
 	["Innkeeper"] = { Icon = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_consumables.dds", ScalingFactor = 1 },
 	["Leatherworker"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_mediumarmor.dds", ScalingFactor = 1.15 },
@@ -79,13 +80,10 @@ local _npcTypeToTextureLookup = {
 	["Mystic"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_arcanist.dds", ScalingFactor = 1 },
 	["Stablemaster"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_stable.dds", ScalingFactor = 0.75 },
 	["Tailor"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_lightarmor.dds", ScalingFactor = 1.1 },
+	["The Bequeather"] = { Icon = "EsoUI/Art/Icons/MapKey/mapkey_darkbrotherhood.dds", ScalingFactor = 0.75 },
 	["Weaponsmith"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_swords.dds", ScalingFactor = 1 },
 	["Woodworker"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicepin_woodworker_new.dds", ScalingFactor = 1 },
 	["Vendor"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_vendor.dds", ScalingFactor = 0.75 },
-
-	-- these still need review
-
-	[""] = "EsoUI/Art/Vendor/tabIcon_mounts_down.dds",
 }
 
 local _nextPipCacheId = 1
@@ -113,6 +111,7 @@ local function CreateMiniMapPin(texture, size)
 	-- NOTE: just because we're using a cached pip does not mean it has the state we require
 	pip:SetTexture(texture)
 	pip:SetDimensions(size, size)
+	pip.id = id
 	return {
 		PIP = pip,
 		Texture = texture,
@@ -127,10 +126,6 @@ local function ConvertNPCToPin(npc, map)
 	local pin = CreateMiniMapPin(texture.Icon, pipSize)
 	if (pin ~= nil) then
 		pin.NPC = npc
-		-- local pip = pin.PIP
-		-- pip:ClearAnchors()
-		-- pip:SetAnchor(TOPLEFT, _tileContainer, CENTER, (npc.Position.X * map.MapWidth) - pipCenter, (npc.Position.Y * map.MapHeight) - pipCenter)
-		-- pip:SetHidden(false)
 	end
 
 	return pin

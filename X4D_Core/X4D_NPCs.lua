@@ -26,30 +26,43 @@ local _currentZoneIndex = nil
 ]]
 
 function X4D_NPCs:GetOrCreate(tag)
-	local playerPosition = X4D.Cartography.PlayerPosition() -- TODO: invert the headings
+	local ts = GetGameTimeMilliseconds()
+	local playerPosition = X4D.Cartography.PlayerPosition()
 	local npcName = GetRawUnitName(tag)
 	if (npcName == nil or npcName:len() == 0) then
 		npcName = tag
+	end
+	local npcType = GetUnitCaption(tag)
+	if (npcType:StartsWith("Guild Trader")) then -- TODO: localization? better way to detect?
+		npcType = "Guild Trader"
+		-- NOTE: not perfect, since the goal is to track a POI (and not the specific NPC) this should be sufficient even though there is risk of overlap/collision.
+		npcName = "GuildTrader_x"..(math.floor(playerPosition.X * 25))  .."y"..(math.floor(playerPosition.Y * 25))
 	end
 	local key = "npc:" .. _currentMapId .. ":" .. _currentZoneIndex .. ":" .. npcName
 	local entity = self:Find(key)
 	if (entity == nil) then
 --		X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "NPC NOT FOUND, CREATING"}
-		local npcType = GetUnitCaption(tag)
 		entity = {
 			Key = key,
 			Name = npcName,
 			Type = npcType,
 			MapId = _currentMapId,
-			ZoneIndex = _currentZoneIndex,
-			Position = playerPosition
+			ZoneIndex = _currentZoneIndex
 		}
-		self.DB:Add(entity.Key, entity)
-		X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "NEW", entity}
+		if (npcName ~= tag) then
+			self.DB:Add(entity.Key, entity)
+			X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "NEW", entity}
+		else
+			X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "NOT STORED", entity}
+		end
 	else
-		entity.Position = playerPosition
 		X4D.Log:Verbose{"X4D_NPCs::GetOrCreate("..tag..")", "EXISTING", entity}
 	end
+	entity.Position = {
+		X = playerPosition.X,
+		Y = playerPosition.Y
+	}
+	entity.Seen = ts
 	return entity, entity.Key
 end
 
