@@ -292,6 +292,15 @@ function X4D_Cartography:Initialize()
     end
 end
 
+local function OnTradingHouseOpened()
+    X4D.Log:Debug("OnTradingHouseOpened", "Cartography")
+    -- capture trading house NPCs (for locations, not for the NPC details since NPC is non-static)
+    local npc = X4D.NPCs:GetOrCreate("interact")
+	X4D.NPCs.CurrentNPC(npc)
+end
+
+EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_OPEN_TRADING_HOUSE, OnTradingHouseOpened)
+
 --EVENT_MANAGER:RegisterForEvent(X4D_Cartography.NAME, EVENT_PLAYER_ACTIVATED, function()
 --end)
 --EVENT_MANAGER:RegisterForEvent("X4D_Cartography", EVENT_QUEST_POSITION_REQUEST_COMPLETE, function()
