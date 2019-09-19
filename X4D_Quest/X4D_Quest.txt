@@ -1,8 +1,8 @@
 ## APIVersion: 100027 100028
-## Title: X4D |cFFAE19Quest |c4D4D4D1.0
+## Title: X4D |cFFAE19Quest |c4D4D4D#VERSION#
 ## Author: @wilson0x4d
 ## Description: Provides quest-tracking facilities, other X4D AddOns may depend on this module being present.
-## Version: 1.0
+## Version: #VERSION#
 ## SavedVariables: X4D_Quest_SV
 ## DependsOn: X4D_Core
 

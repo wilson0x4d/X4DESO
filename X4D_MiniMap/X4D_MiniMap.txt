@@ -1,8 +1,8 @@
 ## APIVersion: 100027 100028
-## Title: X4D |cFFAE19MiniMap |c4D4D4D1.7
+## Title: X4D |cFFAE19MiniMap |c4D4D4D#VERSION#
 ## Author: @wilson0x4d
 ## Description: 
-## Version: 1.7
+## Version: #VERSION#
 ## SavedVariables: X4D_MiniMap_SV
 ## DependsOn: X4D_Core X4D_UI X4D_Quest
 
