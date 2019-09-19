@@ -304,6 +304,12 @@ SLASH_COMMANDS["/x4d"] = function (parameters, other)
             X4D.Log:Information(""..X4D.Cartography.MapIndex().." // "..X4D.Cartography.MapName().." // "..numHorizontalTiles.."x"..numVerticalTiles, "X4D")
             X4D.Log:Information(""..playerPosition.X..","..playerPosition.Y, "X4D")
         end
+    elseif (parameters:EndsWith(".dds")) then
+        X4D.Log:Information("")
+        X4D.Log:Information("")
+        X4D.Log:Information(X4D.Icons:CreateString(parameters, 64, 64))
+        X4D.Log:Information("")
+        X4D.Log:Information("")
 	else
 	    ReportVersions()
 	    ReportLoadTimes()
