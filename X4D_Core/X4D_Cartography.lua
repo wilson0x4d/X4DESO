@@ -91,7 +91,7 @@ local function X4D_Cartography_GetMapScale(mapIndex)
 end
 
 local function RefreshCurrentMapAndZoneAndLocation()
-    local ts = GetGameTimeMilliseconds()
+    local ts = GetTimeStamp()
     local mapIndex = X4D.Cartography.MapIndex()
     if (mapIndex == nil) then
         -- when mapIndex is null, there is no current map
@@ -100,8 +100,10 @@ local function RefreshCurrentMapAndZoneAndLocation()
     local mapName = X4D.Cartography.MapName()
     local isSubZone = X4D.Cartography.IsSubZone()
 
-    local map = X4D.Cartography.DB:Find(mapIndex)
-    if (map == nil or map.CreatedAt == nil or (ts - map.CreatedAt) > 300000) then
+    local dirty = false
+    local map = X4D_Cartography.DB:Find(mapIndex)
+    if (map == nil or map.CreatedAt == nil or (ts - map.CreatedAt) > 30) then -- 30sec TTL
+        dirty = true
         map = {
             CreatedAt = ts,
             MapIndex = mapIndex,
@@ -186,8 +188,9 @@ local function RefreshCurrentMapAndZoneAndLocation()
             end
         end
     end
-
-    X4D_Cartography.DB:Add(mapIndex, map)
+    if (dirty) then
+        X4D_Cartography.DB:Add(mapIndex, map)
+    end
     X4D_Cartography.CurrentMap(map)
 end
 

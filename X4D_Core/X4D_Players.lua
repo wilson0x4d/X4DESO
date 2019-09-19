@@ -109,7 +109,7 @@ EVENT_MANAGER:RegisterForEvent("X4D_Players_SCAVENGER", EVENT_PLAYER_ACTIVATED, 
 end)
 
 function X4D_Players:GetPlayer(tag)
-    local ts = GetGameTimeMilliseconds()
+    local ts = GetTimeStamp()
     local unitName = GetRawUnitName(tag)
     if (unitName == nil or unitName:len() == 0) then
         unitName = tag
@@ -117,14 +117,15 @@ function X4D_Players:GetPlayer(tag)
     -- attempt to lookup by key
     local key = "$" .. base58(sha1(unitName):FromHex())
     local player = self.DB:Find(key)
-    if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 300000) then
+    if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 300) then
         -- lookup by key failed, perhaps this user is known by name (e.g. cross-channel chat where player-names are not discoverable, but we know this player through some other means such as friends list or guild where their account name is in the clear.)
         player = self.DB:FirstOrDefault(function(player) return player.Name == unitName end)
-        if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 300000) then
+        if (player == nil or player.CreatedAt == nil or (ts - player.CreatedAt) > 300) then
             player = X4D_Player(tag)
             player.CreatedAt = ts
             self.DB:Add(key, player)
         end
+        player.Seen = ts
     end
     -- TODO: this needs to be re-updated when (1) join or leave a group (2) add/remove from friends (3) you/other join/part a guild
     -- EVENT_FRIEND_ADDED

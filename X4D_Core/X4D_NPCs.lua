@@ -26,7 +26,7 @@ local _currentZoneIndex = nil
 ]]
 
 function X4D_NPCs:GetOrCreate(tag)
-	local ts = GetGameTimeMilliseconds()
+	local ts = GetTimeStamp()
 	local playerPosition = X4D.Cartography.PlayerPosition()
 	local npcName = GetRawUnitName(tag)
 	if (npcName == nil or npcName:len() == 0) then

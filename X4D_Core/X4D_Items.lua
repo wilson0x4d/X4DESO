@@ -108,9 +108,9 @@ end
 
 function X4D_Items:FromLink(link)
 	link = X4D_ScrubItemLinkForIdentity(link)
-    local ts = GetGameTimeMilliseconds()
+    local ts = GetTimeStamp()
     local item = self.DB:Find(link)
-    if (item == nil or item.CreatedAt == nil or (ts - item.CreatedAt) > 300000) then
+    if (item == nil or item.CreatedAt == nil or (ts - item.CreatedAt) > 300) then
         item = X4D_Item(link)
         item.CreatedAt = ts
         self.DB:Add(link, item)
