@@ -7,6 +7,6 @@
 ## OptionalDependsOn: X4D_Loot X4D_LibAntiSpam
 ## DependsOn: X4D_Core
 
-lib/LibStub/LibStub.lua
+lib/X4D_LibStub/X4D_LibStub.lua
 
 X4D_Mail.lua

@@ -25,6 +25,7 @@ function createAddOnSymLink($addOnName) {
     }
 }
 
+createAddOnSymLink "X4D_LibStub" # NOTE: this gets injected as a library dependency instead (in release builds), but *could* be loaded this way
 createAddOnSymLink "X4D_Bank"
 createAddOnSymLink "X4D_Chat"
 createAddOnSymLink "X4D_Core"

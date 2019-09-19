@@ -6,6 +6,11 @@ end
 X4D.NAME = "X4D"
 X4D.VERSION = "#VERSION#"
 
+if (LibStub.ParseVersionString) then
+    -- NOTE: checking `if (not X4D.LibStub)` is valid to know X4D_LibStub (or compat) loaded
+    X4D.LibStub = LibStub
+end
+
 local _mm
 EVENT_MANAGER:RegisterForEvent("X4D_Core", EVENT_ADD_ON_LOADED, function(event, name)
     if (name ~= "X4D_Core") then

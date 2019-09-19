@@ -4,9 +4,10 @@
 ## Description: A shared library that provides Anti-Spam functionality to other Add-Ons.
 ## Version: #VERSION#
 ## SavedVariables: X4D_LibAntiSpam_SV
+## OptionalDependsOn: X4D_LibStub LibStub LibAddonMenu-2.0
 ## DependsOn: X4D_Core
 
-lib/LibStub/LibStub.lua
+lib/X4D_LibStub/X4D_LibStub.lua
 
 lib/utf8/utf8scrub.lua
 lib/utf8/utf8data.lua

@@ -4,13 +4,15 @@
 ## Description: X4D Core Library and Shared APIs which all X4D Add-Ons depend on.
 ## Version: #VERSION#
 ## SavedVariables: X4D_Core_SV
-## OptionalDependsOn: LibStub LibAddonMenu-2.0
+## OptionalDependsOn: X4D_LibStub LibStub LibAddonMenu-2.0
+
+lib/X4D_LibStub/X4D_LibStub.lua
 
 ## third-party
-lib/LibStub/LibStub.lua
 lib/kikito/sha1.lua
 lib/kikito/md5.lua
 lib/badgerman/BigNum.lua
+
 ## LAM2
 lib/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
 lib/LibAddonMenu-2.0/controls/panel.lua

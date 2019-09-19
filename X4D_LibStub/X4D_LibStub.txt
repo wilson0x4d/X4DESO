@@ -1,0 +1,7 @@
+## APIVersion: 100027 100028
+## Title: X4D |cFFAE19Core |c4D4D4D#VERSION#
+## Author: @wilson0x4d
+## Description: A LibStub-compatible Dependency Management Library
+## Version: #VERSION#
+
+X4D_LibStub.lua

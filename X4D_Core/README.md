@@ -66,14 +66,14 @@ end
 In your manifest, if you are NOT including the library with your Add-On:
 <pre>
 ## DependsOn: X4D_Core
-lib/LibStub/LibStub.lua
+lib/X4D_LibStub/X4D_LibStub.lua
 </pre>
 
 Including X4D_Core along with your add-on is **NOT** recommended, but it is possible to do so. Contact me if you require assistance to avoid breaking other people's Add-Ons due to an incorrect set-up.
 <pre>
 ## DependsOn: LibAddonMenu-2.0
 ## OptionalDependsOn: X4D_Core
-lib/LibStub/LibStub.lua
+lib/X4D_LibStub/X4D_LibStub.lua
 lib/kikito/sha1.lua
 lib/kikito/md5.lua
 lib/badgerman/BigNum.lua

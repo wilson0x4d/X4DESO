@@ -31,6 +31,7 @@ function injectLibraries([string] $addOnName, [string] $libraryName) {
     if (![System.IO.Directory]::Exists("$addOnPath/lib")) {
         mkdir "$addOnPath/lib" 1>> $null
     }
+    $libraryName = $libraryName.Replace("../", "") # this is necessary to inject `X4D_Libstub` as a library dependency
     $addOnLibraryPath = "$addOnPath/lib/$libraryName"
     if ([System.IO.Directory]::Exists($addOnLibraryPath)) {
         Remove-Item -Recurse -Force -Path $addOnLibraryPath
@@ -53,41 +54,41 @@ function createModuleArchive($moduleName, $packageVersion) {
     # allocate library dependencies (this is only necessary for build server)
     # TODO: this could be a dictionary of arrays, or even better, parse from the txt/toc of each AddOn
     if ($moduleName -eq "X4D_Bank") {
-        injectLibraries "X4D_Bank" "LibStub"
+        injectLibraries "X4D_Bank" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_Chat") {
-        injectLibraries "X4D_Chat" "LibStub"
+        injectLibraries "X4D_Chat" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_Core") {
         injectLibraries "X4D_Core" "badgerman"
         injectLibraries "X4D_Core" "kikito"
         injectLibraries "X4D_Core" "LibAddonMenu-2.0"
-        injectLibraries "X4D_Core" "LibStub"
+        injectLibraries "X4D_Core" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_LibAntiSpam") {
-        injectLibraries "X4D_LibAntiSpam" "LibStub"
+        injectLibraries "X4D_LibAntiSpam" "../X4D_LibStub"
         injectLibraries "X4D_LibAntiSpam" "utf8"
     }
     if ($moduleName -eq "X4D_Loot") {
-        injectLibraries "X4D_Loot" "LibStub"
+        injectLibraries "X4D_Loot" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_Mail") {
-        injectLibraries "X4D_Mail" "LibStub"
+        injectLibraries "X4D_Mail" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_MiniMap") {
-        injectLibraries "X4D_MiniMap" "LibStub"
+        injectLibraries "X4D_MiniMap" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_UI") {
-        injectLibraries "X4D_UI" "LibStub"
+        injectLibraries "X4D_UI" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_Vendors") {
-        injectLibraries "X4D_Vendors" "LibStub"
+        injectLibraries "X4D_Vendors" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_XP") {
-        injectLibraries "X4D_XP" "LibStub"
+        injectLibraries "X4D_XP" "../X4D_LibStub"
     }
     if ($moduleName -eq "X4D_Quest") {
-        injectLibraries "X4D_Quest" "LibStub"
+        injectLibraries "X4D_Quest" "../X4D_LibStub"
     }
 
     # create archive (final)
@@ -110,6 +111,7 @@ else {
 Get-ChildItem "X4D_*" | ForEach-Object { createModuleArchive $_.Name $packageVersion }
 
 # create an "All-in-One" package (primary redist)
+Remove-Item -Recurse "$tempPath/X4D_LibStub" # removal of libstub as an AddOn, only used as a library in release build
 Copy-Item -Force "$cwd/LICENSE.md" "$tempPath/LICENSE.md" | Out-Null
 Copy-Item -Force "$cwd/README.md" "$tempPath/README.md" | Out-Null
 Compress-Archive "$tempPath/X4D_*" -DestinationPath "$distPath/X4D_AllInOne-$packageVersion.zip" -CompressionLevel Optimal
