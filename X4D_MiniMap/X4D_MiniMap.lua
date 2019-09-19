@@ -59,6 +59,7 @@ local _npcTypeToTextureLookup = {
 	},
 
 	-- NPCs 
+	-- TODO: either find a numeric key or localization is required, currently these are all mapping to `GetUnitCaption`
 	["Alchemist"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_alchemist.dds", ScalingFactor = 1 },
 	["Armorer"] = { Icon = "EsoUI/Art/Icons/ServiceTooltipIcons/servicetooltipicon_heavyarmor.dds", ScalingFactor = 1 },
 	["Banker"] = { Icon = "EsoUI/Art/Icons/ServiceMapPins/servicepin_bank.dds", ScalingFactor = 0.75 },
@@ -165,8 +166,6 @@ local function LayoutMapPins()
 				X4D.Log:Error("LayoutMapPins cannot access `POI::normalizedX`", "MiniMap")
 				pin.PIP:SetHidden(true)
 			end
-		else 
-			X4D.Log:Warning({"Unsupported pin during `LayoutMapPins`", pin}, "MiniMap")
 		end
 	end
 end
@@ -213,6 +212,12 @@ local function AllocateQuestPins(questInfo, currentMap)
 		for k,v in pairs(questInfo.Locations) do
 			if (v.Pin == nil and v.Icon ~= nil) then
 				-- TODO: how to draw "area radius" circles?
+				--[[
+esoui\art\mappins\map_areapin.dds
+esoui\art\mappins\map_areapin_32.dds
+esoui\art\mappins\map_assistedareapin.dds
+esoui\art\mappins\map_assistedareapin_32.dds					
+				]]
 				local pin = CreateMiniMapPin(v.Icon, DEFAULT_PIP_WIDTH)
 				if (pin ~= nil) then
 					pin.Quest = questInfo
@@ -244,6 +249,20 @@ local function X4D_MiniMap_BuildJournalQuestPins(pins, currentMap)
 			end
 		end
 	end
+end
+
+---
+--- This method is meant to refresh any minimap pins that require
+--- a low refresh rate (once per second or slower.) It runs non-stop
+--- and performs layout.
+---
+local _timerForRefreshLowRatePins = nil
+local function X4D_MiniMap_RefreshLowRatePins(timer, state)
+	-- X4D.Log:Verbose("X4D_MiniMap_RefreshLowRatePins", "MiniMap")
+	if (_currentMap == nil or _pins == nil) then
+		return
+	end
+
 end
 
 function X4D_MiniMap_RebuildAllPins()
@@ -638,6 +657,12 @@ EVENT_MANAGER:RegisterForEvent(X4D_MiniMap.NAME, EVENT_ADD_ON_LOADED, function(e
 	-- explicit carto initialization by consumer(s)
 	X4D.Cartography:Initialize()
 	
+	-- start low-rate minimap pin updates (>=250ms resolution)
+	if (_timerForRefreshLowRatePins == nil) then
+		_timerForRefreshLowRatePins = X4D.Async:CreateTimer(X4D_MiniMap_RefreshLowRatePins)
+	end
+	_timerForRefreshLowRatePins:Start(1000/3, {}, "X4D_MiniMap::RefreshLowRatePins")
+
 	X4D_MiniMap.Took = stopwatch.ElapsedMilliseconds()
 end)
 
