@@ -55,7 +55,7 @@ local _pins = { } -- 'pins' are a subset of 'active pips', it may be less than t
 local _npcTypeToTextureLookup = {
 	["UNKNOWN"] = { 
 		Icon = "esoui/art/progression/progression_tabicon_backup_active.dds",
-		ScalingFactor = 0.25
+		ScalingFactor = 0.5
 	},
 
 	-- NPCs 

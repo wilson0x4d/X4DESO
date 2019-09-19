@@ -12,7 +12,7 @@ local function ParseVersionString(s)
     end
     local major, minor, patch = nil, nil, nil
     for match in (s.."."):gmatch('(%d-)%.') do
-		local s = tostring(match)
+        local s = tostring(match)
         if (s:len() > 0) then
             if (major == nil) then
                 major = tonumber(s)
@@ -21,7 +21,7 @@ local function ParseVersionString(s)
             else
                 patch = tonumber(s)
             end
-		end
+        end
     end
     return major or 0, minor or 0, patch or 0
 end

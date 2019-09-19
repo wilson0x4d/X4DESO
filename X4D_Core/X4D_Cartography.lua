@@ -69,6 +69,7 @@ local _currentLocationName
 
 local _mapScaleOverrides = {
     ["map:stonefallsoutlawrefuge_base"] = 0.35,
+    ["map:morkhazgur_base"] = 0.5,
 }
 local DEFAULT_MINIMAP_SCALE = 0.25
 local function X4D_Cartography_GetMapScale(mapIndex)
