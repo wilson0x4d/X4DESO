@@ -264,6 +264,7 @@ end
 --- a low refresh rate (once per second or slower.) It runs non-stop
 --- and performs layout.
 ---
+local _isPlayerInGroup = false
 local _timerForRefreshLowRatePins = nil
 local function X4D_MiniMap_RefreshLowRatePins(timer, state)
 	-- X4D.Log:Verbose("X4D_MiniMap_RefreshLowRatePins", "MiniMap")
@@ -301,6 +302,99 @@ local function X4D_MiniMap_RefreshLowRatePins(timer, state)
 	end
 	_pins["waypoint:player"] = waypoint
 
+	-- group pins
+	if (not (IsPlayerInGroup() or IsPlayerInRaid() or IsInCampaign() or IsActiveWorldBattleground() or IsUnitInDungeon("player"))) then
+		if (_isPlayerInGroup) then
+			_isPlayerInGroup = false
+			-- ensure all group pins, if any, are cleaned up (no longer in group)
+			for k,pin in pairs(_pins) do
+				if (k:StartsWith("group:")) then
+					if (pin and pin.PIP) then
+						pin.PIP:SetParent(nil)
+						pin.PIP:SetHidden(true)
+						pin.PIP = nil
+					end
+				end
+			end
+		end
+	else
+		_isPlayerInGroup = true
+		for i = 1, GROUP_SIZE_MAX do
+			local unitTag = ZO_Group_GetUnitTagForGroupIndex(i)
+			local pin = _pins["group:"..unitTag]
+			if (DoesUnitExist(unitTag) and not AreUnitsEqual("player", unitTag)) then
+				if (not IsUnitOnline(unitTag)) then
+					if (pin ~= nil and pin.PIP) then
+						DestroyPin(pin)
+					end
+				else
+					local x, y, h, isInCurrentMap = GetMapPlayerPosition(unitTag)
+					if (not isInCurrentMap) then
+						if (pin ~= nil and pin.PIP) then
+							DestroyPin(pin)
+						end
+					else
+						local isUnitGroupLeader = IsUnitGroupLeader(unitTag)
+						local unitIcon = nil
+						local unitIconSize = 16
+						if (IsUnitDead(unitTag)) then
+							unitIcon = "esoui/art/treeicons/tutorial_idexicon_death_down.dds"
+						elseif (IsUnitReincarnating(unitTag) or IsUnitBeingResurrected(unitTag) or IsResurrectPending(unitTag)) then
+							unitIcon = "esoui/art/treeicons/tutorial_idexicon_death_over.dds"
+						elseif (IsUnitResurrectableByPlayer(unitTag)) then
+							unitIcon = "esoui/art/notifications/notificationicon_resurrect.dds"
+						-- elseif (IsUnitInCombat(unitTag)) then
+						-- 	unitIcon = "esoui/art/treeicons/tutorial_idexicon_combat_down.dds"
+						elseif (isUnitGroupLeader) then
+							unitIconSize = 24
+							unitIcon = "EsoUI/Art/Compass/groupLeader.dds"
+						else
+							unitIcon = "EsoUI/Art/MapPins/UI-WorldMapGroupPip.dds"
+						end
+						if (pin and pin.PIP) then
+							if (pin.IsGroupLeader ~= isUnitGroupLeader) then
+								-- because the icon will need to change, destroy old pin immediately
+								DestroyPin(pin)
+								pin = nil
+							end
+						elseif (pin and not pin.PIP) then
+							-- NOTE: there are cases where we destroy the pip for 
+							--		 efficiency sake, this check ensures we realloc
+							--		 when the associate PIP has been destroyed.
+							pin = nil
+						end
+						if (pin == nil) then
+							-- TODO: use correct icon (see `GetGroupIcon`)
+							pin = CreateMiniMapPin(unitIcon, iconSize)
+							pin.UnitTag = unitTag
+							pin.IsGroupMember = true
+							pin.IsGroupLeader = isUnitGroupLeader 
+							pin.Location = {
+								X = x,
+								Y = y,
+								Heading = h
+							}
+							_pins["group:"..unitTag] = pin
+						end
+						-- unlike other, similar functions. this method performs layout. it is intended to be called periodically.
+						local pip = pin.PIP
+						if (pip and pin.Size and _currentMap.MapHeight and _currentMap.MapWidth) then
+							pip:SetDimensions(pin.Size, pin.Size)
+							pip:ClearAnchors()
+							pip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (x * _currentMap.MapWidth) - (pin.Size/2), (y * _currentMap.MapHeight) - (pin.Size/2))
+							if (h ~= nil) then
+								pip:SetTextureRotation(h)
+							end
+							pip:SetHidden(false)
+						end
+					end
+				end
+			end
+		end
+	end
+
+
+end
 end
 
 function X4D_MiniMap_RebuildAllPins()
