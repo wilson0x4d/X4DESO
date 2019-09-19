@@ -271,6 +271,36 @@ local function X4D_MiniMap_RefreshLowRatePins(timer, state)
 		return
 	end
 
+	-- player waypoint
+	local waypoint = _pins["waypoint:player"]
+	local x, y = GetMapPlayerWaypoint()
+	if (x ~= nil and y ~= nil) then
+		if (not waypoint) then
+			waypoint = CreateMiniMapPin("ESOUI/art/mappins/ui_worldmap_pin_customdestination.dds", DEFAULT_PIP_WIDTH)
+		end
+		if (waypoint.Location == nil or waypoint.Location.X ~= x or waypoint.Location.Y ~= y) then
+			waypoint.Location = {
+				X = x,
+				Y = y
+			}
+			if (waypoint.PIP and waypoint.Size and _currentMap.MapHeight and _currentMap.MapWidth) then
+				local pip = waypoint.PIP
+				local pin = waypoint
+				-- TODO: only if X/Y has changed?
+				pip:SetDimensions(pin.Size, pin.Size)
+				pip:ClearAnchors()
+				pip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (x * _currentMap.MapWidth) - (pin.Size/2), (y * _currentMap.MapHeight) - (pin.Size/2))
+				pip:SetHidden(false)
+			end
+		end
+	else
+		if (waypoint and waypoint.PIP) then
+			DestroyPin(waypoint)
+			waypoint = nil
+		end
+	end
+	_pins["waypoint:player"] = waypoint
+
 end
 
 function X4D_MiniMap_RebuildAllPins()
