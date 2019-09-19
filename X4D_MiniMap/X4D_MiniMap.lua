@@ -132,9 +132,17 @@ local function ConvertNPCToPin(npc, map)
 	return pin
 end
 
-local function ReclaimPin(pin)
+local function DestroyPin(pin)
 	-- assume the pin will be left unused in the pool, so hide it
-	pin.PIP:SetHidden(true)
+	if (pin and pin.PIP) then
+		local id = pin.PIP.id
+		pin.PIP:SetParent(nil)
+		pin.PIP:SetHidden(true)
+		pin.PIP = nil
+		if (id ~= nil) then
+			_pipcache["pip:"..id] = nil	
+		end
+	end
 end
 
 local function LayoutMapPins()
@@ -279,7 +287,7 @@ function X4D_MiniMap_RebuildAllPins()
 	local pins = _pins
 	if (pins ~= nil) then
 		for _,pin in pairs(pins) do
-			ReclaimPin(pin)
+			DestroyPin(pin)
 		end
 	end
 
