@@ -153,26 +153,34 @@ local function LayoutMapPins()
 	end
 	local pins = _pins
 	for _,pin in pairs(pins) do
-		pin.PIP:SetDimensions(pin.Size, pin.Size)
-		pin.PIP:ClearAnchors()
-		if (pin.Location ~= nil) then
-			pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.Location.X * _currentMap.MapWidth) - (pin.Size/2), (pin.Location.Y * _currentMap.MapHeight) - (pin.Size/2))
-			pin.PIP:SetHidden(false)
-		elseif (pin.NPC ~= nil) then
-			if (pin.NPC.Position ~= nil) then
-				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.NPC.Position.X * _currentMap.MapWidth) - (pin.Size/2), (pin.NPC.Position.Y * _currentMap.MapHeight) - (pin.Size/2))
-				pin.PIP:SetHidden(false)
-			else
-				X4D.Log:Error("LayoutMapPins cannot access `NPC::Position`", "MiniMap")
-				pin.PIP:SetHidden(true)
-			end
-		elseif (pin.POI ~= nil) then
-			if (pin.POI.normalizedX ~= nil and pin.POI.normalizedY ~= nil) then
-				pin.PIP:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.POI.normalizedX * _currentMap.MapWidth) - (pin.Size/2), (pin.POI.normalizedY * _currentMap.MapHeight) - (pin.Size/2))
-				pin.PIP:SetHidden(false)
-			else
-				X4D.Log:Error("LayoutMapPins cannot access `POI::normalizedX`", "MiniMap")
-				pin.PIP:SetHidden(true)
+		if (pin and pin.PIP) then
+			local pip = pin.PIP
+			pip:SetDimensions(pin.Size, pin.Size)
+			pip:ClearAnchors()
+			if (pin.Location ~= nil) then
+				pip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.Location.X * _currentMap.MapWidth) - (pin.Size/2), (pin.Location.Y * _currentMap.MapHeight) - (pin.Size/2))
+				if (pin.Location.Heading ~= nil) then
+					pip:SetTextureRotation(pin.Location.Heading)
+				end
+				pip:SetHidden(false)
+			elseif (pin.NPC ~= nil) then
+				if (pin.NPC.Position ~= nil) then
+					pip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.NPC.Position.X * _currentMap.MapWidth) - (pin.Size/2), (pin.NPC.Position.Y * _currentMap.MapHeight) - (pin.Size/2))
+					pip:SetHidden(false)
+				else
+					X4D.Log:Error("LayoutMapPins cannot access `NPC::Position`", "MiniMap")
+					pip:SetHidden(true)
+				end
+			elseif (pin.POI ~= nil) then
+				if (pin.POI.normalizedX ~= nil and pin.POI.normalizedY ~= nil) then
+					pip:SetAnchor(TOPLEFT, _tileContainer, TOPLEFT, (pin.POI.normalizedX * _currentMap.MapWidth) - (pin.Size/2), (pin.POI.normalizedY * _currentMap.MapHeight) - (pin.Size/2))
+					pip:SetHidden(false)
+				else
+					X4D.Log:Error("LayoutMapPins cannot access `POI::normalizedX`", "MiniMap")
+					pip:SetHidden(true)
+				end
+			else 
+				X4D.Log:Warning({"Unsupported pin during `LayoutMapPins`", pin}, "MiniMap")
 			end
 		end
 	end
@@ -392,9 +400,6 @@ local function X4D_MiniMap_RefreshLowRatePins(timer, state)
 			end
 		end
 	end
-
-
-end
 end
 
 function X4D_MiniMap_RebuildAllPins()
